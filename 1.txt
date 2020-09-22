@@ -1,0 +1,9 @@
+Baseband simulator starting
+Add graph 0 into candidate graph buffer of the 1-th batch at 0.000000 
+Add graph 1 into candidate graph buffer of the 1-th batch at 0.000000 
+batch = 1, graphId= 0, graph-finished = 0
+Checking graph dependency....
+Add all tasks of graph 0 in the 1-th batch into candidatetaskBuffer at 0.000000 
+Checking task dependency of task0... 
+Submit task0
+<TaskModule.Task.Task object at 0x7fe446619c50>
