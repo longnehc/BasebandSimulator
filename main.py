@@ -32,7 +32,7 @@ if __name__ == "__main__":
     t0 = Task("task0", "DSP", 1, 0, 0, 0)
     t0.setDataInsIn([d0])
     t0.setDataInsOut([d1])
-    t0.setPrecedenceTaskName([])
+    t0.setPrecedenceJobID([])
     t0.setPrecedenceTask([])
 
     d2 = DataInstance("data2", 0, 0, 100, 3136) 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     t1 = Task("task1", "DSP", 1, 1, 1, 0)
     t1.setDataInsIn([d2])
     t1.setDataInsOut([d3])
-    t1.setPrecedenceTaskName([])
+    t1.setPrecedenceJobID([])
     t1.setPrecedenceTask([])
 
     d4 = DataInstance("data3", 0, 0, 100, 102) 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     t2 = Task("task2", "DSP", 1, 2, 1, 0)
     t2.setDataInsIn([d4])
     t2.setDataInsOut([d5])
-    t2.setPrecedenceTaskName(["task1"])
+    t2.setPrecedenceJobID([1])    
     t2.setPrecedenceTask([t1])
 
     #graphId, graphName, DDL, period, globalTaskList, precedenceGraph

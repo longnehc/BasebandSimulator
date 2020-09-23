@@ -35,8 +35,8 @@ class TaskManager:
                             submitted = True                    # find a graph to submit
                             for task in graph.getGlobalTaskList():
                                 self.candidateTaskBuffer.append(task)
-                            print("Add all tasks of graph %d in the %d-th batch into candidatetaskBuffer at %f " % (graph.graphId, i, env.now))
-                            break
+                            print("Add all tasks of graph %d in the %d-th batch into candidateTaskBuffer at %f " % (graph.graphId, i, env.now))
+                            #break
                 if submitted:
                     break
                 else:
@@ -47,25 +47,25 @@ class TaskManager:
         #name, knrlType, instCnt, jobId, graphId, job_inst_idx
         #constructing new task based on task
         newtask = Task(task.taskName, task.knrlType, task.instCnt, task.jobId, task.taskGraphId, task.job_inst_idx)
-        #set the precedence task name
-        newtask.setPrecedenceTaskName(task.precedenceTaskName)
+        #set the precedence task 
+        newtask.setPrecedenceJobID(task.precedenceJobID)
         return newtask
 
     def contructGraphById(self, graphId):
         graph = self.graphList[graphId]
         newglobalTaskList = []
         #Note: this map is used to build precedenceTask
-        newglobalTaskMap = {} #taskName:newtask  
+        newglobalTaskMap = {} #key:jobId: value: newtask  
         #construct global task list without dependency
         for task in graph.globalTaskList:
             newtask = self.constructTask(task)
             newglobalTaskList.append(newtask)
-            newglobalTaskMap[task.taskName] = newtask
+            newglobalTaskMap[task.jobId] = newtask
         #rebuild the task dependency based on the MAP and PRECEDENCE TASK NAME
         for task in newglobalTaskList:
             precedenceTaskList = []
-            for predtaskname in task.precedenceTaskName:
-                precedenceTaskList.append(newglobalTaskMap[predtaskname])
+            for jobId in task.precedenceJobID:
+                precedenceTaskList.append(newglobalTaskMap[jobId])
             task.setPrecedenceTask(precedenceTaskList)
         newgraph = TaskGraph(graph.graphId, graph.graphName, graph.DDL, graph.period, newglobalTaskList, graph.precedenceGraph)        
         return newgraph
@@ -116,7 +116,8 @@ class TaskManager:
         #         candidate_queue.remove(task)
         #         scheduleUtil.allocate_cluster
         while True: 
-            for task in self.candidateTaskBuffer:
+            for i in range(len(self.candidateTaskBuffer)):
+                task = self.candidateTaskBuffer[i]
                 if task.taskStatus != TaskStatus.FINISH:
                     prepareToSumbit = True
                     print("Checking task dependency of %s... " % task.taskName)
@@ -127,10 +128,11 @@ class TaskManager:
                         if predTask.taskStatus != TaskStatus.FINISH:
                             prepareToSumbit = False
                     if prepareToSumbit:
-                        #schedule()
                         print("Submit %s !!!!!!!!!!!" % task.taskName)
                         #print(task)
                         task.taskStatus = TaskStatus.FINISH    # TODO: need modified in other place
+                        self.candidateTaskBuffer.pop(i)
+                        #schedule()
                         #ResourceManager.placeCluster(1)
                         break
                     else:

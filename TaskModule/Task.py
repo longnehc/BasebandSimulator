@@ -12,8 +12,6 @@ class TaskStatus(Enum):
 class Task:
     #taskName,knrlType,instCnt,cost,priority,dataForTask,job_inst_idx,total_size,data_inst_idx
     
- 
-
     def __init__(self, name, knrlType, instCnt, jobId, graphId, job_inst_idx) :
         self.taskName = name
         self.knrlType = knrlType
@@ -30,7 +28,7 @@ class Task:
         self.OutputDataSize = 0
  
         self.taskStatus = TaskStatus.WAIT
-        self.precedenceTaskName = []
+        self.precedenceJobID = []
         self.precedenceTask = []
 
         #任务实例属性
@@ -53,8 +51,8 @@ class Task:
     def setPrecedenceTask(self, precedenceTask) :
         self.precedenceTask = precedenceTask
 
-    def setPrecedenceTaskName(self, precedenceTaskName) :
-        self.precedenceTaskName = precedenceTaskName    
+    def setPrecedenceJobID(self, precedenceJobID) :
+        self.precedenceJobID = precedenceJobID    
 
     def setDataInsIn(self, dataInsIn) :
         self.dataInsIn = dataInsIn
