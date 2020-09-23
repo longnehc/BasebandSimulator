@@ -3,6 +3,7 @@ import queue
 
 from TaskModule.TaskGraph import * 
 from TaskModule.Task import *
+from TaskModule.DataInstance import *
 
 class TaskManager: 
     
@@ -49,6 +50,19 @@ class TaskManager:
         newtask = Task(task.taskName, task.knrlType, task.instCnt, task.jobId, task.taskGraphId, task.job_inst_idx)
         #set the precedence task 
         newtask.setPrecedenceJobID(task.precedenceJobID)
+        #set the input data instance
+        dataInsIn = []
+        for indata in task.dataInsIn:
+            dataInsIn.append(DataInstance(indata.dataName, indata.mov_dir, indata.job_inst_idx,
+                indata.total_size, indata.data_inst_idx))
+        newtask.setDataInsIn(dataInsIn)
+ 
+        #set the output data instance
+        dataOutIn = []
+        for outdata in task.dataInsOut:
+            dataOutIn.append(DataInstance(outdata.dataName, outdata.mov_dir, outdata.job_inst_idx,
+                outdata.total_size, outdata.data_inst_idx))
+        newtask.setDataInsOut(dataOutIn)
         return newtask
 
     def contructGraphById(self, graphId):
