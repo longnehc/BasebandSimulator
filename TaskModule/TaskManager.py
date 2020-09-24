@@ -1,9 +1,8 @@
-import ResourceManager
-import queue
 
 from TaskModule.TaskGraph import * 
 from TaskModule.Task import *
 from TaskModule.DataInstance import *
+import resources.ResourcesManager as RM
 
 class TaskManager: 
     
@@ -24,10 +23,10 @@ class TaskManager:
                 for graphId in self.candidateGraphBuffer[i]:
                     graph = self.candidateGraphBuffer[i][graphId]
                     prepareToSumbit = True
-                    print("batch = %d, graphId= %d, graph-finished = %d" % (i, graphId, graph.finished))
+                    # print("batch = %d, graphId= %d, graph-finished = %d" % (i, graphId, graph.finished))
                     #[for g in graph.getPrecedenceGraph() if g.submitted and not graph.submitted]
                     if not graph.finished:
-                        print("Checking graph dependency....")
+                        # print("Checking graph dependency....")
                         for preGraphId in graph.getPrecedenceGraph():
                             if not self.candidateGraphBuffer[i][preGraphId].finished:
                                 prepareToSumbit = False         # the precedence graphs of the graph are all finished
@@ -36,7 +35,7 @@ class TaskManager:
                             submitted = True                    # find a graph to submit
                             for task in graph.getGlobalTaskList():
                                 self.candidateTaskBuffer.append(task)
-                            print("Add all tasks of graph %d in the %d-th batch into candidateTaskBuffer at %f " % (graph.graphId, i, env.now))
+                            # print("Add all tasks of graph %d in the %d-th batch into candidateTaskBuffer at %f " % (graph.graphId, i, env.now))
                             #break
                 if submitted:
                     break
@@ -96,12 +95,12 @@ class TaskManager:
                     self.candidateGraphBuffer[i][graph.graphId] = newgraph
                     #print("not find graphid = %d in batch= %d" % (graph.graphId, i))
                     #print(self.candidateGraphBuffer[i])
-                    print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), i, env.now))
+                    # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), i, env.now))
                     break
             if not find:                                                    #new graph belongs to the new batch
                 self.batchId += 1
                 self.candidateGraphBuffer[self.batchId] = {graph.graphId : newgraph}
-                print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), self.batchId, env.now))
+                # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), self.batchId, env.now))
             yield env.timeout(graph.getPeriod())
             
     def schedule(self, env):
@@ -121,8 +120,8 @@ class TaskManager:
     def updateResource(self, res):
         #print("Update resource availablities based on scheduling results")
         return 1
-  
-         
+
+    dspId = 0
     def submitTask(self, env):
         # for task in candidate_queue:
         #     # check if task is ready
@@ -134,23 +133,28 @@ class TaskManager:
                 task = self.candidateTaskBuffer[i]
                 if task.taskStatus != TaskStatus.FINISH:
                     prepareToSumbit = True
-                    print("Checking task dependency of %s... " % task.taskName)
+                    # print("Checking task dependency of %s... " % task.taskName)
                     for predTask in task.precedenceTask:
-                        #print("========")
-                        #print(predTask)
-                        #print("========")
+                        # print("========")
+                        # print(predTask)
+                        # print("========")
                         if predTask.taskStatus != TaskStatus.FINISH:
                             prepareToSumbit = False
+                            print("%s wait for %s ...." % (task.taskName, predTask.taskName))
                     if prepareToSumbit:
-                        print("Submit %s !!!!!!!!!!!" % task.taskName)
+                        # print("Submit %s !!!!!!!!!!!" % task.taskName)
                         #print(task)
-                        task.taskStatus = TaskStatus.FINISH    # TODO: need modified in other place
+                        # task.taskStatus = TaskStatus.FINISH    # TODO: need modified in other place
                         self.candidateTaskBuffer.pop(i)
                         #schedule()
                         #ResourceManager.placeCluster(1)
+
+                        RM.submitTask(task, 0, self.dspId % 4)
+                        self.dspId += 1
                         break
                     else:
-                        print("%s is not prepared...." % task.taskName)
+                        # print("%s is not prepared...." % task.taskName)
+                        yield env.timeout(1)
             yield env.timeout(self.taskSubmitFrequency)
 
         

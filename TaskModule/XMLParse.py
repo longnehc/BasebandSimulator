@@ -1,10 +1,6 @@
 #!/usr/bin/python
 # encoding: utf-8
 import xml.sax
-import re
-from TaskModule.DataInstance import *
-from TaskModule.Task import *
-from TaskModule.TaskGraph import * 
 from TaskModule.TaskManager import *
 
 
@@ -47,9 +43,9 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
       if tag == "task_graph": 
             self.graphId = int(attributes["id"])
             self.graphName=attributes["name"]
-            print("Task graph begins: id=%d, name=%s" %(self.graphId, self.graphName))
+            # print("Task graph begins: id=%d, name=%s" %(self.graphId, self.graphName))
       elif tag=="data_info":
-            print("Update the task dependency")
+            # print("Update the task dependency")
             for task in self.globalTaskList:
                precedenceTask = []
                precedenceJobId = []
@@ -62,11 +58,11 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
                      #(task.taskName, self.producerMap[key].taskName, self.producerMap[key].jobId))
                #task.setPrecedenceJobID(precedenceJobId)
                task.setPrecedenceTask(precedenceTask)
-            print("Task graph parse ends: id=%d, name=%s" %(self.graphId, self.graphName))
+            # print("Task graph parse ends: id=%d, name=%s" %(self.graphId, self.graphName))
             tg = TaskGraph (self.graphId, self.graphName, 
                self.DDL, self.period, self.globalTaskList, self.precedenceGraph)
             self.graphList.append(tg)
-            print("Prepare for the next graph")
+            # print("Prepare for the next graph")
             self.graphId = -1
             self.graphName = ""
             self.globalTaskList = []

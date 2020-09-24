@@ -1,15 +1,9 @@
-import collections 
-import simpy  
-import ResourceManager 
-import xml.sax
-import re
-from TaskModule.DataInstance import *
-from TaskModule.Task import *
-from TaskModule.TaskGraph import * 
-from TaskModule.TaskManager import *
-from TaskModule.XMLParse import *
 
- 
+import simpy
+from TaskModule.XMLParse import *
+import resources.ResourcesManager as RM
+
+# 1TTI = 1s(*2000)
 if __name__ == "__main__":
     # Setup and start the simulation
     print('Baseband simulator starting') 
@@ -23,7 +17,7 @@ if __name__ == "__main__":
     MemCapacity = 100
     DMASpeed = 10
     DDRCapacity = 100
-    SIM_TIME = 10
+    SIM_TIME = 100
 
     # Create an environment and start the setup process
     env = simpy.Environment()
@@ -98,6 +92,13 @@ if __name__ == "__main__":
     # update task graph by time
     #schedule(a graph, all tasks)
     env.process(taskManager.submitTask(env))
+
+    RM.setCluster(env, 1)
+    for cluster in RM.getClusterList():
+        for dsp in cluster.getDspList():
+            env.process(dsp.run())
+        for dma in cluster.getDmaList():
+            env.process(dma.run())
 
     # Execute!
     env.run(until=SIM_TIME)

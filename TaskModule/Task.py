@@ -62,10 +62,10 @@ class Task:
         self.dataInsOut = dataInsOut
 
     def getDataInsIn(self):
-        return dataInsIn
+        return self.dataInsIn
 
     def getDataInsOut(self) :
-        return dataInsOut
+        return self.dataInsOut
 
 
     def getJob_inst_idx(self) :

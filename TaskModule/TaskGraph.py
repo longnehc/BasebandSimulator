@@ -8,6 +8,7 @@ class TaskGraph :
         self.precedenceGraph = precedenceGraph       #存储该图前驱图的graphID
         self.submitTime = 0 
         self.finished = False
+        self.taskNum = len(globalTaskList)
  
     def isSubmitted(self):
         return self.submitted
@@ -23,7 +24,6 @@ class TaskGraph :
     
     def getPrecedenceGraph(self) :
         return self.precedenceGraph
-     
-    
+
     def setSubmitTime(self, submitTime):
         self.submitTime = submitTime

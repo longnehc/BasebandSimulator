@@ -1,30 +1,64 @@
 from resources import dma 
-from resources import dsp 
+from resources import dsp
+import resources.ResourcesManager as RM
+from collections import OrderedDict
 
-def save(data):
-    # can mem save data
-    while not checkMem(data):
-        LRU()
-    # save data
-    print ("save data")
 
-# get data
-def getData(data):
-    if not checkData(data):
-        # generate dma task
-        dma.getData(data)
-    # transform data(TIME_OUT)  #time_out5
-    print ("trasform data")
+class Memory:
 
-def LRU():
-    #LRU
-    print("LRU")
+    def __init__(self):
+        # key is dataName
+        self.map = OrderedDict()
+        self.speed = 1
 
-def checkData(data):
-    # check if date is in this mem
-    print("check data")
-    return 0
+        self.capacity = 100000
+        self.curSize = 0
 
-def checkMem(data):
-    # can mem save data
-    return 1
+        self.clusterId = 0
+
+    def saveData(self, data):
+        # can mem save data
+        if data.dataName in self.map.keys():
+            self.map.pop(data.dataName)
+            self.map[data.dataName] = data
+        elif self.checkMem(data):
+            self.map[data.dataName] = data
+            self.curSize += data.total_size
+        else:
+            while self.curSize + data.total_size > self.capacity:
+                tmp = self.map.popitem(last=False)
+                self.curSize -= tmp.total_size
+            self.map[data.dataName] = data
+            self.curSize += data.total_size
+
+        # save data
+        print ("memory save %s" % data.dataName)
+
+    # get data
+    def getData(self, env, data, dsp):
+        if not data.dataName in self.map.keys():
+            RM.submitDmaTask(env, data, self)
+        else:
+            print("data is in the mem =================")
+
+        transformTime = data.total_size / self.speed
+        # yield env.timeout(transformTime)
+        # print ("get data in mem")
+
+
+    def checkData(self,data):
+        # check if date is in this mem
+        # print("check " + data.dataName)
+        # print(data.dataName in self.map.keys())
+        if data.dataName in self.map.keys():
+            return True
+        else:
+            # print("false %d" % self.curSize)
+            return False
+
+    def checkMem(self,data):
+        # can mem save data
+        if self.curSize + data.total_size >= self.capacity:
+            return False
+        else:
+            return True
