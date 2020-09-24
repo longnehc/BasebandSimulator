@@ -61,6 +61,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
             # print("Task graph parse ends: id=%d, name=%s" %(self.graphId, self.graphName))
             tg = TaskGraph (self.graphId, self.graphName, 
                self.DDL, self.period, self.globalTaskList, self.precedenceGraph)
+            # print(len(self.globalTaskList))
             self.graphList.append(tg)
             # print("Prepare for the next graph")
             self.graphId = -1
@@ -68,7 +69,6 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
             self.globalTaskList = []
             self.producerMap = {}
       elif tag=="task":
-            self.globalTaskList.extend(self.taskInsList)
             self.taskName=attributes["name"]
             #print("Find %s" % self.taskName) 
       elif tag=="properties": 
@@ -83,6 +83,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
                self.taskInsList.append(Task(self.taskName, self.knrlType, self.instCnt, self.jobId, 
                self.graphId, task_index, self.cost))
                self.jobId += 1
+            self.globalTaskList.extend(self.taskInsList)
       elif tag=="proc_item":
             self.id = attributes["id"]
             self.data_name=attributes["data_name"]

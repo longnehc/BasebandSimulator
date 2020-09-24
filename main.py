@@ -1,7 +1,7 @@
 
 import simpy
 from TaskModule.XMLParse import *
-import resources.ResourcesManager as RM
+from ResourceModule import ResourcesManager as RM
 from report.reporter import reporter
 
 # 1TTI = 1s(*2000)
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     MemCapacity = 100
     DMASpeed = 10
     DDRCapacity = 100
-    SIM_TIME = 1
+    SIM_TIME = 10
 
     # Create an environment and start the setup process
     env = simpy.Environment()
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     RM.setCluster(env, 16)
     for cluster in RM.getClusterList():
         for dsp in cluster.getDspList():
-            env.process(dsp.run())
+            env.process(dsp.run(taskManager))
         for dma in cluster.getDmaList():
             env.process(dma.run())
 

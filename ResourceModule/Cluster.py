@@ -1,6 +1,5 @@
-from resources.dsp import DSP
-from resources.memory import Memory
-from resources.dma import *
+from ResourceModule.DSP import *
+from ResourceModule.MEM import *
 
 class Cluster:
 
@@ -30,14 +29,14 @@ class Cluster:
 
     def setMemory(self, num, clusterId):
         for i in range(0,num):
-            self.memoryList.append(Memory(clusterId))
+            self.memoryList.append(MEM(clusterId))
 
     def getMemory(self,index):
         return self.memoryList[index]
 
     def setDma(self, env, num, clusterId):
         for i in range(0,num):
-            self.dmaList.append(Dma(env, clusterId))
+            self.dmaList.append(DMA(env, clusterId))
 
     def getDma(self,index):
         return self.dmaList[index]

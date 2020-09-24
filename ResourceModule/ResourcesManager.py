@@ -1,16 +1,15 @@
-import resources.Cluster
-from resources.dma import *
+from ResourceModule import Cluster
+from ResourceModule import DMA
 
 
 class ResourcesManager:
 
     def __init__(self):
-        self.name = "resources manager"
+        self.name = "ResourceModule manager"
         self.clusterList = []
 
 
 resourcesManager = ResourcesManager()
-
 
 def getData(env, dsp, data):
     cluster = getCluster(dsp.clusterId)
@@ -41,7 +40,7 @@ def getCluster(index):
 def setCluster(env, num):
     for i in range(0, num):
         # print("set cluster %d"%i)
-        resourcesManager.clusterList.append(resources.Cluster.Cluster(env, i))
+        resourcesManager.clusterList.append(Cluster.Cluster(env, i))
 
 
 def checkData(dsp, data):

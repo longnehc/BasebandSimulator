@@ -1,4 +1,4 @@
-class DmaTask:
+class DMATask:
     def __init__(self, data):
         self.data = data
 
@@ -10,6 +10,6 @@ class DmaTask:
         return hash(self.data.dataName)
 
     def __eq__(self, other):
-        if not isinstance(other,DmaTask):
+        if not isinstance(other,DMATask):
             return False
         return self.data.dataName == other.data.dataName

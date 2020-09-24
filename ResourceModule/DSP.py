@@ -1,10 +1,8 @@
 from TaskModule.Task import TaskStatus
-from resources import dma
-from resources import memory
+from ResourceModule.DMA import *
+from ResourceModule.MEM import *
 from queue import Queue
-import resources.ResourcesManager as RM
-from resources.dma import *
-from resources.DMATask import *
+from ResourceModule import ResourcesManager as RM
 
 
 class DSP:
@@ -36,12 +34,12 @@ class DSP:
             if not RM.checkData(self, data):
                 # submit to dma
                 dma = RM.getDma(self)
-                dma.submit(DmaTask(data))
+                dma.submit(DMATask(data))
                 # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 
-    def run(self):
+    def run(self, taskManager):
         while(True):
             while not self.taskQueue.empty():
                 task = self.taskQueue.get()
@@ -53,7 +51,7 @@ class DSP:
                     flag = True
                     for data in task.getDataInsIn():
                         if not RM.checkData(self, data):
-                            print("%s not found %s" %(task.taskName, data.dataName) )
+                            # print("%s not found %s" %(task.taskName, data.dataName) )
                             flag = False
                             break
                     if not flag:
@@ -61,7 +59,8 @@ class DSP:
                         # wait for dma
 
                         # 0.001ms ->0.002s
-                        yield self.env.timeout(0.002)
+                        # print("????????????2")
+                        yield self.env.timeout(0.01)
                     else:
                         # print("dma finish########################")
                         break
@@ -86,9 +85,17 @@ class DSP:
                 # finish task
                 task.taskStatus = TaskStatus.FINISH
                 self.curCost -= task.cost
+                graph = taskManager.getGraph(task.batchId, task.taskGraphId)
+                graph.taskNum -= 1
+                if graph.taskNum == 0:
+                    graph.finished = True
+                    print("graph %d finish %f"%(graph.graphId, self.env.now))
+                # if graph.graphId == 4:
+                #     print("graph %d task %d %s" % (graph.graphId,graph.taskNum,task.taskName))
                 # print(task.taskName + " finish in: %f" % self.env.now)
 
-            yield self.env.timeout(0.002)
+            # print("????????????3")
+            yield self.env.timeout(0.01)
             # memory.get_data(task.data) time_out1
             # exe task (TIME_OUT) time_out2
             # memory.save(task.data) time_out3

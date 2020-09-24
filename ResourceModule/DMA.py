@@ -1,12 +1,12 @@
-from resources import dsp
+from ResourceModule.DSP import *
 from queue import Queue
-import resources.ResourcesManager as RM
-import resources.DMATask
+from ResourceModule import ResourcesManager as RM
+from ResourceModule.DMATask import *
 
 
 
 
-class Dma:
+class DMA:
     def __init__(self, env, clusterId):
         self.id = 0
         self.speed = 256 * 866 * 1000000

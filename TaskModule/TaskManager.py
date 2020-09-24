@@ -2,7 +2,7 @@
 from TaskModule.TaskGraph import * 
 from TaskModule.Task import *
 from TaskModule.DataInstance import *
-import resources.ResourcesManager as RM
+from ResourceModule import ResourcesManager as RM
 
 import random
 
@@ -16,6 +16,8 @@ class TaskManager:
         self.graphList = graphList 
         self.candidateGraphBuffer = {self.batchId:{}}  # {key:batchID, value: {{graphId : graph}}}
         self.candidateTaskBuffer = []
+        # {key:batchId,value:graph}
+        self.graphRecorder = {self.batchId:[]}
         
 
     def submitGraph(self, env):
@@ -33,7 +35,7 @@ class TaskManager:
                             if not self.candidateGraphBuffer[i][preGraphId].finished:
                                 prepareToSumbit = False         # the precedence graphs of the graph are all finished
                         if prepareToSumbit:
-                            graph.finished = True               # TODO: need to modify
+                            # graph.finished = True               # TODO: need to modify
                             submitted = True                    # find a graph to submit
                             for task in graph.getGlobalTaskList():
                                 self.candidateTaskBuffer.append(task)
@@ -43,7 +45,7 @@ class TaskManager:
                     break
                 else:
                     self.curBatch = i + 1                       # an improvement to skip the totally executed batch
-            print("---------------------================================")
+            # print("---------------------================================")
             yield env.timeout(self.graphSubmitFrequency)
 
     def constructTask(self, task):
@@ -96,6 +98,8 @@ class TaskManager:
                 if graph.graphId not in self.candidateGraphBuffer[i]:      #new graph belongs to the existence batch
                     find = True
                     self.candidateGraphBuffer[i][graph.graphId] = newgraph
+                    for task in newgraph.globalTaskList:
+                        task.batchId = i
                     #print("not find graphid = %d in batch= %d" % (graph.graphId, i))
                     #print(self.candidateGraphBuffer[i])
                     # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), i, env.now))
@@ -104,6 +108,9 @@ class TaskManager:
                 self.batchId += 1
                 self.candidateGraphBuffer[self.batchId] = {graph.graphId : newgraph}
                 # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), self.batchId, env.now))
+                self.graphRecorder[i] = [newgraph]
+                for task in newgraph.globalTaskList:
+                    task.batchId = self.batchId
             yield env.timeout(graph.getPeriod())
             
     def schedule(self, env):
@@ -158,11 +165,17 @@ class TaskManager:
                         break
                     else:
                         # print("%s is not prepared...." % task.taskName)
-                        yield env.timeout(0.002)
+                        yield env.timeout(0.01)
             # 0.05 ns
             yield env.timeout(0.0001)
+            # yield env.timeout(1)
 
         
     def taskXMLParser(self, filename):
         #parse task parameteres and dependencies
         return 1
+
+
+    def getGraph(self, i, j):
+        return self.candidateGraphBuffer[i][j]
+

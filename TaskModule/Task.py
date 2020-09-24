@@ -34,13 +34,14 @@ class Task:
 
         #任务实例属性
         self.job_inst_idx = 0
-        self.taskGraphId = 0
         self.graphDDL = 0.0 
         self.submittedTime = 0
     
         #输入输出的data实例
         self.dataInsIn = [] #DataInstance
         self.dataInsOut = [] #DataInstance
+
+        self.batchId = 0
 
 
     def getTaskStatus(self) :

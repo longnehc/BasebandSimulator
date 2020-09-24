@@ -1,10 +1,10 @@
-from resources import dma 
-from resources import dsp
-import resources.ResourcesManager as RM
+from ResourceModule.DMA import *
+from ResourceModule.DSP import *
+from ResourceModule import ResourcesManager as RM
 from collections import OrderedDict
 
 
-class Memory:
+class MEM:
 
     def __init__(self, clusterId):
         # key is dataName
@@ -13,6 +13,7 @@ class Memory:
 
         self.capacity = 100000
         self.curSize = 0
+        self.peek = 0
 
         self.clusterId = clusterId
 
@@ -31,6 +32,8 @@ class Memory:
                 # print("******************************%d"%tmp.total_size)
             self.map[data.dataName] = data
             self.curSize += data.total_size
+
+        self.peek = max(self.curSize,self.peek)
 
         # save data
         # print ("memory save %s" % data.dataName)
