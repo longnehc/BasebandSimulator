@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 class Memory:
 
-    def __init__(self):
+    def __init__(self, clusterId):
         # key is dataName
         self.map = OrderedDict()
         self.speed = 1
@@ -14,7 +14,7 @@ class Memory:
         self.capacity = 100000
         self.curSize = 0
 
-        self.clusterId = 0
+        self.clusterId = clusterId
 
     def saveData(self, data):
         # can mem save data
@@ -26,20 +26,21 @@ class Memory:
             self.curSize += data.total_size
         else:
             while self.curSize + data.total_size > self.capacity:
-                tmp = self.map.popitem(last=False)
+                tmp = self.map.popitem(last=False)[1]
                 self.curSize -= tmp.total_size
+                # print("******************************%d"%tmp.total_size)
             self.map[data.dataName] = data
             self.curSize += data.total_size
 
         # save data
-        print ("memory save %s" % data.dataName)
+        # print ("memory save %s" % data.dataName)
 
     # get data
     def getData(self, env, data, dsp):
         if not data.dataName in self.map.keys():
             RM.submitDmaTask(env, data, self)
-        else:
-            print("data is in the mem =================")
+        # else:
+        #     print("data is in the mem =================")
 
         transformTime = data.total_size / self.speed
         # yield env.timeout(transformTime)

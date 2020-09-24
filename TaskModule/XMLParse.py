@@ -73,7 +73,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
             #print("Find %s" % self.taskName) 
       elif tag=="properties": 
             self.instCnt=int(attributes["instCnt"])
-            self.cost=int(attributes["cost"])
+            self.cost = int(attributes["cost"])
             self.knrlType=attributes["type"]
             self.taskInsList = [] 
             #print("Task properties: instCnt=%d, cost=%d, type=%s" %(self.instCnt, self.cost, self.knrlType))
@@ -81,7 +81,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
                #print("task: taskName=%s, instCnt=%d, jobId=%d, graphId=%d, job_inst_idx=%d" 
                # % (self.taskName, self.instCnt, self.jobId, self.graphId, task_index))
                self.taskInsList.append(Task(self.taskName, self.knrlType, self.instCnt, self.jobId, 
-               self.graphId, task_index))
+               self.graphId, task_index, self.cost))
                self.jobId += 1
       elif tag=="proc_item":
             self.id = attributes["id"]

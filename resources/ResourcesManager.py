@@ -40,7 +40,8 @@ def getCluster(index):
 
 def setCluster(env, num):
     for i in range(0, num):
-        resourcesManager.clusterList.append(resources.Cluster.Cluster(env))
+        # print("set cluster %d"%i)
+        resourcesManager.clusterList.append(resources.Cluster.Cluster(env, i))
 
 
 def checkData(dsp, data):
@@ -60,6 +61,10 @@ def getMemory(component):
     cluster = getCluster(component.clusterId)
     return cluster.getMemory(0)
 
+
+def getTransmitSpeed(component):
+    cluster = getCluster(component.clusterId)
+    return cluster.speed
 
 def test(env, data, memory):
     print("TTTTTTTTTTTTTTTTTTTTTTTest")

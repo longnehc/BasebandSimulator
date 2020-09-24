@@ -10,9 +10,9 @@ class TaskStatus(Enum):
     FINISH = 2
 
 class Task:
-    #taskName,knrlType,instCnt,cost,priority,dataForTask,job_inst_idx,total_size,data_inst_idx
+    # taskName,knrlType,instCnt,cost,priority,dataForTask,job_inst_idx,total_size,data_inst_idx
     
-    def __init__(self, name, knrlType, instCnt, jobId, graphId, job_inst_idx) :
+    def __init__(self, name, knrlType, instCnt, jobId, graphId, job_inst_idx, cost):
         self.taskName = name
         self.knrlType = knrlType
         self.instCnt = instCnt
@@ -21,6 +21,7 @@ class Task:
         self.jobId = jobId
         self.taskGraphId = graphId
         self.job_inst_idx = job_inst_idx
+        self.cost = cost
         #graphSchedule
         self.clusterId = -1
         #输入输出数据总量
