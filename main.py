@@ -1,10 +1,13 @@
 import collections 
 import simpy  
 import ResourceManager 
+import xml.sax
+import re
 from TaskModule.DataInstance import *
 from TaskModule.Task import *
 from TaskModule.TaskGraph import * 
 from TaskModule.TaskManager import *
+from TaskModule.XMLParse import *
 
  
 if __name__ == "__main__":
@@ -60,11 +63,27 @@ if __name__ == "__main__":
     #tg0: d0-t0-d1
     #tg1: d2-t1-d3, d4-t2-d5
 
-    graphList = [tg0, tg1] 
+    #graphList = [tg0, tg1] 
+
+    #print("Task graph parser begins")
+    parser = xml.sax.make_parser()
+    parser.setFeature(xml.sax.handler.feature_namespaces, 0)
+    Handler = TaskXMLHandler()
+    parser.setContentHandler( Handler )
+    parser.parse("TaskGraph0903.xml")
+    graphList = Handler.getGraphList()
+    #print(graphList)
+    #print(len(graphList))
+    #print("Task graph parser ends")
+
+    for graph in graphList:     #TODO
+        graph.DDL = 1
+        graph.period = 1
+        graph.precedenceGraph = []
 
     taskManager = TaskManager(graphList)
     for graph in graphList:
-        env.process(taskManager.graphGenerator(env, graph))
+       env.process(taskManager.graphGenerator(env, graph))
     
     env.process(taskManager.submitGraph(env))
       
