@@ -74,6 +74,7 @@ if __name__ == "__main__":
     for graph in graphList:     #TODO
         graph.DDL = 1
         graph.period = 1
+        # TODO: 自动分析。除了时隙的都可以直接分析
         graph.precedenceGraph = []
 
     taskManager = TaskManager(graphList)

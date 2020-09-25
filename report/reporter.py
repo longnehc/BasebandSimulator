@@ -22,6 +22,6 @@ class reporter:
             # print(np.std(dspTotalCost))
     def run(self, env):
         while True:
-            self.report()
-            # print(env.now)
+            # self.report()
+            print(env.now)
             yield env.timeout(0.5)

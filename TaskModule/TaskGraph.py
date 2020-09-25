@@ -9,6 +9,7 @@ class TaskGraph :
         self.submitTime = 0 
         self.finished = False
         self.taskNum = len(globalTaskList)
+        self.submitted = False
  
     def isSubmitted(self):
         return self.submitted

@@ -29,24 +29,28 @@ class TaskManager:
                     prepareToSumbit = True
                     # print("batch = %d, graphId= %d, graph-finished = %d" % (i, graphId, graph.finished))
                     #[for g in graph.getPrecedenceGraph() if g.submitted and not graph.submitted]
-                    if not graph.finished:
+                    if not graph.submitted:
                         # print("Checking graph dependency....")
                         for preGraphId in graph.getPrecedenceGraph():
                             if not self.candidateGraphBuffer[i][preGraphId].finished:
                                 prepareToSumbit = False         # the precedence graphs of the graph are all finished
                         if prepareToSumbit:
                             # graph.finished = True               # TODO: need to modify
-                            submitted = True                    # find a graph to submit
+                            graph.submitted = True                    # find a graph to submit
+                            # TODO: EDF
                             for task in graph.getGlobalTaskList():
                                 self.candidateTaskBuffer.append(task)
                             # print("Add all tasks of graph %d in the %d-th batch into candidateTaskBuffer at %f " % (graph.graphId, i, env.now))
                             # break
+                    # if graphId == 4:
+                    #     print(len(graph.globalTaskList))
                 if submitted:
                     break
                 else:
                     self.curBatch = i + 1                       # an improvement to skip the totally executed batch
             # print("---------------------================================")
             yield env.timeout(self.graphSubmitFrequency)
+            # yield env.timeout(0.002)  # TODO
 
     def constructTask(self, task):
         #name, knrlType, instCnt, jobId, graphId, job_inst_idx
@@ -112,6 +116,7 @@ class TaskManager:
                 for task in newgraph.globalTaskList:
                     task.batchId = self.batchId
             yield env.timeout(graph.getPeriod())
+            # yield env.timeout(0.1)
             
     def schedule(self, env):
         #       ####if offmem： {task.cluster = 1} = offmem()
@@ -122,6 +127,7 @@ class TaskManager:
             #res = getScheduleRes()
             #updateResource(res)
             yield env.timeout(scheduleFrequency)
+            # yield env.timeout(0.002)
 
     def getScheduleRes(self):
         #print("Make schedulings: load-balance/min-offchipmem/greedy/QoSguarantee")
@@ -131,7 +137,7 @@ class TaskManager:
         #print("Update resource availablities based on scheduling results")
         return 1
 
-    dspId = 0
+    taskNum = 0
     def submitTask(self, env):
         # for task in candidate_queue:
         #     # check if task is ready
@@ -161,11 +167,14 @@ class TaskManager:
                         #ResourceManager.placeCluster(1)
 
                         RM.submitTask(task, random.randint(0, 15), random.randint(0, 3))
-                        self.dspId += 1
+                        # if task.taskGraphId == 4:
+                        #     self.taskNum += 1
+                        #     print(self.taskNum)
+
                         break
                     else:
                         # print("%s is not prepared...." % task.taskName)
-                        yield env.timeout(0.01)
+                        yield env.timeout(0.002)
             # 0.05 ns
             yield env.timeout(0.0001)
             # yield env.timeout(1)

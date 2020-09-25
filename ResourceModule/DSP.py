@@ -45,7 +45,7 @@ class DSP:
                 task = self.taskQueue.get()
 
                 # print(task.taskName + " begin in %s"% self.id)
-
+                # TODO: Task -> schedule(all task, dsp) -> DMA -> DSP -> DMA()
                 self.takeDataToMem(task)
                 while True:
                     flag = True
@@ -60,26 +60,25 @@ class DSP:
 
                         # 0.001ms ->0.002s
                         # print("????????????2")
-                        yield self.env.timeout(0.01)
+                        yield self.env.timeout(0.002)
                     else:
                         # print("dma finish########################")
                         break
 
                 # transmit data
-                for data in task.getDataInsIn():
-                    transmitTime = 2000 * data.total_size / RM.getTransmitSpeed(self)
-                    yield self.env.timeout(transmitTime)
+                # for data in task.getDataInsIn():
+                #     transmitTime = 2000 * data.total_size / RM.getTransmitSpeed(self)
+                #     yield self.env.timeout(transmitTime)
 
                 # exe
                 yield self.env.timeout(2000 * task.cost/self.speed)
-                # print("exe task %d" % task.cost)
 
                 # write back
-                for data in task.getDataInsOut():
-                    time = RM.getMemory(self).saveData(data)
-                    # print("dsp save %s" % data.data_inst_idx)
-                    transmitTime = 2000 * data.total_size / RM.getTransmitSpeed(self)
-                    yield self.env.timeout(transmitTime)
+                # for data in task.getDataInsOut():
+                #     time = RM.getMemory(self).saveData(data)
+                #     # print("dsp save %s" % data.data_inst_idx)
+                #     transmitTime = 2000 * data.total_size / RM.getTransmitSpeed(self)
+                #     yield self.env.timeout(transmitTime)
 
 
                 # finish task
@@ -90,18 +89,8 @@ class DSP:
                 if graph.taskNum == 0:
                     graph.finished = True
                     print("graph %d finish %f"%(graph.graphId, self.env.now))
-                # if graph.graphId == 4:
+                # if graph.taskNum < 0:
                 #     print("graph %d task %d %s" % (graph.graphId,graph.taskNum,task.taskName))
                 # print(task.taskName + " finish in: %f" % self.env.now)
 
-            # print("????????????3")
-            yield self.env.timeout(0.01)
-            # memory.get_data(task.data) time_out1
-            # exe task (TIME_OUT) time_out2
-            # memory.save(task.data) time_out3
-            #isfinsih
-            #while(true)
-            # Q.pop()
-            # memory.getData(1)
-            # exe_task (1)
-            # memory.save(1)
+            yield self.env.timeout(0.0002)
