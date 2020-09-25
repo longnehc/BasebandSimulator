@@ -8,6 +8,7 @@ class TaskStatus(Enum):
     WAIT = 0 
     EXECUTING = 1
     FINISH = 2
+    SUMBITTED = 3
 
 class Task:
     # taskName,knrlType,instCnt,cost,priority,dataForTask,job_inst_idx,total_size,data_inst_idx

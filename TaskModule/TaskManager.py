@@ -148,7 +148,8 @@ class TaskManager:
             for i in range(len(self.candidateTaskBuffer)):
                 # print("********** %f" % env.now)
                 task = self.candidateTaskBuffer[i]
-                if task.taskStatus != TaskStatus.FINISH:
+                remove = []
+                if task.taskStatus != TaskStatus.FINISH and task.taskStatus != TaskStatus.SUMBITTED:
                     prepareToSumbit = True
                     # print("Checking task dependency of %s... " % task.taskName)
                     for predTask in task.precedenceTask:
@@ -162,19 +163,16 @@ class TaskManager:
                         # print("Submit %s !!!!!!!!!!!" % task.taskName)
                         #print(task)
                         # task.taskStatus = TaskStatus.FINISH    # TODO: need modified in other place
-                        self.candidateTaskBuffer.pop(i)
                         #schedule()
                         #ResourceManager.placeCluster(1)
-
+                        remove.append(i)
+                        task.taskStatus = TaskStatus.SUMBITTED
                         RM.submitTask(task, random.randint(0, 15), random.randint(0, 3))
                         # if task.taskGraphId == 4:
                         #     self.taskNum += 1
                         #     print(self.taskNum)
-
-                        break
-                    else:
-                        # print("%s is not prepared...." % task.taskName)
-                        yield env.timeout(0.002)
+            for i in remove:
+                self.candidateTaskBuffer.pop(i)
             # 0.05 ns
             yield env.timeout(0.0001)
             # yield env.timeout(1)
