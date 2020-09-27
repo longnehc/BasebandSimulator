@@ -14,8 +14,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
  
       self.graphId = -1          
       self.graphName = ""
-      self.globalTaskList = []
-      self.precedenceGraph = []  #TODO: set precedenceGraph/DDL/PERIOD outside the parser
+      self.globalTaskList = [] 
       self.DDL = 1 
       self.period = 1  
       
@@ -35,6 +34,9 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
       self.graphList=[] 
       self.producerMap = {} #key:dataInsOut : value: task
 
+   def getProducerMap(self):   
+      return self.producerMap
+
    def getGraphList(self):
       return self.graphList
 
@@ -48,7 +50,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
             # print("Update the task dependency")
             for task in self.globalTaskList:
                precedenceTask = []
-               precedenceJobId = []
+               precedenceJobId = [] 
                for datains in task.dataInsIn: 
                   key = datains.dataName + "-" + str(datains.data_inst_idx)
                   if key in self.producerMap:
@@ -56,18 +58,18 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
                      precedenceJobId.append(self.producerMap[key].jobId)
                      #print("%s depends on %s (jobId=%d)" % 
                      #(task.taskName, self.producerMap[key].taskName, self.producerMap[key].jobId))
-               #task.setPrecedenceJobID(precedenceJobId)
-               task.setPrecedenceTask(precedenceTask)
+               task.setPrecedenceJobID(precedenceJobId)
+               task.setPrecedenceTask(precedenceTask) 
             # print("Task graph parse ends: id=%d, name=%s" %(self.graphId, self.graphName))
             tg = TaskGraph (self.graphId, self.graphName, 
-               self.DDL, self.period, self.globalTaskList, self.precedenceGraph)
+               self.DDL, self.period, self.globalTaskList, [])
             # print(len(self.globalTaskList))
             self.graphList.append(tg)
             # print("Prepare for the next graph")
             self.graphId = -1
             self.graphName = ""
             self.globalTaskList = []
-            self.producerMap = {}
+            #self.producerMap = {}
       elif tag=="task":
             self.taskName=attributes["name"]
             #print("Find %s" % self.taskName) 

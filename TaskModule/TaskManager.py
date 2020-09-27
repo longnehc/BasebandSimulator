@@ -18,10 +18,12 @@ class TaskManager:
         self.candidateTaskBuffer = []
         # {key:batchId,value:graph}
         self.graphRecorder = {self.batchId:[]}
+        self.taskBatch = 1
+        self.taskFactory = {self.taskBatch: []} #{key:batchId : value:{key: jobId: value: task}}
         
 
     def submitGraph(self, env):
-        while True:   
+        while True:    
             for i in range (self.curBatch, self.batchId + 1):
                 submitted = False
                 for graphId in self.candidateGraphBuffer[i]:
@@ -30,17 +32,18 @@ class TaskManager:
                     # print("batch = %d, graphId= %d, graph-finished = %d" % (i, graphId, graph.finished))
                     #[for g in graph.getPrecedenceGraph() if g.submitted and not graph.submitted]
                     if not graph.submitted:
-                        # print("Checking graph dependency....")
+                        # print("Checking graph dependency of graph%d" % graph.graphId)
+                        # print(graph.getPrecedenceGraph())
                         for preGraphId in graph.getPrecedenceGraph():
                             if not self.candidateGraphBuffer[i][preGraphId].finished:
                                 prepareToSumbit = False         # the precedence graphs of the graph are all finished
                         if prepareToSumbit:
-                            # graph.finished = True               # TODO: need to modify
+                            # graph.finished = True                   # TODO: need to modify
                             graph.submitted = True                    # find a graph to submit
                             # TODO: EDF
                             for task in graph.getGlobalTaskList():
                                 self.candidateTaskBuffer.append(task)
-                            # print("Add all tasks of graph %d in the %d-th batch into candidateTaskBuffer at %f " % (graph.graphId, i, env.now))
+                            print("Add all tasks of graph %d in the %d-th batch into candidateTaskBuffer at %f " % (graph.graphId, i, env.now))
                             # break
                     # if graphId == 4:
                     #     print(len(graph.globalTaskList))
@@ -73,43 +76,56 @@ class TaskManager:
         newtask.setDataInsOut(dataOutIn)
         return newtask
 
-    def contructGraphById(self, graphId):
+    def contructGraphById(self, graphId, batchId):
         graph = self.graphList[graphId]
         newglobalTaskList = []
         #Note: this map is used to build precedenceTask
         newglobalTaskMap = {} #key:jobId: value: newtask  
         #construct global task list without dependency
         for task in graph.globalTaskList:
-            newtask = self.constructTask(task)
-            newglobalTaskList.append(newtask)
-            newglobalTaskMap[task.jobId] = newtask
-        #rebuild the task dependency based on the MAP and PRECEDENCE TASK NAME
+            newglobalTaskList.append(self.taskFactory[batchId][task.jobId])
+            #rebuild the task dependency based on the MAP and PRECEDENCE TASK NAME
         for task in newglobalTaskList:
             precedenceTaskList = []
             for jobId in task.precedenceJobID:
-                precedenceTaskList.append(newglobalTaskMap[jobId])
+                precedenceTaskList.append(self.taskFactory[batchId][jobId])
             task.setPrecedenceTask(precedenceTaskList)
         newgraph = TaskGraph(graph.graphId, graph.graphName, graph.DDL, graph.period, newglobalTaskList, graph.precedenceGraph)        
         return newgraph
+ 
+
+    def taskGenerator(self, env, minPeriod):
+        while True:
+            taskMap = {}
+            for graph in self.graphList:
+                for task in graph.globalTaskList:
+                    newtask = self.constructTask(task)
+                    taskMap[newtask.jobId] = newtask    
+            self.taskFactory[self.taskBatch] = taskMap
+            self.taskBatch += 1
+            yield env.timeout(minPeriod)
+
 
     def graphGenerator(self, env, graph):
         while True: 
             find = False
-            newgraph = self.contructGraphById(graph.graphId)
+            #rint(graph.graphId)
             for i in range (1, self.batchId + 1):
                 #print(self.candidateGraphBuffer[i])
                 #print("=========")
                 if graph.graphId not in self.candidateGraphBuffer[i]:      #new graph belongs to the existence batch
                     find = True
+                    newgraph = self.contructGraphById(graph.graphId, i)
                     self.candidateGraphBuffer[i][graph.graphId] = newgraph
                     for task in newgraph.globalTaskList:
                         task.batchId = i
-                    #print("not find graphid = %d in batch= %d" % (graph.graphId, i))
-                    #print(self.candidateGraphBuffer[i])
+                    # print("not find graphid = %d in batch= %d" % (graph.graphId, i))
+                    # print(self.candidateGraphBuffer[i])
                     # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), i, env.now))
                     break
             if not find:                                                    #new graph belongs to the new batch
                 self.batchId += 1
+                newgraph = self.contructGraphById(graph.graphId, self.batchId)
                 self.candidateGraphBuffer[self.batchId] = {graph.graphId : newgraph}
                 # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), self.batchId, env.now))
                 self.graphRecorder[i] = [newgraph]
@@ -145,10 +161,10 @@ class TaskManager:
         #         candidate_queue.remove(task)
         #         scheduleUtil.allocate_cluster
         while True: 
+            remove = []
             for i in range(len(self.candidateTaskBuffer)):
                 # print("********** %f" % env.now)
                 task = self.candidateTaskBuffer[i]
-                remove = []
                 if task.taskStatus != TaskStatus.FINISH and task.taskStatus != TaskStatus.SUMBITTED:
                     prepareToSumbit = True
                     # print("Checking task dependency of %s... " % task.taskName)
@@ -158,7 +174,7 @@ class TaskManager:
                         # print("========")
                         if predTask.taskStatus != TaskStatus.FINISH:
                             prepareToSumbit = False
-                            print("%s wait for %s ...." % (task.taskName, predTask.taskName))
+                            #print("%s wait for %s ...." % (task.taskName, predTask.taskName))
                     if prepareToSumbit:
                         # print("Submit %s !!!!!!!!!!!" % task.taskName)
                         #print(task)
@@ -171,8 +187,8 @@ class TaskManager:
                         # if task.taskGraphId == 4:
                         #     self.taskNum += 1
                         #     print(self.taskNum)
-            for i in remove:
-                self.candidateTaskBuffer.pop(i)
+            self.candidateTaskBuffer = [self.candidateTaskBuffer[i] for i in range(len(self.candidateTaskBuffer)) 
+                if i not in remove] 
             # 0.05 ns
             yield env.timeout(0.0001)
             # yield env.timeout(1)

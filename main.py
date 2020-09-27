@@ -70,14 +70,37 @@ if __name__ == "__main__":
     #print(graphList)
     #print(len(graphList))
     #print("Task graph parser ends")
-
-    for graph in graphList:     #TODO
+  
+    
+    taskManager = TaskManager(graphList)
+    minPeriod = 1 # minimal period of all graphs 
+    env.process(taskManager.taskGenerator(env, minPeriod))
+    
+    for graph in graphList:
+        precedenceGraphMap = {} 
+        # print("=========")
+        # print(precedenceGraphMap)
+        # print("=========")
+        for task in graph.globalTaskList:
+            for datains in task.dataInsIn: 
+                key = datains.dataName + "-" + str(datains.data_inst_idx)
+                producerMap = Handler.getProducerMap()
+                if key in producerMap:
+                    if producerMap[key].taskGraphId != task.taskGraphId:
+                        if producerMap[key].taskGraphId not in precedenceGraphMap:
+                            precedenceGraphMap[producerMap[key].taskGraphId] = 1
+                            print("graph%d depends on graph%d" % (task.taskGraphId, producerMap[key].taskGraphId))
+                        task.precedenceTask.append(producerMap[key])
+                        task.precedenceJobID.append(producerMap[key].jobId)
+                        # print("Cross graph task dependency: %s depends on %s" % (task.taskName, producerMap[key].taskName))
+        for key in precedenceGraphMap:
+            graph.precedenceGraph.append(key)           #set precedenceGraph for graph, 除了时隙的都可以直接分析
+        # print(graph.precedenceGraph)
         graph.DDL = 1
         graph.period = 1
-        # TODO: 自动分析。除了时隙的都可以直接分析
-        graph.precedenceGraph = []
+ 
+             
 
-    taskManager = TaskManager(graphList)
     for graph in graphList:
        env.process(taskManager.graphGenerator(env, graph))
     
@@ -93,6 +116,8 @@ if __name__ == "__main__":
     #ready_queue_update->->DSP
     # update task graph by time
     #schedule(a graph, all tasks)
+
+    
     env.process(taskManager.submitTask(env))
 
     env.process(reporter().run(env))

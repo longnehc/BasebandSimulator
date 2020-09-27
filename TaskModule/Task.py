@@ -32,6 +32,7 @@ class Task:
         self.taskStatus = TaskStatus.WAIT
         self.precedenceJobID = []
         self.precedenceTask = []
+        self.precedenceGraphID = []
 
         #任务实例属性
         self.job_inst_idx = 0
@@ -56,6 +57,9 @@ class Task:
 
     def setPrecedenceJobID(self, precedenceJobID) :
         self.precedenceJobID = precedenceJobID    
+
+    def setPrecedenceGraphID(self, precedenceGraphID) :
+        self.precedenceGraphID = precedenceGraphID    
 
     def setDataInsIn(self, dataInsIn) :
         self.dataInsIn = dataInsIn
