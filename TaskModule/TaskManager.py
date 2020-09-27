@@ -35,11 +35,13 @@ class TaskManager:
                         # print("Checking graph dependency of graph%d" % graph.graphId)
                         # print(graph.getPrecedenceGraph())
                         for preGraphId in graph.getPrecedenceGraph():
+                            # print("%d, %d,%d"%(i, preGraphId, self.candidateGraphBuffer[i][preGraphId].finished))
                             if not self.candidateGraphBuffer[i][preGraphId].finished:
                                 prepareToSumbit = False         # the precedence graphs of the graph are all finished
                         if prepareToSumbit:
                             # graph.finished = True                   # TODO: need to modify
                             graph.submitted = True                    # find a graph to submit
+                            submitted = True
                             # TODO: EDF
                             for task in graph.getGlobalTaskList():
                                 self.candidateTaskBuffer.append(task)
