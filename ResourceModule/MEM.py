@@ -50,7 +50,7 @@ class MEM:
         # print ("get data in mem")
 
 
-    def checkData(self,data):
+    def checkData(self, data):
         # check if date is in this mem
         # print("check " + data.dataName)
         # print(data.dataName in self.map.keys())

@@ -185,7 +185,7 @@ class TaskManager:
                         #ResourceManager.placeCluster(1)
                         remove.append(i)
                         task.taskStatus = TaskStatus.SUMBITTED
-                        RM.submitTask(task, random.randint(0, 15), random.randint(0, 3))
+                        RM.submitTaskToDma(task, random.randint(0, 15), 0)
                         # if task.taskGraphId == 4:
                         #     self.taskNum += 1
                         #     print(self.taskNum)

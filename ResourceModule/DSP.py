@@ -27,17 +27,6 @@ class DSP:
         self.totalCost += task.cost
         # print("%d || %d" % (self.curCost, self.totalCost))
 
-    def takeDataToMem(self,task):
-        # print(task.taskName + "===========================%d" % len(task.getDataInsIn()))
-        # get memory
-        for data in task.getDataInsIn():
-            if not RM.checkData(self, data):
-                # submit to dma
-                dma = RM.getDma(self)
-                dma.submit(DMATask(data))
-                # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
-
 
     def run(self, taskManager):
         while(True):
@@ -46,40 +35,14 @@ class DSP:
 
                 # print(task.taskName + " begin in %s"% self.id)
                 # TODO: Task -> schedule(all task, dsp) -> DMA -> DSP -> DMA()
-                self.takeDataToMem(task)
-                while True:
-                    flag = True
-                    for data in task.getDataInsIn():
-                        if not RM.checkData(self, data):
-                            # print("%s not found %s" %(task.taskName, data.dataName) )
-                            flag = False
-                            break
-                    if not flag:
-                        # print("wait")
-                        # wait for dma
-
-                        # 0.001ms ->0.002s
-                        # print("????????????2")
-                        yield self.env.timeout(0.002)
-                    else:
-                        # print("dma finish########################")
-                        break
-
-                # transmit data
-                # for data in task.getDataInsIn():
-                #     transmitTime = 2000 * data.total_size / RM.getTransmitSpeed(self)
-                #     yield self.env.timeout(transmitTime)
 
                 # exe
                 yield self.env.timeout(2000 * task.cost/self.speed)
 
                 # write back
-                # for data in task.getDataInsOut():
-                #     time = RM.getMemory(self).saveData(data)
-                #     # print("dsp save %s" % data.data_inst_idx)
-                #     transmitTime = 2000 * data.total_size / RM.getTransmitSpeed(self)
-                #     yield self.env.timeout(transmitTime)
-
+                for data in task.getDataInsOut():
+                    RM.getMemory(self).saveData(data)
+                    # print("dsp save %s" % data.data_inst_idx)
 
                 # finish task
                 task.taskStatus = TaskStatus.FINISH
@@ -88,7 +51,7 @@ class DSP:
                 graph.taskNum -= 1
                 if graph.taskNum == 0:
                     graph.finished = True
-                    print("graph %d finish %f"%(graph.graphId, self.env.now))
+                    print("graph %d finish %f"% (graph.graphId, self.env.now))
                 # if graph.taskNum < 0:
                 #     print("graph %d task %d %s" % (graph.graphId,graph.taskNum,task.taskName))
                 # print(task.taskName + " finish in: %f" % self.env.now)

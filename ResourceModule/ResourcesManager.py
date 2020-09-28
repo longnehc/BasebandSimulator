@@ -23,7 +23,13 @@ def saveData(env, dsp, data):
     memory.saveData(env, data)
 
 
-def submitTask(task, clusterId, dspId):
+def submitTaskToDma(task, clusterId, dmaId):
+    cluster = getCluster(clusterId)
+    dma = cluster.getDma(dmaId)
+    dma.submit(task)
+
+
+def submitTaskToDsp(task, clusterId, dspId):
     cluster = getCluster(clusterId)
     dsp = cluster.getDsp(dspId)
     dsp.submit(task)
@@ -43,9 +49,9 @@ def setCluster(env, num):
         resourcesManager.clusterList.append(Cluster.Cluster(env, i))
 
 
-def checkData(dsp, data):
+def checkData(component, data):
     # get memory
-    cluster = getCluster(dsp.clusterId)
+    cluster = getCluster(component.clusterId)
     memory = cluster.getMemory(0)
     return memory.checkData(data)
 
