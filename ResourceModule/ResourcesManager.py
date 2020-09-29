@@ -11,18 +11,8 @@ class ResourcesManager:
 
 resourcesManager = ResourcesManager()
 
-def getData(env, dsp, data):
-    cluster = getCluster(dsp.clusterId)
-    memory = cluster.getMemory(0)
-    memory.getData(env, data, dsp)
-
-
-def saveData(env, dsp, data):
-    cluster = getCluster(dsp.clusterId)
-    memory = cluster.getMemory(0)
-    memory.saveData(env, data)
-
-
+ 
+ 
 def submitTaskToDma(task, clusterId, dmaId):
     cluster = getCluster(clusterId)
     dma = cluster.getDma(dmaId)
@@ -48,14 +38,7 @@ def setCluster(env, num):
         # print("set cluster %d"%i)
         resourcesManager.clusterList.append(Cluster.Cluster(env, i))
 
-
-def checkData(component, data):
-    # get memory
-    cluster = getCluster(component.clusterId)
-    memory = cluster.getMemory(0)
-    return memory.checkData(data)
-
-
+  
 def getDma(dsp):
     # get memory
     cluster = getCluster(dsp.clusterId)

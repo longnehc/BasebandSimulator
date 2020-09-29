@@ -1,7 +1,6 @@
 from ResourceModule.DSP import *
 from queue import Queue
-from ResourceModule import ResourcesManager as RM
-from ResourceModule.DMATask import *
+from ResourceModule import ResourcesManager as RM 
 import random
 
 
@@ -38,7 +37,7 @@ class DMA:
                 task = self.taskList.pop(0)
 
                 for data in task.getDataInsIn():
-                    if not RM.checkData(self, data):
+                    if not RM.getMemory(self).checkData(data):
                         transmitTime = 2000 * data.total_size / self.speed
                         yield self.env.timeout(transmitTime)
                         # print("dma save " + data.dataName)

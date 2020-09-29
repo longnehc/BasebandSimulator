@@ -3,6 +3,8 @@ import simpy
 from TaskModule.XMLParse import *
 from ResourceModule import ResourcesManager as RM
 from report.reporter import reporter
+from TaskModule import Scheduler as scheduler
+from TaskModule.Scheduler import SchduleAlgorithm
 
 # 1TTI = 1s(*2000)
 if __name__ == "__main__":
@@ -22,7 +24,7 @@ if __name__ == "__main__":
 
     # Create an environment and start the setup process
     env = simpy.Environment()
-    #
+    
     # #dataName, mov_dir, job_inst_idx, total_size, data_inst_idx
     # d0 = DataInstance("data0", 0, 0, 100, 33792)
     # d1 = DataInstance("data1", 1, 0, 100, 256)
@@ -122,6 +124,8 @@ if __name__ == "__main__":
 
     env.process(reporter().run(env))
     RM.setCluster(env, 16)
+    scheduler.setAlgorithm(SchduleAlgorithm.QOS)
+    env.process(scheduler.run(env))
     for cluster in RM.getClusterList():
         for dsp in cluster.getDspList():
             env.process(dsp.run(taskManager))

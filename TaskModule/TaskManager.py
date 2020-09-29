@@ -3,6 +3,7 @@ from TaskModule.TaskGraph import *
 from TaskModule.Task import *
 from TaskModule.DataInstance import *
 from ResourceModule import ResourcesManager as RM
+from TaskModule import Scheduler as scheduler
 
 import random
 
@@ -185,6 +186,9 @@ class TaskManager:
                         #ResourceManager.placeCluster(1)
                         remove.append(i)
                         task.taskStatus = TaskStatus.SUMBITTED
+                        #TODO: QoS guarantee/Load balancing/greedy/random/offmem chip
+                        scheduler.submit(task)
+                        #env.process(scheduler.run(env))
                         RM.submitTaskToDma(task, random.randint(0, 15), 0)
                         # if task.taskGraphId == 4:
                         #     self.taskNum += 1
