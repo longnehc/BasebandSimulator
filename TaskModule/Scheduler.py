@@ -4,6 +4,8 @@ from TaskModule.DataInstance import *
 from ResourceModule import ResourcesManager as RM
 from queue import Queue
 
+import random
+
 
 class SchduleAlgorithm(Enum):
     RANDOM = 0 
@@ -30,17 +32,20 @@ def submit(task):
 def run(env):
     while True:
         while not scheduler.taskQueue.empty():
+            task = scheduler.taskQueue.get()
             if scheduler.algorithm == SchduleAlgorithm.RANDOM:
                 print("RANDOM...")
             elif scheduler.algorithm == SchduleAlgorithm.GREEDY:
                 print("Greedy...")
             elif scheduler.algorithm == SchduleAlgorithm.OFFMEM:
-                print("Minimizing off-chip memory access...")
+                # print("Minimizing off-chip memory access...")
+                RM.submitTaskToDma(task, task.clusterId, 0)
             elif scheduler.algorithm == SchduleAlgorithm.QOS:
-                print("QoS guarantee...")
+                # print("QoS guarantee...")
+                RM.submitTaskToDma(task, random.randint(0, 15), 0)
             elif scheduler.algorithm == SchduleAlgorithm.LB:
                 print("Load balancing...")
             else:
                 print("Not implemented")
-            yield env.timeout(1)
+        yield env.timeout(0.0002)
 

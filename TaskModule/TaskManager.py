@@ -4,6 +4,7 @@ from TaskModule.Task import *
 from TaskModule.DataInstance import *
 from ResourceModule import ResourcesManager as RM
 from TaskModule import Scheduler as scheduler
+from Algorithm import offChipMem
 
 import random
 
@@ -25,8 +26,9 @@ class TaskManager:
 
     def submitGraph(self, env):
         while True:    
-            for i in range (self.curBatch, self.batchId + 1):
+            for i in range (1, self.batchId + 1):
                 submitted = False
+                prepareToSumbit = False
                 for graphId in self.candidateGraphBuffer[i]:
                     graph = self.candidateGraphBuffer[i][graphId]
                     prepareToSumbit = True
@@ -40,7 +42,10 @@ class TaskManager:
                             if not self.candidateGraphBuffer[i][preGraphId].finished:
                                 prepareToSumbit = False         # the precedence graphs of the graph are all finished
                         if prepareToSumbit:
+                            # print("%d, %d,%d" % (graphId, preGraphId, self.candidateGraphBuffer[i][preGraphId].finished))
                             # graph.finished = True                   # TODO: need to modify
+                            # OffChip schedule
+                            offChipMem.offChipMem(graph)
                             graph.submitted = True                    # find a graph to submit
                             submitted = True
                             # TODO: EDF
@@ -50,13 +55,13 @@ class TaskManager:
                             # break
                     # if graphId == 4:
                     #     print(len(graph.globalTaskList))
-                if submitted:
-                    break
-                else:
-                    self.curBatch = i + 1                       # an improvement to skip the totally executed batch
+                # if submitted and prepareToSumbit:
+                #     break
+                # else:
+                #     self.curBatch = i + 1                       # an improvement to skip the totally executed batch
             # print("---------------------================================")
-            yield env.timeout(self.graphSubmitFrequency)
-            # yield env.timeout(0.002)  # TODO
+            # yield env.timeout(self.graphSubmitFrequency)
+            yield env.timeout(0.05)  # TODO
 
     def constructTask(self, task):
         #name, knrlType, instCnt, jobId, graphId, job_inst_idx
@@ -108,11 +113,10 @@ class TaskManager:
             self.taskBatch += 1
             yield env.timeout(minPeriod)
 
-
     def graphGenerator(self, env, graph):
         while True: 
             find = False
-            #rint(graph.graphId)
+            # print(graph.graphId)
             for i in range (1, self.batchId + 1):
                 #print(self.candidateGraphBuffer[i])
                 #print("=========")
@@ -128,6 +132,7 @@ class TaskManager:
                     break
             if not find:                                                    #new graph belongs to the new batch
                 self.batchId += 1
+                print("batch id %d %d" % (self.batchId, graph.graphId))
                 newgraph = self.contructGraphById(graph.graphId, self.batchId)
                 self.candidateGraphBuffer[self.batchId] = {graph.graphId : newgraph}
                 # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), self.batchId, env.now))
@@ -135,7 +140,7 @@ class TaskManager:
                 for task in newgraph.globalTaskList:
                     task.batchId = self.batchId
             yield env.timeout(graph.getPeriod())
-            # yield env.timeout(0.1)
+            # yield env.timeout(1)
             
     def schedule(self, env):
         #       ####if offmem： {task.cluster = 1} = offmem()
@@ -189,7 +194,7 @@ class TaskManager:
                         #TODO: QoS guarantee/Load balancing/greedy/random/offmem chip
                         scheduler.submit(task)
                         #env.process(scheduler.run(env))
-                        RM.submitTaskToDma(task, random.randint(0, 15), 0)
+                        # RM.submitTaskToDma(task, random.randint(0, 15), 0)
                         # if task.taskGraphId == 4:
                         #     self.taskNum += 1
                         #     print(self.taskNum)

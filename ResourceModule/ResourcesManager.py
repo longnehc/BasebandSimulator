@@ -29,6 +29,10 @@ def getClusterList():
     return resourcesManager.clusterList
 
 
+def getClusterNum():
+    return len(resourcesManager.clusterList)
+
+
 def getCluster(index):
     return resourcesManager.clusterList[index]
 

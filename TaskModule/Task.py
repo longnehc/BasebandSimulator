@@ -23,8 +23,10 @@ class Task:
         self.taskGraphId = graphId
         self.job_inst_idx = job_inst_idx
         self.cost = cost
+
         #graphSchedule
         self.clusterId = -1
+
         #输入输出数据总量
         self.InputDataSize = 0
         self.OutputDataSize = 0
