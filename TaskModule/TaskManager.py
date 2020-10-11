@@ -26,16 +26,19 @@ class TaskManager:
 
     def submitGraph(self, env):
         while True:    
-            for i in range (1, self.batchId + 1):
+            for i in range (self.curBatch, self.batchId + 1):
                 submitted = False
-                prepareToSumbit = False
+                # prepareToSumbit = False
+                cnt = 0
                 for graphId in self.candidateGraphBuffer[i]:
                     graph = self.candidateGraphBuffer[i][graphId]
                     prepareToSumbit = True
                     # print("batch = %d, graphId= %d, graph-finished = %d" % (i, graphId, graph.finished))
                     #[for g in graph.getPrecedenceGraph() if g.submitted and not graph.submitted]
+                    if graph.finished:
+                        cnt += 1
                     if not graph.submitted:
-                        # print("Checking graph dependency of graph%d" % graph.graphId)
+                        print("Checking graph dependency of graph%d" % graph.graphId)
                         # print(graph.getPrecedenceGraph())
                         for preGraphId in graph.getPrecedenceGraph():
                             # print("%d, %d,%d"%(i, preGraphId, self.candidateGraphBuffer[i][preGraphId].finished))
@@ -55,10 +58,12 @@ class TaskManager:
                             # break
                     # if graphId == 4:
                     #     print(len(graph.globalTaskList))
-                # if submitted and prepareToSumbit:
+                # if submitted:
                 #     break
                 # else:
                 #     self.curBatch = i + 1                       # an improvement to skip the totally executed batch
+                if cnt == 5:
+                    self.curBatch += 1
             # print("---------------------================================")
             # yield env.timeout(self.graphSubmitFrequency)
             yield env.timeout(0.05)  # TODO
