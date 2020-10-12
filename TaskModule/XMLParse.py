@@ -56,6 +56,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
                   if key in self.producerMap:
                      precedenceTask.append(self.producerMap[key])
                      precedenceJobId.append(self.producerMap[key].jobId)
+                     datains.refCnt += 1
                      #print("%s depends on %s (jobId=%d)" % 
                      #(task.taskName, self.producerMap[key].taskName, self.producerMap[key].jobId))
                task.setPrecedenceJobID(precedenceJobId)

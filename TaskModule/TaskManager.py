@@ -38,7 +38,7 @@ class TaskManager:
                     if graph.finished:
                         cnt += 1
                     if not graph.submitted:
-                        print("Checking graph dependency of graph%d" % graph.graphId)
+                        # print("Checking graph dependency of graph%d" % graph.graphId)
                         # print(graph.getPrecedenceGraph())
                         for preGraphId in graph.getPrecedenceGraph():
                             # print("%d, %d,%d"%(i, preGraphId, self.candidateGraphBuffer[i][preGraphId].finished))
@@ -77,8 +77,9 @@ class TaskManager:
         #set the input data instance
         dataInsIn = []
         for indata in task.dataInsIn:
-            dataInsIn.append(DataInstance(indata.dataName, indata.mov_dir, indata.job_inst_idx,
-                indata.total_size, indata.data_inst_idx))
+            dataDataInstance = DataInstance(indata.dataName, indata.mov_dir, indata.job_inst_idx, indata.total_size, indata.data_inst_idx)
+            dataDataInstance.refCnt = indata.refCnt
+            dataInsIn.append(dataDataInstance)
         newtask.setDataInsIn(dataInsIn)
  
         #set the output data instance

@@ -5,4 +5,4 @@ class DataInstance:
         self.job_inst_idx = job_inst_idx
         self.total_size = total_size
         self.data_inst_idx = data_inst_idx
-    
+        self.refCnt = 0
