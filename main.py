@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
     env.process(reporter().run(env))
     RM.setCluster(env, 16)
-    scheduler.setAlgorithm(SchduleAlgorithm.OFFMEM)
+    scheduler.setAlgorithm(SchduleAlgorithm.QOS)
     env.process(scheduler.run(env))
     for cluster in RM.getClusterList():
         for dsp in cluster.getDspList():

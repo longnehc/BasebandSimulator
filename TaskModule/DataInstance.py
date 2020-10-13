@@ -6,3 +6,12 @@ class DataInstance:
         self.total_size = total_size
         self.data_inst_idx = data_inst_idx
         self.refCnt = 0
+
+    def __hash__(self):
+        return hash(self.dataName)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.job_inst_idx == other.job_inst_idx and self.dataName == other.dataName
+        else:
+            return False

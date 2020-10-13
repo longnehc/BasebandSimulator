@@ -35,7 +35,7 @@ class TaskManager:
                     prepareToSumbit = True
                     # print("batch = %d, graphId= %d, graph-finished = %d" % (i, graphId, graph.finished))
                     #[for g in graph.getPrecedenceGraph() if g.submitted and not graph.submitted]
-                    if graph.finished:
+                    if graph.submitted:
                         cnt += 1
                     if not graph.submitted:
                         # print("Checking graph dependency of graph%d" % graph.graphId)
