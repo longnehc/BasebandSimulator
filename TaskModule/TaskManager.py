@@ -4,11 +4,15 @@ from TaskModule.Task import *
 from TaskModule.DataInstance import *
 from ResourceModule import ResourcesManager as RM
 from TaskModule import Scheduler as scheduler
+from TaskModule.Task import TaskStatus
 from Algorithm import offChipMem
 
 import random
 
-class TaskManager: 
+from BasebandSimulator.TaskModule.Scheduler import SchduleAlgorithm
+
+
+class TaskManager:
     
     def __init__(self, graphList):
         self.graphSubmitFrequency = 2 
@@ -48,7 +52,7 @@ class TaskManager:
                             # print("%d, %d,%d" % (graphId, preGraphId, self.candidateGraphBuffer[i][preGraphId].finished))
                             # graph.finished = True                   # TODO: need to modify
                             # OffChip schedule
-                            # offChipMem.offChipMem(graph)
+                            offChipMem.offChipMem(graph)
                             graph.submitted = True                    # find a graph to submit
                             submitted = True
                             # TODO: EDF

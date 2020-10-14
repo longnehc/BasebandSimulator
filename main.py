@@ -84,7 +84,7 @@ if __name__ == "__main__":
     DDLList = [1, 1, 1, 1, 1, 1]
     PeriodList = [1, 1, 1, 1, 1, 1]
     PriorityList = [1, 2, 3, 4, 5, 6]
-    ArrivalTimeList = [1, 2, 3, 4, 5, 6] 
+    ArrivalTimeList = [0, 0, 0, 0, 0, 0]
     graphIndex = 0
     for graph in graphList:
         precedenceGraphMap = {} 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
     env.process(reporter().run(env))
     RM.setCluster(env, 16)
-    scheduler.setAlgorithm(SchduleAlgorithm.LB)
+    scheduler.setAlgorithm(SchduleAlgorithm.OFFMEM)
     env.process(scheduler.run(env))
     for cluster in RM.getClusterList():
         for dsp in cluster.getDspList():

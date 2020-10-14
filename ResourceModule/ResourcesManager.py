@@ -18,12 +18,12 @@ resourcesManager = ResourcesManager()
 def submitTaskToDma(task, clusterId, dmaId):
     cluster = getCluster(clusterId)
     dma = cluster.getDma(dmaId)
-    # print(len(dma.taskList))
     if len(dma.taskList) < dma.capacity:
         dma.submit(task)
         task.taskStatus = TaskStatus.SUMBITTED
         return True
     else:
+        print(len(dma.taskList))
         return False
     # dma.submit(task)
     # task.taskStatus = TaskStatus.SUMBITTED

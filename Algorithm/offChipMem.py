@@ -45,7 +45,7 @@ clusterNum = 0
 
 
 def offChipMem(taskGraph):
-    print("off-chip begin")
+    print("graph %d off-chip begin"% taskGraph.graphId)
     global clusterNum
     global clusterDataCnt
     global clusterMap
@@ -83,7 +83,7 @@ def offChipMem(taskGraph):
     # for cluster in clusterDataCnt:
     #     print(cluster.load)
 
-    # print("finish set")
+    print("graph %d off-chip done"% taskGraph.graphId)
 
 def setCluster(task, taskGraph):
     global clusterDataCnt

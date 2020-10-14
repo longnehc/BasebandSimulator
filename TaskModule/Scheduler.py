@@ -29,6 +29,9 @@ def setAlgorithm(algorthim):
 
 def submit(task):
     scheduler.taskQueue.put(task)
+
+def getAlgorithm():
+    return scheduler.algorithm
     
 cnt = 0
 def run(env):
@@ -42,7 +45,8 @@ def run(env):
                 print("Greedy...")
             elif scheduler.algorithm == SchduleAlgorithm.OFFMEM:
                 # print("Minimizing off-chip memory access...")
-                RM.submitTaskToDma(task, task.clusterId, 0)
+                while not RM.submitTaskToDma(task, task.clusterId, 0):
+                    yield env.timeout(0.0001)
             elif scheduler.algorithm == SchduleAlgorithm.QOS:
                 print("QoS guarantee...")
             elif scheduler.algorithm == SchduleAlgorithm.LB:
