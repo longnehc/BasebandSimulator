@@ -42,7 +42,7 @@ class TaskManager:
                         # print(graph.getPrecedenceGraph())
                         for preGraphId in graph.getPrecedenceGraph():
                             # print("%d, %d,%d"%(i, preGraphId, self.candidateGraphBuffer[i][preGraphId].finished))
-                            if not self.candidateGraphBuffer[i][preGraphId].finished:
+                            if preGraphId in self.candidateGraphBuffer[i] and not self.candidateGraphBuffer[i][preGraphId].finished:
                                 prepareToSumbit = False         # the precedence graphs of the graph are all finished
                         if prepareToSumbit:
                             # print("%d, %d,%d" % (graphId, preGraphId, self.candidateGraphBuffer[i][preGraphId].finished))
@@ -121,6 +121,7 @@ class TaskManager:
             yield env.timeout(minPeriod)
 
     def graphGenerator(self, env, graph):
+        yield env.timeout(graph.arrivalTime)
         while True: 
             find = False
             # print(graph.graphId)

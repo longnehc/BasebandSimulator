@@ -1,7 +1,7 @@
 from ResourceModule import Cluster
 from ResourceModule import DMA
 
-from BasebandSimulator.TaskModule.Task import TaskStatus
+from TaskModule.Task import TaskStatus
 
 
 class ResourcesManager:

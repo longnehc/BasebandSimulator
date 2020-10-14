@@ -74,12 +74,18 @@ if __name__ == "__main__":
     #print(graphList)
     #print(len(graphList))
     #print("Task graph parser ends")
-  
+
+    
     
     taskManager = TaskManager(graphList)
     minPeriod = 1 # minimal period of all graphs 
     env.process(taskManager.taskGenerator(env, minPeriod))
-    
+
+    DDLList = [1, 1, 1, 1, 1, 1]
+    PeriodList = [1, 1, 1, 1, 1, 1]
+    PriorityList = [1, 2, 3, 4, 5, 6]
+    ArrivalTimeList = [1, 2, 3, 4, 5, 6] 
+    graphIndex = 0
     for graph in graphList:
         precedenceGraphMap = {} 
         # print("=========")
@@ -101,8 +107,11 @@ if __name__ == "__main__":
         for key in precedenceGraphMap:
             graph.precedenceGraph.append(key)           #set precedenceGraph for graph, 除了时隙的都可以直接分析
         # print(graph.precedenceGraph)
-        graph.DDL = 1
-        graph.period = 1
+        graph.DDL = DDLList[graphIndex]
+        graph.period = PeriodList[graphIndex]
+        graph.priority = PriorityList[graphIndex]
+        graph.arrivalTime = ArrivalTimeList[graphIndex]
+        graphIndex += 1
 
     # off-chip Mem
     # for graph in graphList:

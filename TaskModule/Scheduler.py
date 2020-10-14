@@ -6,7 +6,7 @@ from queue import Queue
 
 import random
 
-from BasebandSimulator.TaskModule.Task import TaskStatus
+from TaskModule.Task import TaskStatus
 
 
 class SchduleAlgorithm(Enum):
