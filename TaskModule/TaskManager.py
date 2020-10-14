@@ -48,7 +48,7 @@ class TaskManager:
                             # print("%d, %d,%d" % (graphId, preGraphId, self.candidateGraphBuffer[i][preGraphId].finished))
                             # graph.finished = True                   # TODO: need to modify
                             # OffChip schedule
-                            offChipMem.offChipMem(graph)
+                            # offChipMem.offChipMem(graph)
                             graph.submitted = True                    # find a graph to submit
                             submitted = True
                             # TODO: EDF
@@ -72,7 +72,8 @@ class TaskManager:
         #name, knrlType, instCnt, jobId, graphId, job_inst_idx
         #constructing new task based on task
         newtask = Task(task.taskName, task.knrlType, task.instCnt, task.jobId, task.taskGraphId, task.job_inst_idx, task.cost)
-        #set the precedence task 
+        newtask.clusterId = task.clusterId
+        #set the precedence task
         newtask.setPrecedenceJobID(task.precedenceJobID)
         #set the input data instance
         dataInsIn = []
@@ -196,7 +197,7 @@ class TaskManager:
                         #schedule()
                         #ResourceManager.placeCluster(1)
                         remove.append(i)
-                        task.taskStatus = TaskStatus.SUMBITTED
+                        # task.taskStatus = TaskStatus.SUMBITTED
                         #TODO: QoS guarantee/Load balancing/greedy/random/offmem chip
                         scheduler.submit(task)
                         #env.process(scheduler.run(env))

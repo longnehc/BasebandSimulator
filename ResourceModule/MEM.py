@@ -11,7 +11,7 @@ class MEM:
         self.map = OrderedDict()
         self.speed = 1
 
-        self.capacity = 100000
+        self.capacity = 100000 * 100
         self.curSize = 0
         self.peek = 0
 

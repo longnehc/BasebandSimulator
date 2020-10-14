@@ -6,6 +6,8 @@ from queue import Queue
 
 import random
 
+from BasebandSimulator.TaskModule.Task import TaskStatus
+
 
 class SchduleAlgorithm(Enum):
     RANDOM = 0 
@@ -28,8 +30,9 @@ def setAlgorithm(algorthim):
 def submit(task):
     scheduler.taskQueue.put(task)
     
-
+cnt = 0
 def run(env):
+    global cnt
     while True:
         while not scheduler.taskQueue.empty():
             task = scheduler.taskQueue.get()
@@ -41,11 +44,21 @@ def run(env):
                 # print("Minimizing off-chip memory access...")
                 RM.submitTaskToDma(task, task.clusterId, 0)
             elif scheduler.algorithm == SchduleAlgorithm.QOS:
-                # print("QoS guarantee...")
-                RM.submitTaskToDma(task, random.randint(0, 15), 0)
+                print("QoS guarantee...")
             elif scheduler.algorithm == SchduleAlgorithm.LB:
-                print("Load balancing...")
+                # print("Load balancing...")
+                cnt = (cnt + 1) % 16
+                if not RM.submitTaskToDma(task, cnt, 0):
+                    tmp = (cnt + 1) % 16
+                    while not RM.submitTaskToDma(task, tmp, 0):
+                        tmp = (tmp + 1) % 16
+                        if tmp == cnt:
+                            # print("full")
+                            yield env.timeout(0.00001)
             else:
                 print("Not implemented")
+
+            # if task.taskStatus != TaskStatus.SUMBITTED:
+            #     yield env.timeout(0.002)
         yield env.timeout(0.0002)
 

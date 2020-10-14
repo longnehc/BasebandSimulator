@@ -5,6 +5,7 @@ from ResourceModule import ResourcesManager as RM
 from report.reporter import reporter
 from TaskModule import Scheduler as scheduler
 from TaskModule.Scheduler import SchduleAlgorithm
+from Algorithm import offChipMem
 
 # 1TTI = 1s(*2000)
 if __name__ == "__main__":
@@ -20,7 +21,7 @@ if __name__ == "__main__":
     MemCapacity = 100
     DMASpeed = 10
     DDRCapacity = 100
-    SIM_TIME = 10
+    SIM_TIME = 50
 
     # Create an environment and start the setup process
     env = simpy.Environment()
@@ -69,6 +70,7 @@ if __name__ == "__main__":
     parser.setContentHandler( Handler )
     parser.parse("TaskGraph0903.xml")
     graphList = Handler.getGraphList()
+    graphList1 = [graphList[0]]
     #print(graphList)
     #print(len(graphList))
     #print("Task graph parser ends")
@@ -83,8 +85,9 @@ if __name__ == "__main__":
         # print("=========")
         # print(precedenceGraphMap)
         # print("=========")
+        # 87-100  #
         for task in graph.globalTaskList:
-            for datains in task.dataInsIn: 
+            for datains in task.dataInsIn:
                 key = datains.dataName + "-" + str(datains.data_inst_idx)
                 producerMap = Handler.getProducerMap()
                 if key in producerMap:
@@ -100,8 +103,13 @@ if __name__ == "__main__":
         # print(graph.precedenceGraph)
         graph.DDL = 1
         graph.period = 1
- 
-             
+
+    # off-chip Mem
+    # for graph in graphList:
+    #     offChipMem.offChipMem(graph)
+
+    # print("?????????%d"%len(graphList))
+    # env.process(taskManager.graphGenerator(env, graphList[4]))
 
     for graph in graphList:
        env.process(taskManager.graphGenerator(env, graph))
@@ -124,7 +132,7 @@ if __name__ == "__main__":
 
     env.process(reporter().run(env))
     RM.setCluster(env, 16)
-    scheduler.setAlgorithm(SchduleAlgorithm.QOS)
+    scheduler.setAlgorithm(SchduleAlgorithm.LB)
     env.process(scheduler.run(env))
     for cluster in RM.getClusterList():
         for dsp in cluster.getDspList():

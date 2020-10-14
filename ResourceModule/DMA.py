@@ -13,6 +13,7 @@ class DMA:
         self.taskList = []
         self.env = env
         self.clusterId = clusterId
+        self.capacity = 500
 
 
 
@@ -44,5 +45,7 @@ class DMA:
                         RM.getMemory(self).saveData(data)
 
                 RM.submitTaskToDsp(task, self.clusterId, random.randint(0, 3))
+                # RM.submitTaskToDsp(task, self.clusterId, 0)
 
-            yield self.env.timeout(0.0002)
+            # yield self.env.timeout(0.0002)
+            yield self.env.timeout(0.002)
