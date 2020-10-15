@@ -40,12 +40,17 @@ class MEM:
 
     # get data
     def getData(self, env, data, dsp):
-        if not data.dataName in self.map.keys():
-            RM.submitDmaTask(env, data, self)
-        # else:
-        #     print("data is in the mem =================")
+        # if not data.dataName in self.map.keys():
+        #     RM.submitDmaTask(env, data, self)
 
-        transformTime = data.total_size / self.speed
+        # transformTime = data.total_size / self.speed
+        data.refCnt -= 1
+        if data.refCnt == 0:
+            # print("delete")
+            if data.dataName in self.map.keys():
+                self.map.pop(data.dataName)
+                self.curSize -= data.total_size
+
         # yield env.timeout(transformTime)
         # print ("get data in mem")
 

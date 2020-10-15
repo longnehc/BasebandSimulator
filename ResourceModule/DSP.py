@@ -33,6 +33,9 @@ class DSP:
             while not self.taskQueue.empty():
                 task = self.taskQueue.get()
 
+                for data in task.dataInsIn:
+                    RM.getMemory(self).getData(self.env, data, self)
+
                 # print(task.taskName + " begin in %s"% self.id)
                 # TODO: Task -> schedule(all task, dsp) -> DMA -> DSP -> DMA()
 
@@ -51,10 +54,15 @@ class DSP:
                 graph.taskNum -= 1
                 if graph.taskNum == 0:
                     graph.finished = True
-                    print("graph %d finish %f"% (graph.graphId, self.env.now))
+                    print("graph %d finish %f and cost %f"% (graph.graphId, self.env.now, self.env.now - graph.submitTime))
+                    if graph.graphId in RM.getExecuteTimeMap():
+                        RM.getExecuteTimeMap()[graph.graphId].append(self.env.now - graph.submitTime)
+                    else:
+                        RM.setFinishGraphCnt(RM.getFinishGraphCnt() + 1)
+                        RM.getExecuteTimeMap()[graph.graphId] = [self.env.now - graph.submitTime]
                 # if graph.taskNum < 0:
                 #     print("graph %d task %d %s" % (graph.graphId,graph.taskNum,task.taskName))
                 # print(task.taskName + " finish in: %f" % self.env.now)
-                print(task.graphDDL)
+                # print(task.graphDDL)
 
             yield self.env.timeout(0.0002)

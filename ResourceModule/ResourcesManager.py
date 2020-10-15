@@ -9,6 +9,8 @@ class ResourcesManager:
     def __init__(self):
         self.name = "ResourceModule manager"
         self.clusterList = []
+        self.finishGraphCnt = 0
+        self.executeTimeMap = {}
 
 
 resourcesManager = ResourcesManager()
@@ -34,6 +36,15 @@ def submitTaskToDsp(task, clusterId, dspId):
     dsp = cluster.getDsp(dspId)
     dsp.submit(task)
 
+
+def getExecuteTimeMap():
+    return resourcesManager.executeTimeMap
+
+def getFinishGraphCnt():
+    return resourcesManager.finishGraphCnt
+
+def setFinishGraphCnt(cnt):
+    resourcesManager.finishGraphCnt = cnt
 
 def getClusterList():
     return resourcesManager.clusterList
@@ -68,7 +79,7 @@ def getTransmitSpeed(component):
     cluster = getCluster(component.clusterId)
     return cluster.speed
 
-# clear dma's taskList []
+# clear dma's taskList [] TODO:
 def clearCluster(start, end):
     for i in range(start,end + 1):
         cluster = resourcesManager.clusterList[i]

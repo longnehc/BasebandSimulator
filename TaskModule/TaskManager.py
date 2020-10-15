@@ -10,7 +10,7 @@ from Algorithm import offChipMem
 
 import random
 
-from BasebandSimulator.TaskModule.Scheduler import SchduleAlgorithm
+from TaskModule.Scheduler import SchduleAlgorithm
 
 
 def QosPreemption(t1, t2):
@@ -34,21 +34,18 @@ class TaskManager:
         self.graphRecorder = {self.batchId:[]}
         self.taskBatch = 1
         self.taskFactory = {self.taskBatch: []} #{key:batchId : value:{key: jobId: value: task}}
+      
         
 
     def submitGraph(self, env):
         while True:    
-            for i in range (self.curBatch, self.batchId + 1):
-                submitted = False
-                # prepareToSumbit = False
-                cnt = 0
+            for i in range (1, self.batchId + 1):
+                submitted = False 
                 for graphId in self.candidateGraphBuffer[i]:
                     graph = self.candidateGraphBuffer[i][graphId]
                     prepareToSumbit = True
                     # print("batch = %d, graphId= %d, graph-finished = %d" % (i, graphId, graph.finished))
                     #[for g in graph.getPrecedenceGraph() if g.submitted and not graph.submitted]
-                    if graph.submitted:
-                        cnt += 1
                     if not graph.submitted:
                         # print("Checking graph dependency of graph%d" % graph.graphId)
                         # print(graph.getPrecedenceGraph())
@@ -58,7 +55,6 @@ class TaskManager:
                                 prepareToSumbit = False         # the precedence graphs of the graph are all finished
                         if prepareToSumbit:
                             # print("%d, %d,%d" % (graphId, preGraphId, self.candidateGraphBuffer[i][preGraphId].finished))
-                            # graph.finished = True                   # TODO: need to modify
                             # OffChip schedule
                             # offChipMem.offChipMem(graph)
                             graph.submitted = True                    # find a graph to submit
@@ -70,7 +66,7 @@ class TaskManager:
                             # QOS Preemption
                             # print("%s | %s" % (scheduler.getAlgorithm(),SchduleAlgorithm.QOSPreemption))
                             # print(scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemption.value)
-                            if scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemption.value:
+                            if scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemption.value or scheduler.getAlgorithm().value == SchduleAlgorithm.QosReserve.value:
                                 # print("qooooooooos")
                                 self.candidateTaskBuffer = sorted(self.candidateTaskBuffer,
                                                               key=functools.cmp_to_key(QosPreemption))
@@ -80,17 +76,11 @@ class TaskManager:
                                     for task in graph.getGlobalTaskList():
                                         cost += task.cost
                                     clusterNum = ((cost / 5.2 * 1000000000) / graph.DDL) + 1
-                                    scheduler.beginQosReserve(graph.graphId, env.now() + graph.DDL, clusterNum)
+                                    scheduler.beginQosReserve(graph.graphId, env.now + graph.DDL, clusterNum)
 
                             # break
                     # if graphId == 4:
                     #     print(len(graph.globalTaskList))
-                # if submitted:
-                #     break
-                # else:
-                #     self.curBatch = i + 1                       # an improvement to skip the totally executed batch
-                if cnt == 5:
-                    self.curBatch += 1
             # print("---------------------================================")
             # yield env.timeout(self.graphSubmitFrequency)
             yield env.timeout(0.05)  # TODO
@@ -142,7 +132,8 @@ class TaskManager:
             for graph in self.graphList:
                 for task in graph.globalTaskList:
                     newtask = self.constructTask(task)
-                    taskMap[newtask.jobId] = newtask    
+                    newtask.graphDDL = graph.DDL + env.now
+                    taskMap[newtask.jobId] = newtask
             self.taskFactory[self.taskBatch] = taskMap
             self.taskBatch += 1
             yield env.timeout(minPeriod)
@@ -158,6 +149,7 @@ class TaskManager:
                 if graph.graphId not in self.candidateGraphBuffer[i]:      #new graph belongs to the existence batch
                     find = True
                     newgraph = self.contructGraphById(graph.graphId, i)
+                    newgraph.submitTime  = env.now
                     self.candidateGraphBuffer[i][graph.graphId] = newgraph
                     for task in newgraph.globalTaskList:
                         task.batchId = i
@@ -167,8 +159,9 @@ class TaskManager:
                     break
             if not find:                                                    #new graph belongs to the new batch
                 self.batchId += 1
-                print("batch id %d %d" % (self.batchId, graph.graphId))
+                # print("batch id %d %d" % (self.batchId, graph.graphId))
                 newgraph = self.contructGraphById(graph.graphId, self.batchId)
+                newgraph.submitTime  = env.now
                 self.candidateGraphBuffer[self.batchId] = {graph.graphId : newgraph}
                 # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), self.batchId, env.now))
                 self.graphRecorder[i] = [newgraph]

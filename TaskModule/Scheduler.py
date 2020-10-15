@@ -60,6 +60,7 @@ def run(env):
                 while not RM.submitTaskToDma(task, task.clusterId, 0):
                     yield env.timeout(0.0001)
 
+            # TODO:
             elif scheduler.algorithm == SchduleAlgorithm.QOSPreemption:
                 clusterId = 0
                 clusterList = RM.getClusterList()
@@ -90,6 +91,7 @@ def run(env):
                             # print("full")
                             yield env.timeout(0.001)
 
+            # TODO:
             elif scheduler.algorithm == SchduleAlgorithm.QosReserve:
                 clusterId = 0
                 clusterList = RM.getClusterList()
