@@ -81,10 +81,10 @@ if __name__ == "__main__":
     minPeriod = 1 # minimal period of all graphs 
     env.process(taskManager.taskGenerator(env, minPeriod))
 
-    DDLList = [100, 0.5, 1.5, 4, 1, 100]
-    PeriodList = [1, 1, 1, 4, 1, 1]
+    DDLList = [100, 0.8, 1.5, 4, 1, 100]
+    PeriodList = [1, 1, 100, 4, 1, 1]
     PriorityList = [1, 2, 3, 4, 5, 6]
-    ArrivalTimeList = [0, 0, 0, 4, 0, 0]
+    ArrivalTimeList = [0, 0, 100, 4, 0, 0]
     graphIndex = 0
     for graph in graphList:
         precedenceGraphMap = {} 
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     # Qos Reserve
     graphList[1].QosReserve = True
     
-    RM.setCluster(env, 16)
+    RM.setCluster(env, 20)
 
     # off-chip Mem
     if selectedAlgo == SchduleAlgorithm.OFFMEM:

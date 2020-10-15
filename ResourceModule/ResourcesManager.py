@@ -2,6 +2,7 @@ from ResourceModule import Cluster
 from ResourceModule import DMA
 
 from TaskModule.Task import TaskStatus
+import random
 
 
 class ResourcesManager:
@@ -81,10 +82,13 @@ def getTransmitSpeed(component):
 
 # clear dma's taskList [] TODO:
 def clearCluster(start, end):
-    for i in range(start,end + 1):
+    for i in range(start, end + 1):
+        # cnt = end + 1
         cluster = resourcesManager.clusterList[i]
         for task in cluster.dmaList[0].taskList:
-            task.taskStatus = TaskStatus.WAIT
+            dma = resourcesManager.clusterList[random.randint(end+1, getClusterNum()-1)].getDma(0)
+            dma.submit(task)
+            # cnt += 1
         cluster.dmaList[0].taskList = []
 
 

@@ -13,7 +13,7 @@ class DMA:
         self.taskList = []
         self.env = env
         self.clusterId = clusterId
-        self.capacity = 500
+        self.capacity = 100
         self.offChipAccess= 0
 
 

@@ -93,9 +93,10 @@ def run(env):
 
             # TODO:
             elif scheduler.algorithm == SchduleAlgorithm.QosReserve:
-                clusterId = 0
                 clusterList = RM.getClusterList()
                 if task.taskGraphId == scheduler.QosReserveGraphId:
+                    # print("graph %d quick"%task.taskGraphId)
+                    clusterId = 0
                     for i in range(0, scheduler.QosReserveClusterNum):
                         if len(clusterList[i].dmaList[0].taskList) < len(clusterList[clusterId].dmaList[0].taskList):
                             clusterId = i
@@ -103,6 +104,7 @@ def run(env):
                     while not RM.submitTaskToDma(task, clusterId, 0):
                         yield env.timeout(0.001)
                 else:
+                    clusterId = scheduler.QosReserveClusterNum
                     for i in range(scheduler.QosReserveClusterNum, len(clusterList)):
                         if len(clusterList[i].dmaList[0].taskList) < len(clusterList[clusterId].dmaList[0].taskList):
                             clusterId = i
@@ -111,6 +113,7 @@ def run(env):
                         yield env.timeout(0.001)
                 if env.now > scheduler.QosReserveDdl:
                     scheduler.algorithm = SchduleAlgorithm.QOSPreemption
+                    print("reverse finish")
 
             else:
                 print("Not implemented")

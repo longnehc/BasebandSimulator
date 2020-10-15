@@ -14,10 +14,7 @@ from TaskModule.Scheduler import SchduleAlgorithm
 
 
 def QosPreemption(t1, t2):
-    if t1.graphDDL != t2.graphDDL:
-        return t1.graphDDL - t2.graphDDL
-    else:
-        return -1
+    return t1.graphDDL - t2.graphDDL
 
 
 class TaskManager:
@@ -67,7 +64,7 @@ class TaskManager:
                             # print("%s | %s" % (scheduler.getAlgorithm(),SchduleAlgorithm.QOSPreemption))
                             # print(scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemption.value)
                             if scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemption.value or scheduler.getAlgorithm().value == SchduleAlgorithm.QosReserve.value:
-                                # print("qooooooooos")
+                                # print(graph.QosReserve)
                                 self.candidateTaskBuffer = sorted(self.candidateTaskBuffer,
                                                               key=functools.cmp_to_key(QosPreemption))
                                 cost = 0
@@ -75,8 +72,13 @@ class TaskManager:
                                 if graph.QosReserve:
                                     for task in graph.getGlobalTaskList():
                                         cost += task.cost
-                                    clusterNum = ((cost / 5.2 * 1000000000) / graph.DDL) + 1
-                                    scheduler.beginQosReserve(graph.graphId, env.now + graph.DDL, clusterNum)
+                                    print("submitTime is %.2f,now is %.2f, so we have %.2f"% (graph.submitTime, env.now, (graph.submitTime + graph.DDL - env.now)))
+                                    clusterNum = (int)((2000 * cost / (5.2 * 1000000000)) / (graph.submitTime + graph.DDL - env.now)) + 2
+                                    if clusterNum < 0:
+                                        clusterNum = 0
+                                    clusterNum = min(clusterNum, RM.getClusterNum()-1)
+                                    print("graph %d has %d cluster"%(graph.graphId, clusterNum))
+                                    scheduler.beginQosReserve(graph.graphId, graph.submitTime + graph.DDL, clusterNum)
 
                             # break
                     # if graphId == 4:
@@ -132,8 +134,10 @@ class TaskManager:
             for graph in self.graphList:
                 for task in graph.globalTaskList:
                     newtask = self.constructTask(task)
-                    newtask.graphDDL = graph.DDL + env.now
+                    # newtask.graphDDL = graph.DDL + env.now
                     taskMap[newtask.jobId] = newtask
+                    # if newtask.taskGraphId == 3:
+                        # print("*******************")
             self.taskFactory[self.taskBatch] = taskMap
             self.taskBatch += 1
             yield env.timeout(minPeriod)
@@ -149,10 +153,14 @@ class TaskManager:
                 if graph.graphId not in self.candidateGraphBuffer[i]:      #new graph belongs to the existence batch
                     find = True
                     newgraph = self.contructGraphById(graph.graphId, i)
-                    newgraph.submitTime  = env.now
                     self.candidateGraphBuffer[i][graph.graphId] = newgraph
+                    newgraph.submitTime  = env.now
+                    newgraph.QosReserve = graph.QosReserve
                     for task in newgraph.globalTaskList:
                         task.batchId = i
+                        task.graphDDL = graph.DDL + env.now
+                        # if task.taskGraphId == 3:
+                        #     print("******************** %d" % task.graphDDL)
                     # print("not find graphid = %d in batch= %d" % (graph.graphId, i))
                     # print(self.candidateGraphBuffer[i])
                     # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), i, env.now))
@@ -162,11 +170,15 @@ class TaskManager:
                 # print("batch id %d %d" % (self.batchId, graph.graphId))
                 newgraph = self.contructGraphById(graph.graphId, self.batchId)
                 newgraph.submitTime  = env.now
+                newgraph.QosReserve = graph.QosReserve
                 self.candidateGraphBuffer[self.batchId] = {graph.graphId : newgraph}
                 # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), self.batchId, env.now))
                 self.graphRecorder[i] = [newgraph]
                 for task in newgraph.globalTaskList:
                     task.batchId = self.batchId
+                    task.graphDDL = graph.DDL + env.now
+                    if task.taskGraphId == 3:
+                        print("******************** %d"%task.graphDDL)
             yield env.timeout(graph.getPeriod())
             # yield env.timeout(1)
             
