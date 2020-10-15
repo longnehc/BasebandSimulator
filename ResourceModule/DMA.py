@@ -14,6 +14,7 @@ class DMA:
         self.env = env
         self.clusterId = clusterId
         self.capacity = 500
+        self.offChipAccess= 0
 
 
 
@@ -40,6 +41,7 @@ class DMA:
                 for data in task.getDataInsIn():
                     if not RM.getMemory(self).checkData(data):
                         transmitTime = 2000 * data.total_size / self.speed
+                        self.offChipAccess += data.total_size
                         yield self.env.timeout(transmitTime)
                         # print("dma save " + data.dataName)
                         RM.getMemory(self).saveData(data)

@@ -46,6 +46,11 @@ class MEM:
         #     print("data is in the mem =================")
 
         transformTime = data.total_size / self.speed
+        data.refCnt -= 1
+        if data.refCnt == 0:
+            self.map.pop(data.dataName)
+            self.curSize -= data.total_size
+
         # yield env.timeout(transformTime)
         # print ("get data in mem")
 

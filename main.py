@@ -22,6 +22,7 @@ if __name__ == "__main__":
     DMASpeed = 10
     DDRCapacity = 100
     SIM_TIME = 50
+    selectedAlgo = SchduleAlgorithm.LB
 
     # Create an environment and start the setup process
     env = simpy.Environment()
@@ -70,7 +71,6 @@ if __name__ == "__main__":
     parser.setContentHandler( Handler )
     parser.parse("TaskGraph0903.xml")
     graphList = Handler.getGraphList()
-    graphList1 = [graphList[0]]
     #print(graphList)
     #print(len(graphList))
     #print("Task graph parser ends")
@@ -81,10 +81,10 @@ if __name__ == "__main__":
     minPeriod = 1 # minimal period of all graphs 
     env.process(taskManager.taskGenerator(env, minPeriod))
 
-    DDLList = [1, 1, 1, 1, 1, 1]
-    PeriodList = [1, 1, 1, 1, 1, 1]
+    DDLList = [100, 1.5, 1.5, 4, 1, 100]
+    PeriodList = [1, 1, 1, 4, 1, 1]
     PriorityList = [1, 2, 3, 4, 5, 6]
-    ArrivalTimeList = [0, 0, 0, 0, 0, 0]
+    ArrivalTimeList = [0, 0, 0, 4, 0, 0]
     graphIndex = 0
     for graph in graphList:
         precedenceGraphMap = {} 
@@ -112,10 +112,12 @@ if __name__ == "__main__":
         graph.priority = PriorityList[graphIndex]
         graph.arrivalTime = ArrivalTimeList[graphIndex]
         graphIndex += 1
-
+    
+    RM.setCluster(env, 16)
     # off-chip Mem
-    # for graph in graphList:
-    #     offChipMem.offChipMem(graph)
+    if selectedAlgo == SchduleAlgorithm.OFFMEM:
+        for graph in graphList:
+            offChipMem.offChipMem(graph)
 
     # print("?????????%d"%len(graphList))
     # env.process(taskManager.graphGenerator(env, graphList[4]))
@@ -140,8 +142,8 @@ if __name__ == "__main__":
     env.process(taskManager.submitTask(env))
 
     env.process(reporter().run(env))
-    RM.setCluster(env, 16)
-    scheduler.setAlgorithm(SchduleAlgorithm.OFFMEM)
+   
+    scheduler.setAlgorithm(selectedAlgo)
     env.process(scheduler.run(env))
     for cluster in RM.getClusterList():
         for dsp in cluster.getDspList():

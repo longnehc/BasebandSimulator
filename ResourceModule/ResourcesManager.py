@@ -9,6 +9,8 @@ class ResourcesManager:
     def __init__(self):
         self.name = "ResourceModule manager"
         self.clusterList = []
+        self.finishGraphCnt = 0
+        self.executeTimeMap = {}
 
 
 resourcesManager = ResourcesManager()
@@ -23,7 +25,7 @@ def submitTaskToDma(task, clusterId, dmaId):
         task.taskStatus = TaskStatus.SUMBITTED
         return True
     else:
-        print(len(dma.taskList))
+        # print(len(dma.taskList))
         return False
     # dma.submit(task)
     # task.taskStatus = TaskStatus.SUMBITTED
@@ -34,6 +36,15 @@ def submitTaskToDsp(task, clusterId, dspId):
     dsp = cluster.getDsp(dspId)
     dsp.submit(task)
 
+
+def getExecuteTimeMap():
+    return resourcesManager.executeTimeMap
+
+def getFinishGraphCnt():
+    return resourcesManager.finishGraphCnt
+
+def setFinishGraphCnt(cnt):
+    resourcesManager.finishGraphCnt = cnt
 
 def getClusterList():
     return resourcesManager.clusterList
