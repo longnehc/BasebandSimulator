@@ -13,25 +13,37 @@ class SchduleAlgorithm(Enum):
     RANDOM = 0 
     GREEDY = 1
     OFFMEM = 2
-    QOS = 3
+    QOSPreemption = 3
     LB = 4
+    QosReserve = 5
 
 class Scheduler:
 
     def __init__(self):
         self.taskQueue = Queue()
         self.algorithm = SchduleAlgorithm.RANDOM
+
+        self.QosReserveDdl = 0
+        self.QosReserveClusterNum = 0
+        self.QosReserveGraphId = 0
     
 scheduler = Scheduler()
     
-def setAlgorithm(algorthim):
-    scheduler.algorithm = algorthim
+def setAlgorithm(algorithm):
+    scheduler.algorithm = algorithm
 
 def submit(task):
     scheduler.taskQueue.put(task)
 
 def getAlgorithm():
     return scheduler.algorithm
+
+def beginQosReserve(graphId, QosReserveDdl, QosReserveClusterNum):
+    scheduler.algorithm = SchduleAlgorithm.QosReserve
+    scheduler.QosReserveDdl = QosReserveDdl
+    scheduler.QosReserveClusterNum = QosReserveClusterNum
+    scheduler.QosReserveGraphId = graphId
+    RM.clearCluster(0, QosReserveClusterNum-1)
     
 cnt = 0
 def run(env):
@@ -47,8 +59,26 @@ def run(env):
                 # print("Minimizing off-chip memory access...")
                 while not RM.submitTaskToDma(task, task.clusterId, 0):
                     yield env.timeout(0.0001)
-            elif scheduler.algorithm == SchduleAlgorithm.QOS:
-                print("QoS guarantee...")
+
+            elif scheduler.algorithm == SchduleAlgorithm.QOSPreemption:
+                clusterId = 0
+                clusterList = RM.getClusterList()
+                for i in range(0, len(clusterList)):
+                    if len(clusterList[i].dmaList[0].taskList) < len(clusterList[clusterId].dmaList[0].taskList):
+                        clusterId = i
+                    # submit
+                while not RM.submitTaskToDma(task, clusterId, 0):
+                    yield env.timeout(0.001)
+                # ---
+                # cnt = (cnt + 1) % 16
+                # if not RM.submitTaskToDma(task, cnt, 0):
+                #     tmp = (cnt + 1) % 16
+                #     while not RM.submitTaskToDma(task, tmp, 0):
+                #         tmp = (tmp + 1) % 16
+                #         if tmp == cnt:
+                #             # print("full")
+                #             yield env.timeout(0.001)
+
             elif scheduler.algorithm == SchduleAlgorithm.LB:
                 # print("Load balancing...")
                 cnt = (cnt + 1) % 16
@@ -58,7 +88,28 @@ def run(env):
                         tmp = (tmp + 1) % 16
                         if tmp == cnt:
                             # print("full")
-                            yield env.timeout(0.00001)
+                            yield env.timeout(0.001)
+
+            elif scheduler.algorithm == SchduleAlgorithm.QosReserve:
+                clusterId = 0
+                clusterList = RM.getClusterList()
+                if task.taskGraphId == scheduler.QosReserveGraphId:
+                    for i in range(0, scheduler.QosReserveClusterNum):
+                        if len(clusterList[i].dmaList[0].taskList) < len(clusterList[clusterId].dmaList[0].taskList):
+                            clusterId = i
+                        # submit
+                    while not RM.submitTaskToDma(task, clusterId, 0):
+                        yield env.timeout(0.001)
+                else:
+                    for i in range(scheduler.QosReserveClusterNum, len(clusterList)):
+                        if len(clusterList[i].dmaList[0].taskList) < len(clusterList[clusterId].dmaList[0].taskList):
+                            clusterId = i
+                        # submit
+                    while not RM.submitTaskToDma(task, clusterId, 0):
+                        yield env.timeout(0.001)
+                if env.now > scheduler.QosReserveDdl:
+                    scheduler.algorithm = SchduleAlgorithm.QOSPreemption
+
             else:
                 print("Not implemented")
 

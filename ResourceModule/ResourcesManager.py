@@ -23,7 +23,7 @@ def submitTaskToDma(task, clusterId, dmaId):
         task.taskStatus = TaskStatus.SUMBITTED
         return True
     else:
-        print(len(dma.taskList))
+        # print(len(dma.taskList))
         return False
     # dma.submit(task)
     # task.taskStatus = TaskStatus.SUMBITTED
@@ -67,6 +67,15 @@ def getMemory(component):
 def getTransmitSpeed(component):
     cluster = getCluster(component.clusterId)
     return cluster.speed
+
+# clear dma's taskList []
+def clearCluster(start, end):
+    for i in range(start,end + 1):
+        cluster = resourcesManager.clusterList[i]
+        for task in cluster.dmaList[0].taskList:
+            task.taskStatus = TaskStatus.WAIT
+        cluster.dmaList[0].taskList = []
+
 
 def test(env, data, memory):
     print("TTTTTTTTTTTTTTTTTTTTTTTest")

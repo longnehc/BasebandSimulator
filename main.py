@@ -81,7 +81,7 @@ if __name__ == "__main__":
     minPeriod = 1 # minimal period of all graphs 
     env.process(taskManager.taskGenerator(env, minPeriod))
 
-    DDLList = [1, 1, 1, 1, 1, 1]
+    DDLList = [1, 0.5, 1, 1, 1, 1]
     PeriodList = [1, 1, 1, 1, 1, 1]
     PriorityList = [1, 2, 3, 4, 5, 6]
     ArrivalTimeList = [0, 0, 0, 0, 0, 0]
@@ -113,6 +113,9 @@ if __name__ == "__main__":
         graph.arrivalTime = ArrivalTimeList[graphIndex]
         graphIndex += 1
 
+    # Qos Reserve
+    # graphList[1].QosReserve = True
+
     # off-chip Mem
     # for graph in graphList:
     #     offChipMem.offChipMem(graph)
@@ -141,7 +144,7 @@ if __name__ == "__main__":
 
     env.process(reporter().run(env))
     RM.setCluster(env, 16)
-    scheduler.setAlgorithm(SchduleAlgorithm.OFFMEM)
+    scheduler.setAlgorithm(SchduleAlgorithm.QOSPreemption)
     env.process(scheduler.run(env))
     for cluster in RM.getClusterList():
         for dsp in cluster.getDspList():

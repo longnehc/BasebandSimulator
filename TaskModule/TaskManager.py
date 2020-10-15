@@ -1,5 +1,6 @@
+import functools
 
-from TaskModule.TaskGraph import * 
+from TaskModule.TaskGraph import *
 from TaskModule.Task import *
 from TaskModule.DataInstance import *
 from ResourceModule import ResourcesManager as RM
@@ -10,6 +11,13 @@ from Algorithm import offChipMem
 import random
 
 from BasebandSimulator.TaskModule.Scheduler import SchduleAlgorithm
+
+
+def QosPreemption(t1, t2):
+    if t1.graphDDL != t2.graphDDL:
+        return t1.graphDDL - t2.graphDDL
+    else:
+        return -1
 
 
 class TaskManager:
@@ -52,13 +60,28 @@ class TaskManager:
                             # print("%d, %d,%d" % (graphId, preGraphId, self.candidateGraphBuffer[i][preGraphId].finished))
                             # graph.finished = True                   # TODO: need to modify
                             # OffChip schedule
-                            offChipMem.offChipMem(graph)
+                            # offChipMem.offChipMem(graph)
                             graph.submitted = True                    # find a graph to submit
                             submitted = True
                             # TODO: EDF
                             for task in graph.getGlobalTaskList():
                                 self.candidateTaskBuffer.append(task)
                             print("Add all tasks of graph %d in the %d-th batch into candidateTaskBuffer at %f " % (graph.graphId, i, env.now))
+                            # QOS Preemption
+                            # print("%s | %s" % (scheduler.getAlgorithm(),SchduleAlgorithm.QOSPreemption))
+                            # print(scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemption.value)
+                            if scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemption.value:
+                                # print("qooooooooos")
+                                self.candidateTaskBuffer = sorted(self.candidateTaskBuffer,
+                                                              key=functools.cmp_to_key(QosPreemption))
+                                cost = 0
+                                # Qos reserve
+                                if graph.QosReserve:
+                                    for task in graph.getGlobalTaskList():
+                                        cost += task.cost
+                                    clusterNum = ((cost / 5.2 * 1000000000) / graph.DDL) + 1
+                                    scheduler.beginQosReserve(graph.graphId, env.now() + graph.DDL, clusterNum)
+
                             # break
                     # if graphId == 4:
                     #     print(len(graph.globalTaskList))

@@ -55,5 +55,6 @@ class DSP:
                 # if graph.taskNum < 0:
                 #     print("graph %d task %d %s" % (graph.graphId,graph.taskNum,task.taskName))
                 # print(task.taskName + " finish in: %f" % self.env.now)
+                print(task.graphDDL)
 
             yield self.env.timeout(0.0002)
