@@ -54,12 +54,17 @@ class DSP:
                 graph.taskNum -= 1
                 if graph.taskNum == 0:
                     graph.finished = True
-                    print("graph %d finish %f and cost %f"% (graph.graphId, self.env.now, self.env.now - graph.submitTime))
+                    print("graph %d of batch %d finish %f and cost %f"% (graph.graphId, graph.batchId, self.env.now, self.env.now - graph.submitTime))
                     if graph.graphId in RM.getExecuteTimeMap():
                         RM.getExecuteTimeMap()[graph.graphId].append(self.env.now - graph.submitTime)
+                        RM.getBeginTimeMap()[graph.graphId].append(graph.submitTime)
+                        RM.getEndTimeMap()[graph.graphId].append(self.env.now)
                     else:
                         RM.setFinishGraphCnt(RM.getFinishGraphCnt() + 1)
+                        print("getFinishGraphCnt: %d" % RM.getFinishGraphCnt())
                         RM.getExecuteTimeMap()[graph.graphId] = [self.env.now - graph.submitTime]
+                        RM.getBeginTimeMap()[graph.graphId] = [graph.submitTime]
+                        RM.getEndTimeMap()[graph.graphId] = [self.env.now]
                 # if graph.taskNum < 0:
                 #     print("graph %d task %d %s" % (graph.graphId,graph.taskNum,task.taskName))
                 # print(task.taskName + " finish in: %f" % self.env.now)

@@ -13,6 +13,7 @@ class TaskGraph :
         self.arrivalTime = 0
         self.priority = 0
         self.QosReserve = False
+        self.batchId = 0
         
  
     def isSubmitted(self):

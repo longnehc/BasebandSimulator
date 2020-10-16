@@ -155,6 +155,7 @@ class TaskManager:
                     newgraph = self.contructGraphById(graph.graphId, i)
                     self.candidateGraphBuffer[i][graph.graphId] = newgraph
                     newgraph.submitTime  = env.now
+                    newgraph.batchId = i
                     newgraph.QosReserve = graph.QosReserve
                     for task in newgraph.globalTaskList:
                         task.batchId = i
@@ -170,6 +171,7 @@ class TaskManager:
                 # print("batch id %d %d" % (self.batchId, graph.graphId))
                 newgraph = self.contructGraphById(graph.graphId, self.batchId)
                 newgraph.submitTime  = env.now
+                newgraph.batchId = self.batchId
                 newgraph.QosReserve = graph.QosReserve
                 self.candidateGraphBuffer[self.batchId] = {graph.graphId : newgraph}
                 # print("Add graph %d into candidate graph buffer of the %d-th batch at %f " % (graph.getGraphId(), self.batchId, env.now))
@@ -177,8 +179,8 @@ class TaskManager:
                 for task in newgraph.globalTaskList:
                     task.batchId = self.batchId
                     task.graphDDL = graph.DDL + env.now
-                    if task.taskGraphId == 3:
-                        print("******************** %d"%task.graphDDL)
+                    # if task.taskGraphId == 3:
+                    #     print("******************** %d"%task.graphDDL)
             yield env.timeout(graph.getPeriod())
             # yield env.timeout(1)
             

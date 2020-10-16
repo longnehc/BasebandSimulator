@@ -16,13 +16,13 @@ if __name__ == "__main__":
     #taskGraphs = taskManager.taskXMLParser("taskgraph.xml")
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
-    ClusterNum = 4
+    ClusterNum = 24
     DSPPerCluster = 4
     MemCapacity = 100
     DMASpeed = 10
     DDRCapacity = 100
     SIM_TIME = 50
-    selectedAlgo = SchduleAlgorithm.QOSPreemption
+    selectedAlgo = SchduleAlgorithm.LB
 
     # Create an environment and start the setup process
     env = simpy.Environment()
@@ -80,11 +80,15 @@ if __name__ == "__main__":
     taskManager = TaskManager(graphList)
     minPeriod = 1 # minimal period of all graphs 
     env.process(taskManager.taskGenerator(env, minPeriod))
-
+    # graph 0, 1, 2, 3, 4, 5
+    # DDLList = [100, 0.8, 1.5, 4, 1, 100]
+    # PeriodList = [1, 1, 1, 4, 1, 1]
+    # PriorityList = [1, 2, 3, 4, 5, 6]
+    # ArrivalTimeList = [0, 0, 1, 4, 0, 0]
     DDLList = [100, 0.8, 1.5, 4, 1, 100]
-    PeriodList = [1, 1, 100, 4, 1, 1]
+    PeriodList = [1, 1, 1, 1, 1, 1]
     PriorityList = [1, 2, 3, 4, 5, 6]
-    ArrivalTimeList = [0, 0, 100, 4, 0, 0]
+    ArrivalTimeList = [0, 0, 0, 0, 0, 0]
     graphIndex = 0
     for graph in graphList:
         precedenceGraphMap = {} 
@@ -116,7 +120,7 @@ if __name__ == "__main__":
     # Qos Reserve
     graphList[1].QosReserve = True
     
-    RM.setCluster(env, 20)
+    RM.setCluster(env, ClusterNum)
 
     # off-chip Mem
     if selectedAlgo == SchduleAlgorithm.OFFMEM:
@@ -144,9 +148,9 @@ if __name__ == "__main__":
 
     
     env.process(taskManager.submitTask(env))
-
-    env.process(reporter().run(env))
-
+    rpt = reporter()
+    env.process(rpt.run(env))
+    env.process(rpt.loging(env))
    
     scheduler.setAlgorithm(selectedAlgo)
     env.process(scheduler.run(env))

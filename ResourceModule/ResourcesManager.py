@@ -12,6 +12,8 @@ class ResourcesManager:
         self.clusterList = []
         self.finishGraphCnt = 0
         self.executeTimeMap = {}
+        self.beginTimeMap = {}
+        self.endTimeMap = {}
 
 
 resourcesManager = ResourcesManager()
@@ -40,6 +42,12 @@ def submitTaskToDsp(task, clusterId, dspId):
 
 def getExecuteTimeMap():
     return resourcesManager.executeTimeMap
+
+def getBeginTimeMap():
+    return resourcesManager.beginTimeMap
+
+def getEndTimeMap():
+    return resourcesManager.endTimeMap
 
 def getFinishGraphCnt():
     return resourcesManager.finishGraphCnt
