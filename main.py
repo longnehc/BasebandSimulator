@@ -16,7 +16,7 @@ if __name__ == "__main__":
     #taskGraphs = taskManager.taskXMLParser("taskgraph.xml")
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
-    ClusterNum = 24
+    ClusterNum = 16
     DSPPerCluster = 4
     MemCapacity = 100
     DMASpeed = 10

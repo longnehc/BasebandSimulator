@@ -9,7 +9,7 @@ import random
 class DMA:
     def __init__(self, env, clusterId):
         self.id = 0
-        self.speed = 256 * 866 * 1000000
+        self.speed = 256 * 866 * 1000000 
         self.taskList = []
         self.env = env
         self.clusterId = clusterId
@@ -44,6 +44,9 @@ class DMA:
                 # RM.getTaskExeMap()[task.batchId - 1][task.taskName][task.job_inst_idx][0] is the begin time and [1] is the finish time
                 RM.getTaskExeMap()[task.batchId - 1][task.taskName][task.job_inst_idx] = [self.env.now]
 
+                if task.taskName not in RM.getTaskLogMap():
+                    RM.getTaskLogMap()[task.taskName] = {}
+                RM.getTaskLogMap()[task.taskName][task.job_inst_idx] = [self.env.now]
 
                 for data in task.getDataInsIn():
                     if not RM.getMemory(self).checkData(data):

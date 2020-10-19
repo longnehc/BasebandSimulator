@@ -11,7 +11,7 @@ class DSP:
         self.id = DSP.num
         DSP.num += 1
         self.taskQueue = Queue()
-        self.speed = 1.3 * 1000000000
+        self.speed = 1.3 * 1000000000 
         self.clusterId = clusterId
         self.env = env
 
@@ -42,7 +42,7 @@ class DSP:
                 # TODO: Task -> schedule(all task, dsp) -> DMA -> DSP -> DMA()
 
                 # exe
-                yield self.env.timeout(2000 * task.cost/self.speed)
+                yield self.env.timeout(2000 * task.cost/self.speed)       # TTI = 0.5ms
 
                 # write back
                 for data in task.getDataInsOut():
@@ -73,5 +73,6 @@ class DSP:
                 # print(task.graphDDL)
 
                 RM.getTaskExeMap()[task.batchId - 1][task.taskName][task.job_inst_idx].append(self.env.now)
+                RM.getTaskLogMap()[task.taskName][task.job_inst_idx].append(self.env.now)
             self.yieldTime += 0.0002
             yield self.env.timeout(0.0002)
