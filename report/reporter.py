@@ -34,9 +34,18 @@ class reporter:
         self.dspCurCostArr.append(dspCurCost)
         self.dspTotalCostArr.append(dspTotalCost)
         self.cnt += 1
+
+        # The utilization of dsp
+        dspUtilization = []
+        for cluster in RM.getClusterList():
+            for dsp in cluster.dspList:
+                dspUtilization.append(1.0-dsp.yieldTime)
+
+        # Task begin and finish time
+
         # print("dsps std %d" % np.std(dspCurCost))
         # print(np.std(dspTotalCost))
-            
+
     def report(self):
         dspCurStd = 0
         dspTotalStd = 0

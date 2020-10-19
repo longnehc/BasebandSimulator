@@ -37,6 +37,13 @@ class DMA:
                 # RM.getMemory(self).saveData(dmaTask.getData())
 
                 task = self.taskList.pop(0)
+                if len(RM.getTaskExeMap()) < task.batchId:
+                    RM.getTaskExeMap().append({})
+                if task.taskName not in RM.getTaskExeMap()[task.batchId-1]:
+                    RM.getTaskExeMap()[task.batchId - 1][task.taskName] = {}
+                # RM.getTaskExeMap()[task.batchId - 1][task.taskName][task.job_inst_idx][0] is the begin time and [1] is the finish time
+                RM.getTaskExeMap()[task.batchId - 1][task.taskName][task.job_inst_idx] = [self.env.now]
+
 
                 for data in task.getDataInsIn():
                     if not RM.getMemory(self).checkData(data):

@@ -18,6 +18,8 @@ class DSP:
         self.totalCost = 0
         self.curCost = 0
 
+        self.yieldTime = 0
+
     def submit(self, task):
         # print ("*************** %s"%self)
         self.taskQueue.put(task)
@@ -70,4 +72,6 @@ class DSP:
                 # print(task.taskName + " finish in: %f" % self.env.now)
                 # print(task.graphDDL)
 
+                RM.getTaskExeMap()[task.batchId - 1][task.taskName][task.job_inst_idx].append(self.env.now)
+            self.yieldTime += 0.0002
             yield self.env.timeout(0.0002)
