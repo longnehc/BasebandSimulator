@@ -9,6 +9,7 @@ class reporter:
         self.memPeekMap = {}
         self.memAccessMap = {}
         self.recordedMemAccess = {}
+        self.dspUtilReport = []
 
 
     def log(self):
@@ -40,7 +41,8 @@ class reporter:
         for cluster in RM.getClusterList():
             for dsp in cluster.dspList:
                 dspUtilization.append(1.0-dsp.yieldTime)
-
+                dsp.yieldTime = 0
+        self.dspUtilReport.append(dspUtilization)
         # Task begin and finish time
 
         # print("dsps std %d" % np.std(dspCurCost))
@@ -164,6 +166,7 @@ class reporter:
 
     def dspUtilReport(self):
         print("9. The utilization of dsp")
+        print(self.dspUtilization)
     
     def taskReport(self):
         print("10. Task begin time and end time")
