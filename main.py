@@ -90,6 +90,7 @@ if __name__ == "__main__":
     PriorityList = [1, 2, 3, 4, 5, 6]
     ArrivalTimeList = [0, 0, 0, 0, 0, 0]
     graphIndex = 0
+    of = open("0graphDependency.txt","w")
     for graph in graphList:
         precedenceGraphMap = {} 
         # print("=========")
@@ -105,9 +106,11 @@ if __name__ == "__main__":
                         if producerMap[key].taskGraphId not in precedenceGraphMap:
                             precedenceGraphMap[producerMap[key].taskGraphId] = 1
                             print("graph%d depends on graph%d" % (task.taskGraphId, producerMap[key].taskGraphId))
+                            of.write("%d " % producerMap[key].taskGraphId)
                         task.precedenceTask.append(producerMap[key])
                         task.precedenceJobID.append(producerMap[key].jobId)
                         # print("Cross graph task dependency: %s depends on %s" % (task.taskName, producerMap[key].taskName))
+        of.write("\n")
         for key in precedenceGraphMap:
             graph.precedenceGraph.append(key)           #set precedenceGraph for graph, 除了时隙的都可以直接分析
         # print(graph.precedenceGraph)
@@ -116,7 +119,7 @@ if __name__ == "__main__":
         graph.priority = PriorityList[graphIndex]
         graph.arrivalTime = ArrivalTimeList[graphIndex]
         graphIndex += 1
-
+    of.close()
     # Qos Reserve
     graphList[1].QosReserve = True
     
