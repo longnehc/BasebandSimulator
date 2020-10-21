@@ -43,13 +43,13 @@ class reporter:
             fo2.write("%d\n" % keys)
             for ele in RM.getExecuteTimeMap()[keys]:
                 fo.write("%f %f " % (RM.getBeginTimeMap()[keys][cnt], RM.getEndTimeMap()[keys][cnt]))
-                fo2.write("%f " % ele)
                 print("1. graph id, begin, end, cost: %d %f %f %f" % (keys, RM.getBeginTimeMap()[keys][cnt], RM.getEndTimeMap()[keys][cnt], ele))
                 cnt += 1
                 sum += ele
             fo.write("\n")
-            fo2.write("\n")
+            fo2.write("%f\n" % sum / cnt)
             print("2. graph %d avg cost %f" % (keys, sum / cnt))
+
         fo.close()
         fo2.close()
 
