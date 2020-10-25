@@ -36,8 +36,7 @@ class Task:
         self.precedenceTask = []
         self.precedenceGraphID = []
 
-        #任务实例属性
-        self.job_inst_idx = 0
+        #任务实例属性 
         self.graphDDL = 0.0 
         self.submittedTime = 0
     

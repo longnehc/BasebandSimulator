@@ -79,7 +79,6 @@ class TaskManager:
                                     clusterNum = min(clusterNum, RM.getClusterNum()-1)
                                     print("graph %d has %d cluster"%(graph.graphId, clusterNum))
                                     scheduler.beginQosReserve(graph.graphId, graph.submitTime + graph.DDL, clusterNum)
-
                             # break
                     # if graphId == 4:
                     #     print(len(graph.globalTaskList))

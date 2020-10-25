@@ -16,9 +16,9 @@ def cmpTask(t1, t2):
     dataIn1 = 0
     dataIn2 = 0
     for data in t1.getDataInsIn():
-        dataIn1 += data.total_size;
+        dataIn1 += data.total_size
     for data in t2.getDataInsIn():
-        dataIn2 += data.total_size;
+        dataIn2 += data.total_size
     # 大到小
     return dataIn2 - dataIn1
 

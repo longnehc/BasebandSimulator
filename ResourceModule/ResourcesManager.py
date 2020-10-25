@@ -15,6 +15,7 @@ class ResourcesManager:
         self.beginTimeMap = {}
         self.endTimeMap = {}
         self.taskExeMap = []
+        self.taskLogMap = {}
 
 
 resourcesManager = ResourcesManager()
@@ -103,6 +104,9 @@ def clearCluster(start, end):
 
 def getTaskExeMap():
     return resourcesManager.taskExeMap
+
+def getTaskLogMap():
+    return resourcesManager.taskLogMap
 
 def test(env, data, memory):
     print("TTTTTTTTTTTTTTTTTTTTTTTest")
