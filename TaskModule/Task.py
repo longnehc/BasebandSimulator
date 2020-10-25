@@ -47,6 +47,11 @@ class Task:
 
         self.batchId = 0
 
+        self.dspId = -1
+        self.graphCost = -1
+        self.graphPriority = -1
+        self.dspPriority = -1
+
 
     def getTaskStatus(self) :
         return self.taskStatus

@@ -14,6 +14,8 @@ class TaskGraph :
         self.priority = 0
         self.QosReserve = False
         self.batchId = 0
+
+        self.graphCost = -1
         
  
     def isSubmitted(self):

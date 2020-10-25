@@ -9,7 +9,7 @@ class reporter:
         self.memPeekMap = {}
         self.memAccessMap = {}
         self.recordedMemAccess = {}
-        self.dspUtilReport = []
+        self.dspUtil = []
 
 
     def log(self):
@@ -42,7 +42,7 @@ class reporter:
             for dsp in cluster.dspList:
                 dspUtilization.append(1.0-dsp.yieldTime)
                 dsp.yieldTime = 0
-        self.dspUtilReport.append(dspUtilization)
+        self.dspUtil.append(dspUtilization)
         # Task begin and finish time
 
         # print("dsps std %d" % np.std(dspCurCost))
@@ -166,10 +166,22 @@ class reporter:
 
     def dspUtilReport(self):
         print("9. The utilization of dsp")
-        print(self.dspUtilization)
+        for i in range(len(self.dspUtil)):
+            utils = ""
+            for j in range(len(self.dspUtil[i])):
+                utils += (self.dspUtil[i][j]).__add__(" ")
+            print(utils)
     
     def taskReport(self):
         print("10. Task begin time and end time")
+        map = RM.getTaskExeMap()
+        for i in range(0,len(map)):
+            for batchId in map[i]:
+                for taskName in map[i][batchId]:
+                    log = "%s:"%taskName
+                    for job_inst_idx in map[i][batchId][taskName]:
+                        log = log + ("%4f %4f " % (map[i][batchId][taskName][0],map[i][batchId][taskName][1]))
+                    print(log)
 
     def run(self, env):
         reported = False
@@ -177,13 +189,11 @@ class reporter:
             print("system time: %f" % env.now)
             yield env.timeout(0.2)
             # if RM.getFinishGraphCnt() >= 6 and not reported:
-            if env.now > 4 and not reported:
+            if env.now > 0.5 and not reported:
                 self.graphReport()
                 self.memPeekReport()
                 self.dspCostReport()
                 self.memAccessReport()
                 self.dspUtilReport()
                 self.taskReport()
-                reported = True 
-                
-                
+                reported = True

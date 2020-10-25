@@ -1,20 +1,27 @@
+import functools
+
 from ResourceModule.DSP import *
 from queue import Queue
 from ResourceModule import ResourcesManager as RM 
 import random
 
-
+def cmpTask(t1, t2):
+    # 大到小
+    return t1.dspPriority - t2.dspPriority
 
 
 class DMA:
     def __init__(self, env, clusterId):
         self.id = 0
-        self.speed = 256 * 866 * 1000000
+        self.speed = 256 * 866 * 1000000 * 100
         self.taskList = []
         self.env = env
         self.clusterId = clusterId
         self.capacity = 100
         self.offChipAccess= 0
+
+        self.a = 0.000001
+        self.b = 10
 
 
 
@@ -53,7 +60,20 @@ class DMA:
                         # print("dma save " + data.dataName)
                         RM.getMemory(self).saveData(data)
 
-                RM.submitTaskToDsp(task, self.clusterId, random.randint(0, 3))
+                if task.dspId == -1:
+                    dspList = RM.getCluster(self.clusterId).getDspList()
+                    for task in self.taskList:
+                        task.dspPriority = (self.a * task.graphCost + self.b * task.graphPriority)/(task.graphDDL - self.env.now + 0.001)
+                    # assign dsp
+                    tmpTaskList = sorted(self.taskList, key=functools.cmp_to_key(cmpTask))
+                    for task in tmpTaskList:
+                        dsp = dspList[0]
+                        for d in dspList:
+                            if d.curCost < dsp.curCost:
+                                dsp = d
+                        task.dspId = dsp.id % 4
+                    # print("11")
+                RM.submitTaskToDsp(task, self.clusterId, task.dspId)
                 # RM.submitTaskToDsp(task, self.clusterId, 0)
 
             # yield self.env.timeout(0.0002)

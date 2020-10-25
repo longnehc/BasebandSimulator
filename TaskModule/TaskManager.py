@@ -157,9 +157,17 @@ class TaskManager:
                     newgraph.submitTime  = env.now
                     newgraph.batchId = i
                     newgraph.QosReserve = graph.QosReserve
+                    if graph.graphCost == -1:
+                        tmp = 0
+                        for task in graph.globalTaskList:
+                            tmp += task.cost
+                        graph.graphCost = tmp
+                    newgraph.graphCost = graph.graphCost
                     for task in newgraph.globalTaskList:
                         task.batchId = i
                         task.graphDDL = graph.DDL + env.now
+                        task.graphCost = graph.graphCost
+                        task.graphPriority = graph.priority
                         # if task.taskGraphId == 3:
                         #     print("******************** %d" % task.graphDDL)
                     # print("not find graphid = %d in batch= %d" % (graph.graphId, i))
