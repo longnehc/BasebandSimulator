@@ -65,17 +65,16 @@ class DMA:
 
                 if task.dspId == -1:
                     dspList = RM.getCluster(self.clusterId).getDspList()
-                    for task in self.taskList:
-                        task.dspPriority = (self.a * task.graphCost + self.b * task.graphPriority)/(task.graphDDL - self.env.now + 0.001)
+                    for t in self.taskList:
+                        t.dspPriority = (self.a * t.graphCost + self.b * t.graphPriority)/(t.graphDDL - self.env.now + 0.001)
                     # assign dsp
                     tmpTaskList = sorted(self.taskList, key=functools.cmp_to_key(cmpTask))
-                    for task in tmpTaskList:
+                    for t in tmpTaskList:
                         dsp = dspList[0]
                         for d in dspList:
                             if d.curCost < dsp.curCost:
                                 dsp = d
-                        task.dspId = dsp.id % 4
-                    # print("11")
+                        t.dspId = dsp.id % 4
                 RM.submitTaskToDsp(task, self.clusterId, task.dspId)
                 # RM.submitTaskToDsp(task, self.clusterId, 0)
 
