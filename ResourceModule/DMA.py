@@ -63,20 +63,27 @@ class DMA:
                         # print("dma save " + data.dataName)
                         RM.getMemory(self).saveData(data)
 
-                if task.dspId == -1:
-                    dspList = RM.getCluster(self.clusterId).getDspList()
-                    for t in self.taskList:
-                        t.dspPriority = (self.a * t.graphCost + self.b * t.graphPriority)/(t.graphDDL - self.env.now + 0.001)
-                    # assign dsp
-                    tmpTaskList = sorted(self.taskList, key=functools.cmp_to_key(cmpTask))
-                    for t in tmpTaskList:
-                        dsp = dspList[0]
-                        for d in dspList:
-                            if d.curCost < dsp.curCost:
-                                dsp = d
-                        t.dspId = dsp.id % 4
-                RM.submitTaskToDsp(task, self.clusterId, task.dspId)
-                # RM.submitTaskToDsp(task, self.clusterId, 0)
+                # if task.dspId == -1:
+                #     dspList = RM.getCluster(self.clusterId).getDspList()
+                #     for t in self.taskList:
+                #         t.dspPriority = (self.a * t.graphCost + self.b * t.graphPriority)/(t.graphDDL - self.env.now + 0.001)
+                #     # assign dsp
+                #     tmpTaskList = sorted(self.taskList, key=functools.cmp_to_key(cmpTask))
+                #     for t in tmpTaskList:
+                #         dsp = dspList[0]
+                #         for d in dspList:
+                #             if d.curCost < dsp.curCost:
+                #                 dsp = d
+                #         t.dspId = dsp.id % 4
+                # RM.submitTaskToDsp(task, self.clusterId, task.dspId)
+
+                dspList = RM.getCluster(self.clusterId).getDspList()
+                dsp = dspList[0]
+                for d in dspList:
+                    if d.curCost < dsp.curCost:
+                        dsp = d
+                dspId = dsp.id % 4
+                RM.submitTaskToDsp(task, self.clusterId, dspId)
 
             # yield self.env.timeout(0.0002)
             yield self.env.timeout(0.002)

@@ -12,12 +12,16 @@ import random
 
 from TaskModule.Scheduler import SchduleAlgorithm
 
-
+a = 0.000001
+b = 10
 def QosPreemption(t1, t2):
-    return t1.graphDDL - t2.graphDDL
+    p1 = (a * t1.graphCost + b * t1.graphPriority)/(t1.graphDDL - TaskManager.env.now + 0.001)
+    p2 = (a * t2.graphCost + b * t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
+    return p1 - p2
 
 
 class TaskManager:
+    env = None
     
     def __init__(self, graphList):
         self.graphSubmitFrequency = 2 
@@ -31,10 +35,14 @@ class TaskManager:
         self.graphRecorder = {self.batchId:[]}
         self.taskBatch = 1
         self.taskFactory = {self.taskBatch: []} #{key:batchId : value:{key: jobId: value: task}}
+
+
       
         
 
     def submitGraph(self, env):
+        if TaskManager.env is None:
+            TaskManager.env = env
         while True:    
             for i in range (1, self.batchId + 1):
                 submitted = False 

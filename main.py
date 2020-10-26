@@ -16,13 +16,13 @@ if __name__ == "__main__":
     #taskGraphs = taskManager.taskXMLParser("taskgraph.xml")
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
-    ClusterNum = 16
+    ClusterNum = 28
     DSPPerCluster = 4
     MemCapacity = 100
     DMASpeed = 10
     DDRCapacity = 100
     SIM_TIME = 50
-    selectedAlgo = SchduleAlgorithm.LB
+    selectedAlgo = SchduleAlgorithm.QOSPreemption
 
     # Create an environment and start the setup process
     env = simpy.Environment()
@@ -81,14 +81,14 @@ if __name__ == "__main__":
     minPeriod = 1 # minimal period of all graphs 
     env.process(taskManager.taskGenerator(env, minPeriod))
     # graph 0, 1, 2, 3, 4, 5
-    # DDLList = [100, 0.8, 1.5, 4, 1, 100]
-    # PeriodList = [1, 1, 1, 4, 1, 1]
-    # PriorityList = [1, 2, 3, 4, 5, 6]
-    # ArrivalTimeList = [0, 0, 1, 4, 0, 0]
     DDLList = [100, 0.8, 1.5, 4, 1, 100]
-    PeriodList = [1, 1, 1, 1, 1, 1]
+    PeriodList = [1, 1, 1, 4, 1, 1]
     PriorityList = [1, 2, 3, 4, 5, 6]
-    ArrivalTimeList = [0, 0, 0, 0, 0, 0]
+    ArrivalTimeList = [0, 0, 0, 4, 0, 0]
+    # DDLList = [100, 0.8, 1.5, 4, 1, 100]
+    # PeriodList = [1, 1, 1, 1, 1, 1]
+    # PriorityList = [1, 2, 3, 4, 5, 6]
+    # ArrivalTimeList = [0, 0, 0, 0, 0, 0]
     graphIndex = 0
     of = open("0graphDependency.txt","w")
     for graph in graphList:

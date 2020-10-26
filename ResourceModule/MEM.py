@@ -46,7 +46,7 @@ class MEM:
         # transformTime = data.total_size / self.speed
         data.refCnt -= 1
         if data.refCnt == 0:
-            # print("delete")
+            # print("delete!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             if data.dataName + "-" + str(data.job_inst_idx) in self.map.keys():
                 self.map.pop(data.dataName + "-" + str(data.job_inst_idx))
                 self.curSize -= data.total_size
