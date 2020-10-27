@@ -126,9 +126,9 @@ if __name__ == "__main__":
         graphIndex += 1
     of.close()
     # Qos Reserve
-    graphList[1].QosReserve = True
-    graphList[4].QosReserve = True
-    graphList[5].QosReserve = True
+    # graphList[1].QosReserve = True
+    # graphList[4].QosReserve = True
+    # graphList[5].QosReserve = True
     
     RM.setCluster(env, ClusterNum)
 

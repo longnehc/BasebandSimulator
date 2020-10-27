@@ -13,7 +13,7 @@ def cmpTask(t1, t2):
 class DMA:
     def __init__(self, env, clusterId):
         self.id = 0
-        self.speed = 256 * 866 * 1000000
+        self.speed = 256 * 866 * 1000000 
         self.taskList = []
         self.env = env
         self.clusterId = clusterId
@@ -53,7 +53,10 @@ class DMA:
 
                 if task.taskName not in RM.getTaskLogMap():
                     RM.getTaskLogMap()[task.taskName] = {}
-                RM.getTaskLogMap()[task.taskName][task.job_inst_idx] = [self.env.now]
+                if task.job_inst_idx in RM.getTaskLogMap()[task.taskName]:
+                    RM.getTaskLogMap()[task.taskName][task.job_inst_idx].append(self.env.now)
+                else:
+                    RM.getTaskLogMap()[task.taskName][task.job_inst_idx] = [self.env.now]
 
                 for data in task.getDataInsIn():
                     if not RM.getMemory(self).checkData(data):
