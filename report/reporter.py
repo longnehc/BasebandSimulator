@@ -196,26 +196,53 @@ class reporter:
     def taskReport(self):
         fo = open("10TaskExecutionDur.txt","w")
         print("10. Task begin time and end time")
-        for taskname in RM.getTaskLogMap():
-            timelist = []
-            print("The begin and end time of %s" % taskname)
-            fo.write("%s\n" % taskname)
-            for jobidx in RM.getTaskLogMap()[taskname]:
-                for i in range(0, len(RM.getTaskLogMap()[taskname][jobidx])):
-                    timelist.append(RM.getTaskLogMap()[taskname][jobidx][i]) 
-                    # fo.write("%f " % RM.getTaskLogMap()[taskname][jobidx][i])
-            print(*timelist)
-            begin = timelist[0]
-            end = timelist[1]
-            for i in range(2, len(timelist)):
-                if i % 2 == 0:
-                    if timelist[i] > end:
-                        fo.write("%f %f " % (begin, end))
-                        begin = timelist[i]
+        taskTimeMap = {}
+        for i in range(0, len(RM.getTaskExeMap())):
+            for taskname in RM.getTaskExeMap()[i]:
+                timelist = []
+                for jobidx in RM.getTaskExeMap()[i][taskname]:
+                    for j in range(0, len(RM.getTaskExeMap()[i][taskname][jobidx])):
+                        timelist.append(RM.getTaskExeMap()[i][taskname][jobidx][j]) 
+                print(*timelist)
+                if taskname in taskTimeMap:
+                    taskTimeMap[taskname].extend(timelist)
                 else:
-                    end = timelist[i]
+                    taskTimeMap[taskname] = timelist
+
+        for taskname in taskTimeMap:
+            fo.write("%s\n" % taskname)
+            begin = taskTimeMap[taskname][0]
+            end = taskTimeMap[taskname][1]
+            for i in range(2, len(taskTimeMap[taskname])):
+                if i % 2 == 0:
+                    if taskTimeMap[taskname][i] > end:
+                        fo.write("%f %f " % (begin, end))
+                        begin = taskTimeMap[taskname][i]
+                else:
+                    end = taskTimeMap[taskname][i]
             fo.write("%f %f " % (begin, end))
             fo.write("\n")
+
+        # for taskname in RM.getTaskLogMap():
+        #     timelist = []
+        #     print("The begin and end time of %s" % taskname)
+        #     fo.write("%s\n" % taskname)
+        #     for jobidx in RM.getTaskLogMap()[taskname]:
+        #         for i in range(0, len(RM.getTaskLogMap()[taskname][jobidx])):
+        #             timelist.append(RM.getTaskLogMap()[taskname][jobidx][i]) 
+        #             # fo.write("%f " % RM.getTaskLogMap()[taskname][jobidx][i])
+        #     print(*timelist)
+        #     begin = timelist[0]
+        #     end = timelist[1]
+        #     for i in range(2, len(timelist)):
+        #         if i % 2 == 0:
+        #             if timelist[i] > end:
+        #                 fo.write("%f %f " % (begin, end))
+        #                 begin = timelist[i]
+        #         else:
+        #             end = timelist[i]
+        #     fo.write("%f %f " % (begin, end))
+        #     fo.write("\n")
         fo.close()
 
     def run(self, env):
