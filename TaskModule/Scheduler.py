@@ -25,7 +25,7 @@ class Scheduler:
 
         self.QosReserveDdl = 0
         self.QosReserveClusterNum = 0
-        self.QosReserveGraphId = 0
+        self.QosReserveGraphId = []
     
 scheduler = Scheduler()
     
@@ -94,7 +94,7 @@ def run(env):
             # TODO:
             elif scheduler.algorithm == SchduleAlgorithm.QosReserve:
                 clusterList = RM.getClusterList()
-                if task.taskGraphId == scheduler.QosReserveGraphId:
+                if task.taskGraphId in scheduler.QosReserveGraphId:
                     # print("graph %d quick"%task.taskGraphId)
                     clusterId = 0
                     for i in range(0, scheduler.QosReserveClusterNum):

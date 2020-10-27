@@ -47,7 +47,7 @@ class reporter:
                 cnt += 1
                 sum += ele
             fo.write("\n")
-            fo2.write("%f\n" % (sum / cnt))
+            fo2.write("%f \n" % (sum / cnt))
             print("2. graph %d avg cost %f" % (keys, sum / cnt))
 
         fo.close()
@@ -92,12 +92,12 @@ class reporter:
 
                     # The utilization of dsp
                     if dsp.id in self.dspUtilRecord:
-                        self.dspUtilRecord[dsp.id].append(1.0 - dsp.yieldTime)
+                        self.dspUtilRecord[dsp.id].append(0.1 - dsp.yieldTime)
                         dsp.yieldTime = 0
                     else:
-                        self.dspUtilRecord[dsp.id] = [1.0 - dsp.yieldTime]
+                        self.dspUtilRecord[dsp.id] = [0.1 - dsp.yieldTime]
                         dsp.yieldTime = 0
-            yield env.timeout(1)
+            yield env.timeout(0.1)
 
     def memPeekReport(self):
         # print("memPeekReport")
@@ -213,8 +213,8 @@ class reporter:
         while True: 
             print("system time: %f" % env.now)
             yield env.timeout(0.2)
-            if RM.getFinishGraphCnt() >= 6 and not reported:
-            # if env.now > 8 and not reported:
+            # if RM.getFinishGraphCnt() >= 6 and not reported:
+            if env.now > 6 and not reported:
                 self.graphReport()
                 self.memPeekReport()
                 self.dspCostReport()

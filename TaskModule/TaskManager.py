@@ -15,9 +15,11 @@ from TaskModule.Scheduler import SchduleAlgorithm
 a = 0.000001
 b = 10
 def QosPreemption(t1, t2):
-    p1 = (a * t1.graphCost + b * t1.graphPriority) / (t1.graphDDL - TaskManager.env.now + 0.001)
-    p2 = (a * t2.graphCost + b * t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
-    return p1 - p2
+    # p1 = (a * t1.graphCost + b * t1.graphPriority)/(t1.graphDDL - TaskManager.env.now + 0.001)
+    # p2 = (a * t2.graphCost + b * t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
+    p1 = (t1.graphCost + t1.graphPriority) / (t1.graphDDL - TaskManager.env.now + 0.001)
+    p2 = (t2.graphCost + t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
+    return p2 - p1
 
 
 class TaskManager:
@@ -76,17 +78,32 @@ class TaskManager:
                                 self.candidateTaskBuffer = sorted(self.candidateTaskBuffer,
                                                               key=functools.cmp_to_key(QosPreemption))
                                 cost = 0
+                                ddl = 1000
+                                reserveList = []
                                 # Qos reserve
-                                if graph.QosReserve:
-                                    for task in graph.getGlobalTaskList():
-                                        cost += task.cost
-                                    print("submitTime is %.2f,now is %.2f, so we have %.2f"% (graph.submitTime, env.now, (graph.submitTime + graph.DDL - env.now)))
-                                    clusterNum = (int)((2000 * cost / (5.2 * 1000000000)) / (graph.submitTime + graph.DDL - env.now)) + 2
+                                if graph.QosReserve and scheduler.getAlgorithm().value != SchduleAlgorithm.QosReserve.value:
+                                    for gId in self.candidateGraphBuffer[i]:
+                                        g = self.candidateGraphBuffer[i][gId]
+                                        if g.QosReserve:
+                                            reserveList.append(g.graphId)
+                                            ddl = min(ddl, g.submitTime + g.DDL)
+                                            for task in g.getGlobalTaskList():
+                                                cost += task.cost
+                                    print("submitTime is %.2f,now is %.2f, so we have %.2f, and cost is %.2f"% (graph.submitTime, env.now, (ddl - env.now), cost))
+                                    clusterNum = (int)(1.5 * (2000 * cost / (5.2 * 1000000000)) / (ddl - env.now))
+                                    clusterList = RM.getClusterList()
+                                    dspCost = 0
+                                    for i in range(0,clusterNum):
+                                        for dsp in clusterList[i].getDspList():
+                                            dspCost += dsp.curCost
+                                    print("dsp cost is %d"%dspCost)
+                                    clusterNum += (int)(1.5 * (2000 * dspCost / (5.2 * 1000000000)) / (ddl - env.now))
                                     if clusterNum < 0:
                                         clusterNum = RM.getClusterNum() * 0.8
                                     clusterNum = min(clusterNum, RM.getClusterNum()-1)
-                                    print("graph %d has %d cluster"%(graph.graphId, clusterNum))
-                                    scheduler.beginQosReserve(graph.graphId, graph.submitTime + graph.DDL, clusterNum)
+                                    for id in reserveList:
+                                        print("graph %d has %d cluster"%(id, clusterNum))
+                                    scheduler.beginQosReserve(reserveList, ddl, clusterNum)
                             # break
                     # if graphId == 4:
                     #     print(len(graph.globalTaskList))
@@ -164,11 +181,7 @@ class TaskManager:
                     newgraph.submitTime  = env.now
                     newgraph.batchId = i
                     newgraph.QosReserve = graph.QosReserve
-                    if graph.graphCost == -1:
-                        tmp = 0
-                        for task in graph.globalTaskList:
-                            tmp += task.cost
-                        graph.graphCost = tmp
+                    
                     newgraph.graphCost = graph.graphCost
                     for task in newgraph.globalTaskList:
                         task.batchId = i
