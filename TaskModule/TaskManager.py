@@ -15,9 +15,11 @@ from TaskModule.Scheduler import SchduleAlgorithm
 a = 0.000001
 b = 10
 def QosPreemption(t1, t2):
-    p1 = (a * t1.graphCost + b * t1.graphPriority)/(t1.graphDDL - TaskManager.env.now + 0.001)
-    p2 = (a * t2.graphCost + b * t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
-    return p1 - p2
+    # p1 = (a * t1.graphCost + b * t1.graphPriority)/(t1.graphDDL - TaskManager.env.now + 0.001)
+    # p2 = (a * t2.graphCost + b * t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
+    p1 = (t1.graphCost + t1.graphPriority) / (t1.graphDDL - TaskManager.env.now + 0.001)
+    p2 = (t2.graphCost + t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
+    return p2 - p1
 
 
 class TaskManager:
@@ -164,11 +166,7 @@ class TaskManager:
                     newgraph.submitTime  = env.now
                     newgraph.batchId = i
                     newgraph.QosReserve = graph.QosReserve
-                    if graph.graphCost == -1:
-                        tmp = 0
-                        for task in graph.globalTaskList:
-                            tmp += task.cost
-                        graph.graphCost = tmp
+                    
                     newgraph.graphCost = graph.graphCost
                     for task in newgraph.globalTaskList:
                         task.batchId = i

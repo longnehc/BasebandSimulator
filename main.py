@@ -6,6 +6,11 @@ from report.reporter import reporter
 from TaskModule import Scheduler as scheduler
 from TaskModule.Scheduler import SchduleAlgorithm
 from Algorithm import offChipMem
+import math
+
+
+def costCmp(g1, g2):
+    return g1.graphCost - g2.graphCost
 
 # 1TTI = 1s(*2000)
 if __name__ == "__main__":
@@ -22,7 +27,7 @@ if __name__ == "__main__":
     DMASpeed = 10
     DDRCapacity = 100
     SIM_TIME = 50
-    selectedAlgo = SchduleAlgorithm.QOSPreemption
+    selectedAlgo = SchduleAlgorithm.LB
 
     # Create an environment and start the setup process
     env = simpy.Environment()
@@ -70,7 +75,7 @@ if __name__ == "__main__":
     Handler = TaskXMLHandler()
     parser.setContentHandler( Handler )
     parser.parse("TaskGraph0903.xml")
-    graphList = Handler.getGraphList()
+    graphList = Handler.getGraphList()  
     #print(graphList)
     #print(len(graphList))
     #print("Task graph parser ends")
@@ -83,7 +88,7 @@ if __name__ == "__main__":
     # graph 0, 1, 2, 3, 4, 5
     DDLList = [100, 0.8, 1.5, 4, 1, 100]
     PeriodList = [1, 1, 1, 4, 1, 1]
-    PriorityList = [1, 2, 3, 4, 5, 6]
+    PriorityList = [1, 4, 1, 1, 1, 1]
     ArrivalTimeList = [0, 0, 0, 4, 0, 0]
     # DDLList = [100, 0.8, 1.5, 4, 1, 100]
     # PeriodList = [1, 1, 1, 1, 1, 1]
@@ -132,6 +137,27 @@ if __name__ == "__main__":
 
     # print("?????????%d"%len(graphList))
     # env.process(taskManager.graphGenerator(env, graphList[4]))
+    
+    maxCost = 0
+    for graph in graphList:
+        if graph.graphCost == -1:
+                tmp = 0
+                for task in graph.globalTaskList:
+                    tmp += task.cost
+                    graph.graphCost = tmp     
+                if tmp > maxCost:
+                    maxCost = tmp    
+        print("graph %d cost %f" % (graph.graphId, graph.graphCost))
+
+
+    # graphList = sorted(graphList, key=functools.cmp_to_key(costCmp))
+
+    # for i in range(len(graphList)):
+    #     graphList[i].graphCost = i
+    #     print("graph %d normalized cost %d" % (graphList[i].graphId, graphList[i].graphCost))
+    for graph in graphList: 
+        graph.graphCost = (graph.graphCost / maxCost) * 5 + 1
+        print("graph %d normalized cost %f" % (graph.graphId, graph.graphCost))
 
     for graph in graphList:
        env.process(taskManager.graphGenerator(env, graph))
