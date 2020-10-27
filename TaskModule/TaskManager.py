@@ -49,6 +49,7 @@ class TaskManager:
             for i in range (1, self.batchId + 1):
                 submitted = False 
                 for graphId in self.candidateGraphBuffer[i]:
+                    # print("i: %d  graphId: %d"%(i,graphId))
                     graph = self.candidateGraphBuffer[i][graphId]
                     prepareToSumbit = True
                     # print("batch = %d, graphId= %d, graph-finished = %d" % (i, graphId, graph.finished))
@@ -93,13 +94,13 @@ class TaskManager:
                                     clusterNum = (int)(1.5 * (2000 * cost / (5.2 * 1000000000)) / (ddl - env.now))
                                     clusterList = RM.getClusterList()
                                     dspCost = 0
-                                    for i in range(0,clusterNum):
-                                        for dsp in clusterList[i].getDspList():
+                                    for ii in range(0, clusterNum):
+                                        for dsp in clusterList[ii].getDspList():
                                             dspCost += dsp.curCost
                                     print("dsp cost is %d"%dspCost)
                                     clusterNum += (int)(1.5 * (2000 * dspCost / (5.2 * 1000000000)) / (ddl - env.now))
                                     if clusterNum < 0:
-                                        clusterNum = RM.getClusterNum() * 0.8
+                                        clusterNum = RM.getClusterNum() * 0.9
                                     clusterNum = min(clusterNum, RM.getClusterNum()-1)
                                     for id in reserveList:
                                         print("graph %d has %d cluster"%(id, clusterNum))
@@ -109,7 +110,8 @@ class TaskManager:
                     #     print(len(graph.globalTaskList))
             # print("---------------------================================")
             # yield env.timeout(self.graphSubmitFrequency)
-            yield env.timeout(0.05)  # TODO
+            # yield env.timeout(0.05)  # TODO
+            yield env.timeout(0.01)  # TODO
 
     def constructTask(self, task):
         #name, knrlType, instCnt, jobId, graphId, job_inst_idx

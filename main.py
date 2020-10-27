@@ -88,7 +88,7 @@ if __name__ == "__main__":
     # graph 0, 1, 2, 3, 4, 5
     DDLList = [100, 0.8, 1.5, 4, 1, 100]
     PeriodList = [1, 1, 1, 4, 1, 1]
-    PriorityList = [1, 4, 1, 1, 1, 1]
+    PriorityList = [1, 4, 3, 1, 1, 1]
     ArrivalTimeList = [0, 0, 0, 4, 0, 0]
     # DDLList = [100, 0.8, 1.5, 4, 1, 100]
     # PeriodList = [1, 1, 1, 1, 1, 1]

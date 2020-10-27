@@ -23,11 +23,15 @@ class DMA:
         self.a = 0.000001
         self.b = 10
 
+        self.curCost = 0
+
 
 
     def submit(self, task):
         # if dmaTask not in self.taskList:
         self.taskList.append(task)
+        for data in task.dataInsIn:
+            self.curCost += data.total_size
             # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         # print("dma begin")
 
@@ -56,6 +60,7 @@ class DMA:
                 RM.getTaskLogMap()[task.taskName][task.job_inst_idx] = [self.env.now]
 
                 for data in task.getDataInsIn():
+                    self.curCost -= data.total_size
                     if not RM.getMemory(self).checkData(data):
                         transmitTime = 2000 * data.total_size / self.speed
                         self.offChipAccess += data.total_size

@@ -3,6 +3,7 @@ from ResourceModule.DMA import *
 from ResourceModule.MEM import *
 from queue import Queue
 from ResourceModule import ResourcesManager as RM
+from TaskModule import Scheduler as scheduler
 
 
 class DSP:
@@ -56,6 +57,8 @@ class DSP:
                 graph.taskNum -= 1
                 if graph.taskNum == 0:
                     graph.finished = True
+                    if graph.QosReserve:
+                        scheduler.qosReserveFinish()
                     print("graph %d of batch %d finish %f and cost %f"% (graph.graphId, graph.batchId, self.env.now, self.env.now - graph.submitTime))
                     if graph.graphId in RM.getExecuteTimeMap():
                         RM.getExecuteTimeMap()[graph.graphId].append(self.env.now - graph.submitTime)
