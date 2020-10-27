@@ -47,7 +47,7 @@ class reporter:
                 cnt += 1
                 sum += ele
             fo.write("\n")
-            fo2.write("%f\n" % (sum / cnt))
+            fo2.write("%f \n" % (sum / cnt))
             print("2. graph %d avg cost %f" % (keys, sum / cnt))
 
         fo.close()
