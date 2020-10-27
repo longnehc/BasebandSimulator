@@ -203,8 +203,18 @@ class reporter:
             for jobidx in RM.getTaskLogMap()[taskname]:
                 for i in range(0, len(RM.getTaskLogMap()[taskname][jobidx])):
                     timelist.append(RM.getTaskLogMap()[taskname][jobidx][i]) 
-                    fo.write("%f " % RM.getTaskLogMap()[taskname][jobidx][i])
+                    # fo.write("%f " % RM.getTaskLogMap()[taskname][jobidx][i])
             print(*timelist)
+            begin = timelist[0]
+            end = timelist[1]
+            for i in range(2, len(timelist)):
+                if i % 2 == 0:
+                    if timelist[i] > end:
+                        fo.write("%f %f " % (begin, end))
+                        begin = timelist[i]
+                else:
+                    end = timelist[i]
+            fo.write("%f %f " % (begin, end))
             fo.write("\n")
         fo.close()
 

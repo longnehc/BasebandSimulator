@@ -39,7 +39,15 @@ def submitTaskToDma(task, clusterId, dmaId):
 def submitTaskToDsp(task, clusterId, dspId):
     cluster = getCluster(clusterId)
     dsp = cluster.getDsp(dspId)
+    # 01
     dsp.submit(task)
+    # 02
+    # if dsp.taskQueue.qsize() < dsp.capacity:
+    #     dsp.submit(task)
+    #     return True
+    # else:
+    #     # print(len(dma.taskList))
+    #     return False
 
 
 def getExecuteTimeMap():

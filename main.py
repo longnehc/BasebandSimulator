@@ -158,7 +158,7 @@ if __name__ == "__main__":
     #     graphList[i].graphCost = i
     #     print("graph %d normalized cost %d" % (graphList[i].graphId, graphList[i].graphCost))
     for graph in graphList: 
-        graph.graphCost = (graph.graphCost / maxCost) * 5 + 1
+        graph.graphCost = math.ceil((graph.graphCost / maxCost) * 5)
         print("graph %d normalized cost %f" % (graph.graphId, graph.graphCost))
 
     for graph in graphList:
