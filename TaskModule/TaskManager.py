@@ -15,7 +15,7 @@ from TaskModule.Scheduler import SchduleAlgorithm
 a = 0.000001
 b = 10
 def QosPreemption(t1, t2):
-    p1 = (a * t1.graphCost + b * t1.graphPriority)/(t1.graphDDL - TaskManager.env.now + 0.001)
+    p1 = (a * t1.graphCost + b * t1.graphPriority) / (t1.graphDDL - TaskManager.env.now + 0.001)
     p2 = (a * t2.graphCost + b * t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
     return p1 - p2
 
@@ -83,7 +83,7 @@ class TaskManager:
                                     print("submitTime is %.2f,now is %.2f, so we have %.2f"% (graph.submitTime, env.now, (graph.submitTime + graph.DDL - env.now)))
                                     clusterNum = (int)((2000 * cost / (5.2 * 1000000000)) / (graph.submitTime + graph.DDL - env.now)) + 2
                                     if clusterNum < 0:
-                                        clusterNum = 0
+                                        clusterNum = RM.getClusterNum() * 0.8
                                     clusterNum = min(clusterNum, RM.getClusterNum()-1)
                                     print("graph %d has %d cluster"%(graph.graphId, clusterNum))
                                     scheduler.beginQosReserve(graph.graphId, graph.submitTime + graph.DDL, clusterNum)
