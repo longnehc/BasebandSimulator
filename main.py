@@ -27,7 +27,7 @@ if __name__ == "__main__":
     DMASpeed = 10
     DDRCapacity = 100
     SIM_TIME = 50
-    selectedAlgo = SchduleAlgorithm.LB
+    selectedAlgo = SchduleAlgorithm.QOSPreemption
 
     # Create an environment and start the setup process
     env = simpy.Environment()
