@@ -18,7 +18,7 @@ class DMA:
         self.env = env
         self.clusterId = clusterId
         self.capacity = 100
-        self.offChipAccess= 0
+        self.offChipAccess = 0
 
         self.a = 0.000001
         self.b = 10
