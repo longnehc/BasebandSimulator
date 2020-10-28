@@ -12,7 +12,7 @@ class DSP:
         self.id = DSP.num
         DSP.num += 1
         self.taskQueue = Queue()
-        self.speed = 1.3 * 1000000000 * 10000
+        self.speed = 1.3 * 1000000000
         self.clusterId = clusterId
         self.env = env
 

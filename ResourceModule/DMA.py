@@ -13,7 +13,7 @@ def cmpTask(t1, t2):
 class DMA:
     def __init__(self, env, clusterId):
         self.id = 0
-        self.speed = 256 * 866 * 1000000 * 10000
+        self.speed = 256 * 866 * 1000000
         self.taskList = []
         self.env = env
         self.clusterId = clusterId
