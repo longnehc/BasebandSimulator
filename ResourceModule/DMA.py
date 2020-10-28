@@ -5,12 +5,35 @@ from queue import Queue
 from ResourceModule import ResourcesManager as RM 
 import random
 
+from BasebandSimulator.TaskModule.Scheduler import SchduleAlgorithm
+from TaskModule import Scheduler as scheduler
+
 def cmpTask(t1, t2):
     # 大到小
     return t1.dspPriority - t2.dspPriority
 
+def QosPreemption(t1, t2):
+    # p1 = (a * t1.graphCost + b * t1.graphPriority)/(t1.graphDDL - TaskManager.env.now + 0.001)
+    # p2 = (a * t2.graphCost + b * t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
+    if scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemptionG.value:
+        p1 = (t1.graphCost + t1.graphPriority) / (t1.graphDDL - DMA.env.now + 0.001)
+        p2 = (t2.graphCost + t2.graphPriority) / (t2.graphDDL - DMA.env.now + 0.001)
+        return p2 - p1
+    elif scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemptionT.value:
+        if t1.graphDDL != t2.graphDDL:
+            return t1.graphDDL - t2.graphDDL
+        else:
+            return t2.cost - t1.cost
+    elif scheduler.getAlgorithm().value == SchduleAlgorithm.QOSReserve.value:
+        # print("算法：%d；实际：%d"%(scheduler.getAlgorithm().value,SchduleAlgorithm.QOSPreemptionT.value))
+        p1 = (t1.graphCost + t1.graphPriority) / (t1.graphDDL - DMA.env.now + 0.001)
+        p2 = (t2.graphCost + t2.graphPriority) / (t2.graphDDL - DMA.env.now + 0.001)
+        return p2 - p1
+    else:
+        return -1
 
 class DMA:
+    env = None
     def __init__(self, env, clusterId):
         self.id = 0
         self.speed = 256 * 866 * 1000000
@@ -25,6 +48,10 @@ class DMA:
 
         self.curCost = 0
 
+        self.preemptionCnt = 0
+        if DMA.env == None:
+            DMA.env = env
+
 
 
     def submit(self, task):
@@ -33,7 +60,10 @@ class DMA:
         for data in task.dataInsIn:
             self.curCost += data.total_size
             # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        # print("dma begin")
+        self.preemptionCnt += 1
+        if self.preemptionCnt == 10:
+            self.preemptionCnt = 0
+            self.taskList = sorted(self.taskList, key=functools.cmp_to_key(QosPreemption))
 
 
     def run(self):

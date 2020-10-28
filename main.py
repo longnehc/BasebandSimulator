@@ -26,8 +26,8 @@ if __name__ == "__main__":
     MemCapacity = 100
     DMASpeed = 10
     DDRCapacity = 100
-    SIM_TIME = 50
-    selectedAlgo = SchduleAlgorithm.LB
+    SIM_TIME = 10
+    selectedAlgo = SchduleAlgorithm.QOSPreemptionG
 
     # Create an environment and start the setup process
     env = simpy.Environment()
@@ -126,9 +126,9 @@ if __name__ == "__main__":
         graphIndex += 1
     of.close()
     # Qos Reserve
-    graphList[1].QosReserve = True
-    graphList[4].QosReserve = True
-    graphList[5].QosReserve = True
+    # graphList[1].QosReserve = True
+    # graphList[4].QosReserve = True
+    # graphList[5].QosReserve = True
     
     RM.setCluster(env, ClusterNum)
 
