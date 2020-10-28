@@ -13,9 +13,10 @@ class SchduleAlgorithm(Enum):
     RANDOM = 0 
     GREEDY = 1
     OFFMEM = 2
-    QOSPreemption = 3
-    LB = 4
-    QosReserve = 5
+    QOSPreemptionG = 3
+    QOSPreemptionT = 4
+    LB = 5
+    QOSReserve = 6
 
 class Scheduler:
 
@@ -40,7 +41,7 @@ def getAlgorithm():
     return scheduler.algorithm
 
 def beginQosReserve(graphId, QosReserveDdl, QosReserveClusterNum):
-    scheduler.algorithm = SchduleAlgorithm.QosReserve
+    scheduler.algorithm = SchduleAlgorithm.QOSReserve
     scheduler.QosReserveDdl = QosReserveDdl
     scheduler.QosReserveClusterNum = QosReserveClusterNum
     scheduler.QosReserveGraphId = graphId
@@ -51,7 +52,7 @@ def beginQosReserve(graphId, QosReserveDdl, QosReserveClusterNum):
 def qosReserveFinish():
     scheduler.QosGraphNum -= 1
     if scheduler.QosGraphNum == 0:
-        scheduler.algorithm = SchduleAlgorithm.QOSPreemption
+        scheduler.algorithm = SchduleAlgorithm.QOSPreemptionG
         print("reverse finish")
     
 cnt = 0
@@ -70,7 +71,7 @@ def run(env):
                     yield env.timeout(0.0001)
 
             # TODO:
-            elif scheduler.algorithm == SchduleAlgorithm.QOSPreemption:
+            elif scheduler.algorithm == SchduleAlgorithm.QOSPreemptionG or scheduler.algorithm == SchduleAlgorithm.QOSPreemptionT:
                 clusterId = 0
                 curCost = 10000000.0
                 clusterList = RM.getClusterList()
@@ -130,7 +131,7 @@ def run(env):
                     yield env.timeout(0.001)
 
             # TODO:
-            elif scheduler.algorithm == SchduleAlgorithm.QosReserve:
+            elif scheduler.algorithm == SchduleAlgorithm.QOSReserve:
                 clusterList = RM.getClusterList()
                 if task.taskGraphId in scheduler.QosReserveGraphId:
                     # print("graph %d quick"%task.taskGraphId)
@@ -164,7 +165,7 @@ def run(env):
                     while not RM.submitTaskToDma(task, clusterId, 0):
                         yield env.timeout(0.001)
                 if env.now > scheduler.QosReserveDdl:
-                    scheduler.algorithm = SchduleAlgorithm.QOSPreemption
+                    scheduler.algorithm = SchduleAlgorithm.QOSPreemptionG
                     print("reverse finish")
 
             else:

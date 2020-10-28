@@ -17,9 +17,17 @@ b = 10
 def QosPreemption(t1, t2):
     # p1 = (a * t1.graphCost + b * t1.graphPriority)/(t1.graphDDL - TaskManager.env.now + 0.001)
     # p2 = (a * t2.graphCost + b * t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
-    p1 = (t1.graphCost + t1.graphPriority) / (t1.graphDDL - TaskManager.env.now + 0.001)
-    p2 = (t2.graphCost + t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
-    return p2 - p1
+    if scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemptionG.value:
+        p1 = (t1.graphCost + t1.graphPriority) / (t1.graphDDL - TaskManager.env.now + 0.001)
+        p2 = (t2.graphCost + t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
+        return p2 - p1
+    elif scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemptionT.value:
+        if t1.graphDDL != t2.graphDDL:
+            return t1.graphDDL - t2.graphDDL
+        else:
+            return t2.cost - t1.cost
+    else:
+        return -1
 
 
 class TaskManager:
@@ -72,9 +80,9 @@ class TaskManager:
                                 self.candidateTaskBuffer.append(task)
                             print("Add all tasks of graph %d in the %d-th batch into candidateTaskBuffer at %f " % (graph.graphId, i, env.now))
                             # QOS Preemption
-                            # print("%s | %s" % (scheduler.getAlgorithm(),SchduleAlgorithm.QOSPreemption))
-                            # print(scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemption.value)
-                            if scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemption.value or scheduler.getAlgorithm().value == SchduleAlgorithm.QosReserve.value:
+                            # print("%s | %s" % (scheduler.getAlgorithm(),SchduleAlgorithm.QOSPreemptionG))
+                            # print(scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemptionG.value)
+                            if scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemptionG.value or scheduler.getAlgorithm().value == SchduleAlgorithm.QOSReserve.value or scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemptionT.value:
                                 # print(graph.QosReserve)
                                 self.candidateTaskBuffer = sorted(self.candidateTaskBuffer,
                                                               key=functools.cmp_to_key(QosPreemption))
@@ -82,7 +90,7 @@ class TaskManager:
                                 ddl = 1000
                                 reserveList = []
                                 # Qos reserve
-                                if graph.QosReserve and scheduler.getAlgorithm().value != SchduleAlgorithm.QosReserve.value:
+                                if graph.QosReserve and scheduler.getAlgorithm().value != SchduleAlgorithm.QOSReserve.value:
                                     for gId in self.candidateGraphBuffer[i]:
                                         g = self.candidateGraphBuffer[i][gId]
                                         if g.QosReserve:
