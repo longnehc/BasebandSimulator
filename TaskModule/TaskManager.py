@@ -201,6 +201,7 @@ class TaskManager:
                         task.graphDDL = graph.DDL + env.now
                         task.graphCost = graph.graphCost
                         task.graphPriority = graph.priority
+                        task.graphSumbittedTime = newgraph.submitTime 
                         # if task.taskGraphId == 3:
                         #     print("******************** %d" % task.graphDDL)
                     # print("not find graphid = %d in batch= %d" % (graph.graphId, i))
@@ -220,6 +221,7 @@ class TaskManager:
                 for task in newgraph.globalTaskList:
                     task.batchId = self.batchId
                     task.graphDDL = graph.DDL + env.now
+                    task.graphSumbittedTime = newgraph.submitTime 
                     # if task.taskGraphId == 3:
                     #     print("******************** %d"%task.graphDDL)
             yield env.timeout(graph.getPeriod())
@@ -276,8 +278,7 @@ class TaskManager:
                         # task.taskStatus = TaskStatus.SUMBITTED
                         #TODO: QoS guarantee/Load balancing/greedy/random/offmem chip
                         scheduler.submit(task)
-                        #env.process(scheduler.run(env))
-                        # RM.submitTaskToDma(task, random.randint(0, 15), 0)
+                        #env.process(scheduler.run(env)) 
                         # if task.taskGraphId == 4:
                         #     self.taskNum += 1
                         #     print(self.taskNum)

@@ -16,18 +16,25 @@ class ResourcesManager:
         self.endTimeMap = {}
         self.taskExeMap = []
         self.taskLogMap = {}
+        self.submittedTaskNum = 0
+        self.waitTime = 0.0
+        self.reserveGraph = {}
+
 
 
 resourcesManager = ResourcesManager()
 
  
  
-def submitTaskToDma(task, clusterId, dmaId):
+def submitTaskToDma(task, clusterId, dmaId, env):
     cluster = getCluster(clusterId)
     dma = cluster.getDma(dmaId)
     if len(dma.taskList) < dma.capacity:
         dma.submit(task)
         task.taskStatus = TaskStatus.SUMBITTED
+        task.submittedTime = env.now
+        resourcesManager.submittedTaskNum += 1
+        resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
         return True
     else:
         # print(len(dma.taskList))
@@ -49,6 +56,11 @@ def submitTaskToDsp(task, clusterId, dspId):
     #     # print(len(dma.taskList))
     #     return False
 
+def getSubmittedTaskNum():
+    return resourcesManager.submittedTaskNum
+
+def getWaitTime():
+    return resourcesManager.waitTime
 
 def getExecuteTimeMap():
     return resourcesManager.executeTimeMap
@@ -82,6 +94,11 @@ def setCluster(env, num):
         # print("set cluster %d"%i)
         resourcesManager.clusterList.append(Cluster.Cluster(env, i))
 
+def setReserveGraph(id, ddl):
+    resourcesManager.reserveGraph[id] = ddl
+
+def getReserveGraph():
+    return resourcesManager.reserveGraph
   
 def getDma(dsp):
     # get memory

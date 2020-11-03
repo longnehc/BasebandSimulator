@@ -126,11 +126,12 @@ if __name__ == "__main__":
         graphIndex += 1
     of.close()
     # Qos Reserve
-    # graphList[1].QosReserve = True
-    # graphList[4].QosReserve = True
-    # graphList[5].QosReserve = True
+    graphList[1].QosReserve = True
+    graphList[4].QosReserve = True
+    graphList[5].QosReserve = True
     
     RM.setCluster(env, ClusterNum)
+    RM.setReserveGraph(1, 0.8)
 
     # off-chip Mem
     if selectedAlgo == SchduleAlgorithm.OFFMEM:
@@ -180,6 +181,7 @@ if __name__ == "__main__":
     
     env.process(taskManager.submitTask(env))
     rpt = reporter()
+    rpt.setAlgorithm(selectedAlgo)
     env.process(rpt.run(env))
     env.process(rpt.loging(env))
    

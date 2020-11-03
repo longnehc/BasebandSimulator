@@ -12,7 +12,7 @@ class DSP:
         self.id = DSP.num
         DSP.num += 1
         self.taskQueue = Queue()
-        self.speed = 1.3 * 1000000000
+        self.speed = 1.3 * 1000000000 
         self.clusterId = clusterId
         self.env = env
 
@@ -71,6 +71,8 @@ class DSP:
                         RM.getExecuteTimeMap()[graph.graphId] = [self.env.now - graph.submitTime]
                         RM.getBeginTimeMap()[graph.graphId] = [graph.submitTime]
                         RM.getEndTimeMap()[graph.graphId] = [self.env.now]
+                    
+                
                 # if graph.taskNum < 0:
                 #     print("graph %d task %d %s" % (graph.graphId,graph.taskNum,task.taskName))
                 # print(task.taskName + " finish in: %f" % self.env.now)

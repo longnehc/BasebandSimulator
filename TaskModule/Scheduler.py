@@ -67,7 +67,7 @@ def run(env):
                 print("Greedy...")
             elif scheduler.algorithm == SchduleAlgorithm.OFFMEM:
                 # print("Minimizing off-chip memory access...")
-                while not RM.submitTaskToDma(task, task.clusterId, 0):
+                while not RM.submitTaskToDma(task, task.clusterId, 0, env):
                     yield env.timeout(0.0001)
 
             # TODO:
@@ -88,13 +88,13 @@ def run(env):
                         clusterId = i
                         curCost = tmp
                     # submit
-                while not RM.submitTaskToDma(task, clusterId, 0):
+                while not RM.submitTaskToDma(task, clusterId, 0, env):
                     yield env.timeout(0.001)
                 # ---
                 # cnt = (cnt + 1) % 16
-                # if not RM.submitTaskToDma(task, cnt, 0):
+                # if not RM.submitTaskToDma(task, cnt, 0, env):
                 #     tmp = (cnt + 1) % 16
-                #     while not RM.submitTaskToDma(task, tmp, 0):
+                #     while not RM.submitTaskToDma(task, tmp, 0, env):
                 #         tmp = (tmp + 1) % 16
                 #         if tmp == cnt:
                 #             # print("full")
@@ -103,9 +103,9 @@ def run(env):
             elif scheduler.algorithm == SchduleAlgorithm.LB:
                 # print("Load balancing...")
                 # cnt = (cnt + 1) % 16
-                # if not RM.submitTaskToDma(task, cnt, 0):
+                # if not RM.submitTaskToDma(task, cnt, 0, env):
                 #     tmp = (cnt + 1) % 16
-                #     while not RM.submitTaskToDma(task, tmp, 0):
+                #     while not RM.submitTaskToDma(task, tmp, 0, env):
                 #         tmp = (tmp + 1) % 16
                 #         if tmp == cnt:
                 #             # print("full")
@@ -127,7 +127,7 @@ def run(env):
                         clusterId = i
                         curCost = tmp
                     # submit
-                while not RM.submitTaskToDma(task, clusterId, 0):
+                while not RM.submitTaskToDma(task, clusterId, 0, env):
                     yield env.timeout(0.001)
 
             # TODO:
@@ -154,7 +154,7 @@ def run(env):
                         #     clusterId = i
                         # submit
                     # print(clusterId)
-                    while not RM.submitTaskToDma(task, clusterId, 0):
+                    while not RM.submitTaskToDma(task, clusterId, 0, env):
                         yield env.timeout(0.001)
                 else:
                     clusterId = scheduler.QosReserveClusterNum
@@ -162,7 +162,7 @@ def run(env):
                         if len(clusterList[i].dmaList[0].taskList) < len(clusterList[clusterId].dmaList[0].taskList):
                             clusterId = i
                         # submit
-                    while not RM.submitTaskToDma(task, clusterId, 0):
+                    while not RM.submitTaskToDma(task, clusterId, 0, env):
                         yield env.timeout(0.001)
                 if env.now > scheduler.QosReserveDdl:
                     scheduler.algorithm = SchduleAlgorithm.QOSPreemptionG

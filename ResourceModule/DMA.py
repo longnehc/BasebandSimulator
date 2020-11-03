@@ -5,7 +5,7 @@ from queue import Queue
 from ResourceModule import ResourcesManager as RM 
 import random
 
-from BasebandSimulator.TaskModule.Scheduler import SchduleAlgorithm
+from TaskModule.Scheduler import SchduleAlgorithm
 from TaskModule import Scheduler as scheduler
 
 def cmpTask(t1, t2):
@@ -36,7 +36,7 @@ class DMA:
     env = None
     def __init__(self, env, clusterId):
         self.id = 0
-        self.speed = 256 * 866 * 1000000
+        self.speed = 256 * 866 * 1000000 
         self.taskList = []
         self.env = env
         self.clusterId = clusterId

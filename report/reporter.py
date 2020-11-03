@@ -1,5 +1,6 @@
 from ResourceModule import ResourcesManager as RM
 import numpy as np
+from TaskModule.Scheduler import SchduleAlgorithm
 
 class reporter:
 
@@ -10,7 +11,7 @@ class reporter:
         self.memAccessMap = {}
         self.recordedMemAccess = {}
         self.dspUtilRecord = {}
-
+        self.prefix = ""
 
 
     def report(self):
@@ -34,8 +35,8 @@ class reporter:
             print("Total offmem = %f, avgerage offmem = %f" % (totalOffMem, totalOffMem/cnt))
         
     def graphReport(self):
-        fo = open("1graphExecutionDur.txt", "w")
-        fo2 = open("2graphAvgCost.txt","w")
+        fo = open(self.prefix + "/1graphExecutionDur.txt", "w")
+        fo2 = open(self.prefix + "/2graphAvgCost.txt","w")
         for keys in RM.getExecuteTimeMap(): 
             cnt = 0
             sum = 0
@@ -49,9 +50,32 @@ class reporter:
             fo.write("\n")
             fo2.write("%f \n" % (sum / cnt))
             print("2. graph %d avg cost %f" % (keys, sum / cnt))
-
         fo.close()
         fo2.close()
+
+    def maxExecutionReport(self):
+        fo = open(self.prefix + "/11maxExecutionTime.txt", "w")
+        max = 100000000
+        cnt = 0
+        satifycnt = 0
+        for keys in RM.getExecuteTimeMap():
+            for ele in RM.getExecuteTimeMap()[keys]:
+                if ele < max:
+                    max = ele
+            if keys in RM.getReserveGraph():
+                cnt += 1
+                if ele <= RM.getReserveGraph()[keys]:
+                    satifycnt += 1
+            fo.write("%f " % max)
+        fo.write("\n%f" % (satifycnt / cnt))
+        fo.close()
+    
+    def avgWaitTime(self):
+        fo = open(self.prefix + "/12avgWaitTime.txt", "w")
+        fo.write("%f " % (RM.getWaitTime() / RM.getSubmittedTaskNum()))
+        fo.close()
+
+
 
     def loging(self, env):
         while True:
@@ -101,7 +125,7 @@ class reporter:
 
     def memPeekReport(self):
         # print("memPeekReport")
-        fo = open("3memPeek.txt","w")
+        fo = open(self.prefix + "/3memPeek.txt","w")
         clusterList = RM.getClusterList()
         print(self.memPeekMap)
         for cluster in clusterList:
@@ -116,8 +140,8 @@ class reporter:
         fo.close()
     
     def dspCostReport(self):
-        fo = open("4dspCost.txt","w")
-        fo2 = open("5dspCostStd.txt","w")
+        fo = open(self.prefix + "/4dspCost.txt","w")
+        fo2 = open(self.prefix + "/5dspCostStd.txt","w")
         stdArr = []
         clusterList = RM.getClusterList()
         for cluster in clusterList:
@@ -144,9 +168,9 @@ class reporter:
         fo2.close()
                 
     def memAccessReport(self):
-        fo = open("6dspMemAccess.txt","w")
-        fo2 = open("7dspMemStd.txt","w")
-        fo3 = open("8totalMemAcess.txt", "w")
+        fo = open(self.prefix + "/6dspMemAccess.txt","w")
+        fo2 = open(self.prefix + "/7dspMemStd.txt","w")
+        fo3 = open(self.prefix + "/8totalMemAcess.txt", "w")
         clusterList = RM.getClusterList()
         for cluster in clusterList:
             for dsp in cluster.dspList:
@@ -179,7 +203,7 @@ class reporter:
         fo3.close()
 
     def dspUtilReport(self):
-        fo = open("9DSPUtil.txt","w")
+        fo = open(self.prefix + "/9DSPUtil.txt","w")
         print("9. The utilization of dsp")
         clusterList = RM.getClusterList()
         for cluster in clusterList:
@@ -193,8 +217,24 @@ class reporter:
                     fo.write("\n")
         fo.close()
     
+    
+    def resourceUtilReport(self):
+        fo = open(self.prefix + "/13resourceUtil.txt", "w")
+        clusterList = RM.getClusterList()
+        for i in range(0, len(self.dspUtilRecord[0])):
+            util = 0.0
+            cnt = 0
+            for cluster in clusterList:
+                for dsp in cluster.dspList:
+                    if dsp.id in self.dspUtilRecord:
+                        util += self.dspUtilRecord[dsp.id][i]
+                        cnt += 1
+            fo.write("%f " % (util / cnt))
+        fo.close()
+ 
+    
     def taskReport(self):
-        fo = open("10TaskExecutionDur.txt","w")
+        fo = open(self.prefix + "/10TaskExecutionDur.txt","w")
         print("10. Task begin time and end time")
         taskTimeMap = {}
         for i in range(0, len(RM.getTaskExeMap())):
@@ -245,8 +285,21 @@ class reporter:
         #     fo.write("\n")
         fo.close()
 
+    def setAlgorithm(self, selectedAlgo):
+        self.selectedAlgo = selectedAlgo
+
     def run(self, env):
         reported = False
+        if self.selectedAlgo == SchduleAlgorithm.QOSPreemptionG:
+            self.prefix = "QOSPreemptionG"
+        elif self.selectedAlgo == SchduleAlgorithm.QOSPreemptionT:
+            self.prefix = "QOSPreemptionT"
+        elif self.selectedAlgo == SchduleAlgorithm.LB:
+            self.prefix = "LB"
+        elif self.selectedAlgo == SchduleAlgorithm.QOSReserve:
+            self.prefix = "QOSReserve"  
+        else:
+            self.prefix = "OFFMEM"
         while True: 
             print("system time: %f" % env.now)
             yield env.timeout(0.2)
@@ -258,4 +311,7 @@ class reporter:
                 self.memAccessReport()
                 self.dspUtilReport()
                 self.taskReport()
+                self.maxExecutionReport()
+                self.avgWaitTime()
+                self.resourceUtilReport()
                 reported = True
