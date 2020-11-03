@@ -51,6 +51,9 @@ class Task:
         self.graphPriority = -1
         self.dspPriority = -1
 
+        self.layer = -1
+        self.layerDdl = -1
+
 
     def getTaskStatus(self) :
         return self.taskStatus

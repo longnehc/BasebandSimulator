@@ -89,6 +89,9 @@ class TaskManager:
                                 # print(graph.QosReserve)
                                 self.candidateTaskBuffer = sorted(self.candidateTaskBuffer,
                                                               key=functools.cmp_to_key(QosPreemption))
+                                # for jj in range(0, len(self.candidateTaskBuffer)):
+                                #     print(self.candidateTaskBuffer[jj].taskGraphId, end=" ")
+                                # print("TM")
                                 cost = 0
                                 ddl = 1000
                                 reserveList = []
@@ -191,14 +194,15 @@ class TaskManager:
                     find = True
                     newgraph = self.contructGraphById(graph.graphId, i)
                     self.candidateGraphBuffer[i][graph.graphId] = newgraph
-                    newgraph.submitTime  = env.now
+                    newgraph.submitTime = env.now
                     newgraph.batchId = i
                     newgraph.QosReserve = graph.QosReserve
-                    
+
+
                     newgraph.graphCost = graph.graphCost
                     for task in newgraph.globalTaskList:
                         task.batchId = i
-                        task.graphDDL = graph.DDL + env.now
+                        task.graphDDL = graph.layerDdl[task.layer] + env.now
                         task.graphCost = graph.graphCost
                         task.graphPriority = graph.priority
                         # if task.taskGraphId == 3:
@@ -256,6 +260,7 @@ class TaskManager:
             for i in range(len(self.candidateTaskBuffer)):
                 # print("********** %f" % env.now)
                 task = self.candidateTaskBuffer[i]
+
                 if task.taskStatus != TaskStatus.FINISH and task.taskStatus != TaskStatus.SUMBITTED:
                     prepareToSumbit = True
                     # print("Checking task dependency of %s... " % task.taskName)
@@ -275,6 +280,7 @@ class TaskManager:
                         remove.append(i)
                         # task.taskStatus = TaskStatus.SUMBITTED
                         #TODO: QoS guarantee/Load balancing/greedy/random/offmem chip
+                        # print(task.taskGraphId, end="*")
                         scheduler.submit(task)
                         #env.process(scheduler.run(env))
                         # RM.submitTaskToDma(task, random.randint(0, 15), 0)
@@ -295,4 +301,5 @@ class TaskManager:
 
     def getGraph(self, i, j):
         return self.candidateGraphBuffer[i][j]
+
 

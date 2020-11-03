@@ -16,6 +16,9 @@ class TaskGraph :
         self.batchId = 0
 
         self.graphCost = -1
+
+        self.layerCost = []
+        self.layerDdl = []
         
  
     def isSubmitted(self):

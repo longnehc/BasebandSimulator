@@ -16,6 +16,7 @@ def QosPreemption(t1, t2):
     # p1 = (a * t1.graphCost + b * t1.graphPriority)/(t1.graphDDL - TaskManager.env.now + 0.001)
     # p2 = (a * t2.graphCost + b * t2.graphPriority) / (t2.graphDDL - TaskManager.env.now + 0.001)
     if scheduler.getAlgorithm().value == SchduleAlgorithm.QOSPreemptionG.value:
+        # print("QOSPreemptionG")
         p1 = (t1.graphCost + t1.graphPriority) / (t1.graphDDL - DMA.env.now + 0.001)
         p2 = (t2.graphCost + t2.graphPriority) / (t2.graphDDL - DMA.env.now + 0.001)
         return p2 - p1
@@ -30,6 +31,7 @@ def QosPreemption(t1, t2):
         p2 = (t2.graphCost + t2.graphPriority) / (t2.graphDDL - DMA.env.now + 0.001)
         return p2 - p1
     else:
+        # print("????????????????????")
         return -1
 
 class DMA:
@@ -40,7 +42,7 @@ class DMA:
         self.taskList = []
         self.env = env
         self.clusterId = clusterId
-        self.capacity = 100
+        self.capacity = 10000
         self.offChipAccess = 0
 
         self.a = 0.000001
@@ -49,6 +51,7 @@ class DMA:
         self.curCost = 0
 
         self.preemptionCnt = 0
+        self.sortNum = 1
         if DMA.env == None:
             DMA.env = env
 
@@ -61,9 +64,13 @@ class DMA:
             self.curCost += data.total_size
             # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         self.preemptionCnt += 1
-        if self.preemptionCnt == 10:
+        if self.preemptionCnt == self.sortNum:
             self.preemptionCnt = 0
             self.taskList = sorted(self.taskList, key=functools.cmp_to_key(QosPreemption))
+            # if 0.08 > self.env.now > 0.06:
+            #     for i in range(0, len(self.taskList)):
+            #         print(self.taskList[i].taskGraphId, end=" ")
+            #     print("dma")
 
 
     def run(self):

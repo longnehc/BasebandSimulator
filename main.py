@@ -13,6 +13,28 @@ def costCmp(g1, g2):
     return g1.graphCost - g2.graphCost
 
 # 1TTI = 1s(*2000)
+def setGraphLayer(graph):
+    hight = 0
+    for task in graph.globalTaskList:
+        setTaskLayer(graph, task)
+        hight = max(hight, task.layer)
+    return hight + 1
+
+
+def setTaskLayer(graph, task):
+    if task.layer != -1:
+        return task.layer
+    elif len(task.precedenceTask) == 0:
+        task.layer = 0
+        return task.layer
+    else:
+        tmp = -1
+        for t in task.precedenceTask:
+            tmp = max(setTaskLayer(graph, t), tmp)
+        task.layer = tmp + 1
+        return task.layer
+
+
 if __name__ == "__main__":
     # Setup and start the simulation
     print('Baseband simulator starting') 
@@ -89,7 +111,7 @@ if __name__ == "__main__":
     DDLList = [100, 0.8, 1.5, 4, 1, 100]
     PeriodList = [1, 1, 1, 4, 1, 1]
     PriorityList = [1, 4, 3, 1, 1, 1]
-    ArrivalTimeList = [0, 0, 0, 4, 0, 0]
+    ArrivalTimeList = [0, 0, 0, 0, 0, 0]
     # DDLList = [100, 0.8, 1.5, 4, 1, 100]
     # PeriodList = [1, 1, 1, 1, 1, 1]
     # PriorityList = [1, 2, 3, 4, 5, 6]
@@ -126,9 +148,9 @@ if __name__ == "__main__":
         graphIndex += 1
     of.close()
     # Qos Reserve
-    # graphList[1].QosReserve = True
-    # graphList[4].QosReserve = True
-    # graphList[5].QosReserve = True
+    graphList[1].QosReserve = True
+    graphList[4].QosReserve = True
+    graphList[5].QosReserve = True
     
     RM.setCluster(env, ClusterNum)
 
@@ -150,6 +172,20 @@ if __name__ == "__main__":
                 if tmp > maxCost:
                     maxCost = tmp    
         print("graph %d cost %f" % (graph.graphId, graph.graphCost))
+        hight = setGraphLayer(graph)
+        for i in range(0, hight):
+            graph.layerCost.append(0)
+            graph.layerDdl.append(0)
+        for t in graph.globalTaskList:
+            graph.layerCost[t.layer] += t.cost
+        rate = 0
+        for i in range(0, hight):
+            graph.layerCost[i] /= (graph.graphCost + 1)
+            rate += graph.layerCost[i]
+            graph.layerDdl[i] = graph.DDL * rate
+        # for i in range(0, hight):
+        #     print(graph.layerDdl[i], end=",")
+        # print(" ")
 
 
     # graphList = sorted(graphList, key=functools.cmp_to_key(costCmp))
@@ -193,3 +229,5 @@ if __name__ == "__main__":
 
     # Execute!
     env.run(until=SIM_TIME)
+
+
