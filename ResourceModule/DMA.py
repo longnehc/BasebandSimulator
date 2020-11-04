@@ -38,7 +38,7 @@ class DMA:
     env = None
     def __init__(self, env, clusterId):
         self.id = 0
-        self.speed = 256 * 866 * 1000000 
+        self.speed = 256 * 866 * 1000000
         self.taskList = []
         self.env = env
         self.clusterId = clusterId
