@@ -25,7 +25,7 @@ def QosPreemption(t1, t2):
         if t1.graphDDL != t2.graphDDL:
             return t1.graphDDL - t2.graphDDL
         else:
-            return t2.cost - t1.cost
+            return t1.cost - t2.cost
     else:
         # print("算法：%d；实际：%d"%(scheduler.getAlgorithm().value,SchduleAlgorithm.QOSPreemptionT.value))
         p1 = (t1.graphCost + t1.graphPriority) / (max(0, t1.graphDDL - TaskManager.env.now) + 0.001)
@@ -105,7 +105,7 @@ class TaskManager:
                                             for task in g.getGlobalTaskList():
                                                 cost += task.cost
                                     print("submitTime is %.2f,now is %.2f, so we have %.2f, and cost is %.2f"% (graph.submitTime, env.now, (ddl - env.now), cost))
-                                    clusterNum = (int)(1.5 * (2000 * cost / (5.2 * 1000000000)) / (ddl - env.now))
+                                    clusterNum = (int)(1.8 * (2000 * cost / (5.2 * 1000000000)) / (ddl - env.now))
                                     clusterList = RM.getClusterList()
                                     dspCost = 0
                                     clusterNum = min(clusterNum, RM.getClusterNum()-1)
