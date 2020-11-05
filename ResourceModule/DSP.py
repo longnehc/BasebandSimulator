@@ -7,7 +7,7 @@ from queue import Queue
 from ResourceModule import ResourcesManager as RM
 from TaskModule import Scheduler as scheduler
 
-from BasebandSimulator.TaskModule.Scheduler import SchduleAlgorithm
+from TaskModule.Scheduler import SchduleAlgorithm
 
 
 def QosPreemption(t1, t2):

@@ -55,12 +55,15 @@ class reporter:
 
     def maxExecutionReport(self):
         fo = open(self.prefix + "/11maxExecutionTime.txt", "w")
-        max = 100000000
         cnt = 0
         satifycnt = 0
+        # for keys in RM.getBeginTimeMap():
+        #     fo.write("%d ", keys)
+        # fo.write("\n")
         for keys in RM.getExecuteTimeMap():
+            max = -1
             for ele in RM.getExecuteTimeMap()[keys]:
-                if ele < max:
+                if ele > max:
                     max = ele
             if keys in RM.getReserveGraph():
                 cnt += 1
@@ -116,10 +119,10 @@ class reporter:
 
                     # The utilization of dsp
                     if dsp.id in self.dspUtilRecord:
-                        self.dspUtilRecord[dsp.id].append(0.1 - dsp.yieldTime)
+                        self.dspUtilRecord[dsp.id].append((0.1 - dsp.yieldTime)/0.1)
                         dsp.yieldTime = 0
                     else:
-                        self.dspUtilRecord[dsp.id] = [0.1 - dsp.yieldTime]
+                        self.dspUtilRecord[dsp.id] = [(0.1 - dsp.yieldTime)/0.1]
                         dsp.yieldTime = 0
             yield env.timeout(0.1)
 
@@ -290,13 +293,13 @@ class reporter:
 
     def run(self, env):
         reported = False
-        if self.selectedAlgo == SchduleAlgorithm.QOSPreemptionG:
+        if self.selectedAlgo == SchduleAlgorithm.QOSPreemptionG and self.rflag == False:
             self.prefix = "QOSPreemptionG"
         elif self.selectedAlgo == SchduleAlgorithm.QOSPreemptionT:
             self.prefix = "QOSPreemptionT"
         elif self.selectedAlgo == SchduleAlgorithm.LB:
             self.prefix = "LB"
-        elif self.selectedAlgo == SchduleAlgorithm.QOSReserve:
+        elif self.selectedAlgo == SchduleAlgorithm.QOSPreemptionG and self.rflag == True:
             self.prefix = "QOSReserve"  
         else:
             self.prefix = "OFFMEM"

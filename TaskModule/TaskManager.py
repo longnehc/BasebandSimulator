@@ -108,17 +108,18 @@ class TaskManager:
                                     clusterNum = (int)(1.5 * (2000 * cost / (5.2 * 1000000000)) / (ddl - env.now))
                                     clusterList = RM.getClusterList()
                                     dspCost = 0
+                                    clusterNum = min(clusterNum, RM.getClusterNum()-1)
                                     for ii in range(0, clusterNum):
                                         for dsp in clusterList[ii].getDspList():
                                             dspCost += dsp.curCost
                                     print("dsp cost is %d"%dspCost)
-                                    clusterNum += (int)(1.5 * (2000 * dspCost / (5.2 * 1000000000)) / (ddl - env.now))
+                                    clusterNum += (int)(1.8 * (2000 * dspCost / (5.2 * 1000000000)) / (ddl - env.now))
                                     if clusterNum < 0:
                                         clusterNum = RM.getClusterNum() * 0.9
                                     clusterNum = min(clusterNum, RM.getClusterNum()-1)
                                     for id in reserveList:
                                         print("graph %d has %d cluster"%(id, clusterNum))
-                                    scheduler.beginQosReserve(reserveList, ddl, clusterNum)
+                                    scheduler.beginQosReserve(reserveList, ddl, (int)(clusterNum))
                             # break
                     # if graphId == 4:
                     #     print(len(graph.globalTaskList))
