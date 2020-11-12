@@ -1,5 +1,6 @@
 from ResourceModule import Cluster
 from ResourceModule import DMA
+from ResourceModule import DDR
 
 from TaskModule.Task import TaskStatus
 import random
@@ -55,6 +56,16 @@ def submitTaskToDsp(task, clusterId, dspId):
     # else:
     #     # print(len(dma.taskList))
     #     return False
+
+def submitWriteBackTaskToDma(data, clusterId, dmaId):
+    cluster = getCluster(clusterId)
+    dma = cluster.getDma(dmaId)
+    if len(dma.writeTaskList) < dma.writeTaskListCapacity:
+        dma.submitWriteTask(data)  
+        return True
+    else:
+        # print(len(dma.taskList))
+        return False
 
 def getSubmittedTaskNum():
     return resourcesManager.submittedTaskNum
@@ -132,6 +143,13 @@ def getTaskExeMap():
 
 def getTaskLogMap():
     return resourcesManager.taskLogMap
+
+def setDDR(env, capacity):
+    resourcesManager.DDR = DDR.DDR(env, capacity)
+
+def getDDR():
+    return resourcesManager.DDR
+ 
 
 def test(env, data, memory):
     print("TTTTTTTTTTTTTTTTTTTTTTTest")

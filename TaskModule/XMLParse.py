@@ -99,6 +99,8 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
  
             self.data_inst_idx=data_inst_idx_str.split(",")
             self.data_inst_idx.pop() 
+            # print(self.data_name)
+            # print(self.data_inst_idx)
 
             dataInsIn = []
             dataInsOut = []   
@@ -106,6 +108,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
             if self.mov_dir==0:
                for dataid in range (len(self.data_inst_idx)):
                   #dataName, mov_dir, job_inst_idx, data_size, data_inst_idx
+                  # print("%s-%d" % (self.data_name, dataid))
                   datains=DataInstance(self.data_name, self.mov_dir, self.job_inst_idx, datasize, dataid)
                   dataInsIn.append(datains)
                   #print("input datainstance: job_inst_idx=%d, datasize=%d, data_inst_idx=%d" 
@@ -114,6 +117,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
                #print("set dataInsIn for jobId=%d" % self.taskInsList[self.job_inst_idx].jobId)               
             else:
                for dataid in range (len(self.data_inst_idx)):
+                  # print("%s-%d" % (self.data_name, dataid))
                   #dataName, mov_dir, job_inst_idx, data_size, data_inst_idx
                   datains=DataInstance(self.data_name, self.mov_dir, self.job_inst_idx, datasize, dataid)
                   dataInsOut.append(datains)

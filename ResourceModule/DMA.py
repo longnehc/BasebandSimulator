@@ -39,10 +39,13 @@ class DMA:
     def __init__(self, env, clusterId):
         self.id = 0
         self.speed = 256 * 866 * 1000000
+        self.writeBackSpeed = 256 * 866 * 1000000
         self.taskList = []
+        self.writeTaskList = []
         self.env = env
         self.clusterId = clusterId
         self.capacity = 10000
+        self.writeTaskListCapacity = 10000
         self.offChipAccess = 0
 
         self.a = 0.000001
@@ -71,6 +74,17 @@ class DMA:
             #     for i in range(0, len(self.taskList)):
             #         print(self.taskList[i].taskGraphId, end=" ")
             #     print("dma")
+
+    def submitWriteTask(self, data):
+        self.writeTaskList.append(data)
+
+    def writeBackWorker(self):    
+        while(True):
+            while len(self.writeTaskList) > 0:
+                data = self.writeTaskList.pop(0)
+                transmitTime = 2000 * data.total_size / self.writeBackSpeed
+                yield self.env.timeout(transmitTime)
+            yield self.env.timeout(0.002)
 
 
     def run(self):
