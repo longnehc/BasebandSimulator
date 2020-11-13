@@ -70,7 +70,8 @@ class reporter:
                 if ele <= RM.getReserveGraph()[keys]:
                     satifycnt += 1
             fo.write("%f " % max)
-        fo.write("\n%f" % (satifycnt / cnt))
+        if cnt != 0:
+            fo.write("\n%f" % (satifycnt / cnt))
         fo.close()
     
     def avgWaitTime(self):
