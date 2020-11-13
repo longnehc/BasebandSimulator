@@ -78,6 +78,8 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
             self.instCnt=int(attributes["instCnt"])
             self.cost = int(attributes["cost"])
             self.knrlType=attributes["type"]
+            # if self.knrlType == "FHAC":
+            #    print("Find !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %s" % self.taskName)
             self.taskInsList = [] 
             #print("Task properties: instCnt=%d, cost=%d, type=%s" %(self.instCnt, self.cost, self.knrlType))
             for task_index in range(self.instCnt):
@@ -91,6 +93,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
             self.id = attributes["id"]
             self.data_name=attributes["data_name"]
             self.mov_dir=int(attributes["mov_dir"]) 
+            self.dataid = 0
             #print("proc_item: id=%s, data_name=%s, mov_dir=%d" %(self.id, self.data_name, self.mov_dir))
       elif tag=="data_inst":
             self.job_inst_idx=int(attributes["job_inst_idx"])
@@ -117,13 +120,15 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
                #print("set dataInsIn for jobId=%d" % self.taskInsList[self.job_inst_idx].jobId)               
             else:
                for dataid in range (len(self.data_inst_idx)):
-                  # print("%s-%d" % (self.data_name, dataid))
+                  # if self.data_name == "data31":
+                  #    print("%s-%d" % (self.data_name, dataid + self.dataid))
                   #dataName, mov_dir, job_inst_idx, data_size, data_inst_idx
-                  datains=DataInstance(self.data_name, self.mov_dir, self.job_inst_idx, datasize, dataid)
+                  datains=DataInstance(self.data_name, self.mov_dir, self.job_inst_idx, datasize, dataid + self.dataid)
                   dataInsOut.append(datains)
                   self.producerMap[self.data_name + "-" +str(dataid)] = self.taskInsList[self.job_inst_idx]
                   #print("output datainstance: job_inst_idx=%d, datasize=%d, data_inst_idx=%d of jobid=%d" 
                   #% (self.job_inst_idx, datasize, dataid, self.taskInsList[self.job_inst_idx].jobId))  
+               self.dataid += len(self.data_inst_idx)
                self.taskInsList[self.job_inst_idx].setDataInsOut(dataInsOut)
                #print("set dataInsOut for jobId=%d" % self.taskInsList[self.job_inst_idx].jobId)
 

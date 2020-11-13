@@ -20,22 +20,22 @@ class MEM:
     def saveData(self, data):
         # can mem save data
         # print("%s-%d" % (data.dataName, data.data_inst_idx))
-        if data.dataName + "-" + str(data.job_inst_idx) in self.map.keys():
-            self.map.pop(data.dataName + "-" + str(data.job_inst_idx))
-            self.map[data.dataName + "-" + str(data.job_inst_idx)] = data
+        if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
+            self.map.pop(data.dataName + "-" + str(data.data_inst_idx))
+            self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
         elif self.checkMem(data):
-            self.map[data.dataName + "-" + str(data.job_inst_idx)] = data
+            self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
             self.curSize += data.total_size
         else:
             while self.curSize + data.total_size > self.capacity:
                 tmp = self.map.popitem(last=False)[1]
                 self.curSize -= tmp.total_size
                 if tmp.refCnt != 0:
-                    # print("Writing back to DDR %s-%d, move: %d" % (tmp.dataName, tmp.job_inst_idx, tmp.mov_dir))
+                    # print("Writing back to DDR %s-%d, move: %d" % (tmp.dataName, tmp.data_inst_idx, tmp.mov_dir))
                     if not RM.submitWriteBackTaskToDma(data, self.clusterId, 0):
                         print("Write back buffer full, write back failed")
                 # print("******************************%d"%tmp.total_size)
-            self.map[data.dataName + "-" + str(data.job_inst_idx)] = data
+            self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
             self.curSize += data.total_size
 
         self.peek = max(self.curSize,self.peek)
@@ -52,8 +52,8 @@ class MEM:
         data.refCnt -= 1
         if data.refCnt == 0:
             # print("delete!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            if data.dataName + "-" + str(data.job_inst_idx) in self.map.keys():
-                self.map.pop(data.dataName + "-" + str(data.job_inst_idx))
+            if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
+                self.map.pop(data.dataName + "-" + str(data.data_inst_idx))
                 self.curSize -= data.total_size
 
         # yield env.timeout(transformTime)
@@ -64,7 +64,7 @@ class MEM:
         # check if date is in this mem
         # print("check " + data.dataName)
         # print(data.dataName in self.map.keys())
-        if data.dataName + "-" + str(data.job_inst_idx) in self.map.keys():
+        if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
             return True
         else:
             # print("false %d" % self.curSize)
