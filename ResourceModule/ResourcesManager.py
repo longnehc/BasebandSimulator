@@ -27,11 +27,9 @@ resourcesManager = ResourcesManager()
 
  
  
-def submitTaskToDma(task, clusterId, dmaId, env):
+def submitTaskToCluster(task, clusterId, env):
     cluster = getCluster(clusterId)
-    dma = cluster.getDma(dmaId)
-    if len(dma.taskList) < dma.capacity:
-        dma.submit(task)
+    if cluster.submit(task):
         task.taskStatus = TaskStatus.SUMBITTED
         task.submittedTime = env.now
         resourcesManager.submittedTaskNum += 1
@@ -61,7 +59,7 @@ def submitWriteBackTaskToDma(data, clusterId, dmaId):
     cluster = getCluster(clusterId)
     dma = cluster.getDma(dmaId)
     if len(dma.writeTaskList) < dma.writeTaskListCapacity:
-        dma.submitWriteTask(data)  
+        dma.saveData(data)  
         return True
     else:
         # print(len(dma.taskList))
@@ -104,6 +102,11 @@ def setCluster(env, num):
     for i in range(0, num):
         # print("set cluster %d"%i)
         resourcesManager.clusterList.append(Cluster.Cluster(env, i))
+
+def setDma(self, num, clusterId):
+    cluster = getCluster(clusterId)
+    for i in range(0,num):
+        cluster.dmaList.append(DMA(clusterId, resourcesManager))
 
 def setReserveGraph(id, ddl):
     resourcesManager.reserveGraph[id] = ddl

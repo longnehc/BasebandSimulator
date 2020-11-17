@@ -45,8 +45,9 @@ class MEM:
 
     # get data
     def getData(self, env, data, dsp):
-        # if not data.dataName in self.map.keys():
-        #     RM.submitDmaTask(env, data, self)
+        if not data.dataName in self.map.keys():
+           cluster = RM.getCluster(self.clusterId)
+           cluster.getDma(0).getData(data)
 
         # transformTime = data.total_size / self.speed
         data.refCnt -= 1

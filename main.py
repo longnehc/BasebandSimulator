@@ -155,6 +155,9 @@ if __name__ == "__main__":
     graphList[5].QosReserve = True
     
     RM.setCluster(env, ClusterNum)
+    for i in range(ClusterNum):
+        RM.setDma(1,i)
+    
     RM.setReserveGraph(1, 0.8)
 
     # off-chip Mem
@@ -227,10 +230,9 @@ if __name__ == "__main__":
     scheduler.setAlgorithm(selectedAlgo)
     env.process(scheduler.run(env))
     for cluster in RM.getClusterList():
+        env.process(cluster.run())
         for dsp in cluster.getDspList():
             env.process(dsp.run(taskManager))
-        for dma in cluster.getDmaList():
-            env.process(dma.run())
 
     # Execute!
     env.run(until=SIM_TIME)

@@ -37,9 +37,15 @@ class DSP:
     num = 0
     env = None
 
-    def __init__(self, env, clusterId):
-        self.id = DSP.num
-        DSP.num += 1
+    def __init__(self, env, clusterId, type):
+        self.type = type
+        #type is "DSP" or "FHAC" ...
+        if self.type == 'FHAC':
+            self.speed *= 16
+            self.id = 0
+        else:
+            self.id = DSP.num
+            DSP.num += 1
         self.taskQueue = []
         self.speed = 1.3 * 1000000000
         self.clusterId = clusterId
@@ -78,6 +84,9 @@ class DSP:
         while (True):
             while len(self.taskQueue) > 0:
                 task = self.taskQueue.pop(0)
+                
+                if task.knrlType == "FHAC" and self.type == 'DSP':
+                    print("error: find a FHAC task on DSP!!!!!!!")
 
                 for data in task.dataInsIn:
                     RM.getMemory(self).getData(self.env, data, self)

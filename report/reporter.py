@@ -75,9 +75,10 @@ class reporter:
         fo.close()
     
     def avgWaitTime(self):
-        fo = open(self.prefix + "/12avgWaitTime.txt", "w")
-        fo.write("%f " % (RM.getWaitTime() / RM.getSubmittedTaskNum()))
-        fo.close()
+        if RM.getSubmittedTaskNum()>0:
+            fo = open(self.prefix + "/12avgWaitTime.txt", "w")
+            fo.write("%f " % (RM.getWaitTime() / RM.getSubmittedTaskNum()))
+            fo.close()
 
 
 
