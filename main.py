@@ -157,6 +157,8 @@ if __name__ == "__main__":
     RM.setCluster(env, ClusterNum)
     for i in range(ClusterNum):
         RM.setDma(1,i)
+
+    RM.setDDR(1000000)
     
     RM.setReserveGraph(1, 0.8)
 
@@ -233,6 +235,8 @@ if __name__ == "__main__":
         env.process(cluster.run())
         for dsp in cluster.getDspList():
             env.process(dsp.run(taskManager))
+        for FHAC in cluster.getFHACList():
+            env.process(FHAC.run(taskManager))
 
     # Execute!
     env.run(until=SIM_TIME)

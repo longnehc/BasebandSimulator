@@ -20,6 +20,7 @@ class ResourcesManager:
         self.submittedTaskNum = 0
         self.waitTime = 0.0
         self.reserveGraph = {}
+        self.DDR = {}
 
 
 
@@ -54,6 +55,11 @@ def submitTaskToDsp(task, clusterId, dspId):
     # else:
     #     # print(len(dma.taskList))
     #     return False
+
+def submitTaskToFHAC(task, clusterId):
+    cluster = getCluster(clusterId)
+    dsp = cluster.getFHACList()[0]
+    dsp.submit(task)
 
 def submitWriteBackTaskToDma(data, clusterId, dmaId):
     cluster = getCluster(clusterId)
@@ -142,8 +148,8 @@ def getTaskExeMap():
 def getTaskLogMap():
     return resourcesManager.taskLogMap
 
-def setDDR(env, capacity):
-    resourcesManager.DDR = DDR.DDR(env, capacity)
+def setDDR(capacity):
+    resourcesManager.DDR = DDR.DDR(capacity)
 
 def getDDR():
     return resourcesManager.DDR

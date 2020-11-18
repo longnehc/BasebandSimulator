@@ -39,7 +39,8 @@ class DSP:
 
     def __init__(self, env, clusterId, type):
         self.type = type
-        self.speed = 1.3 * 1000000000
+        """speed is 1.3 * 1000000000"""
+        self.speed = 1.3 * 10000000000000
         #type is "DSP" or "FHAC" ...
         if self.type == 'FHAC':
             self.speed *= 16
@@ -63,7 +64,6 @@ class DSP:
             DSP.env = env
 
     def submit(self, task):
-        # print ("*************** %s"%self)
         self.taskQueue.append(task)
 
         # for report
@@ -99,10 +99,11 @@ class DSP:
 
                 # write back
                 for data in task.getDataInsOut():
-                    print("=====debug from Shine: try to save data to memory=====")
                     Replace = RM.getMemory(self).saveData(data)
+                    """
                     if Replace:
                         print("=====debug from Shine: write with replace=====")
+                    """
                     # print("dsp save %s" % data.data_inst_idx)
 
                 # finish task
@@ -110,6 +111,10 @@ class DSP:
                 self.curCost -= task.cost
                 graph = taskManager.getGraph(task.batchId, task.taskGraphId)
                 graph.taskNum -= 1
+                """
+                if task.taskGraphId == 4:
+                    print("=====debug from Shine:the remaining num of graph4=====",graph.taskNum)     
+                """
                 if graph.taskNum == 0:
                     graph.finished = True
                     if graph.QosReserve:

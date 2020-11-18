@@ -5,7 +5,6 @@ class DMA:
         self.clusterId = clusterId
 
     def getData(self, data):
-        print("get data from other clusters or DDR!!!!!!!!!!")
         accessTime = 0
         find = False
         """
@@ -24,13 +23,13 @@ class DMA:
             if data.dataName + "-" + str(data.data_inst_idx) in DDR.map.keys():
                 find = True
             else:
-                print("not in DDR!!!!!!!!!!!!")
+                #print("not in DDR!!!!!!!!!!!!")
                 self.saveData(data)
-        RM.getCluster(self.clusterId).memoryList[0].saveData()
+        RM.getCluster(self.clusterId).memoryList[0].saveData(data)
         return accessTime
 
     def saveData(self, data):
-        print("write data back to DDR!!!!!!!!!!")
+        #print("write data back to DDR!!!!!!!!!!")
         DDR = RM.getDDR()
         DDR.map[data.dataName + "-" + str(data.data_inst_idx)] = data
         return True

@@ -99,7 +99,7 @@ def run(env):
                 #             yield env.timeout(0.001)
 
             elif scheduler.algorithm == SchduleAlgorithm.LB:
-                # print("Load balancing...")
+                print("Load balancing...")
                 # cnt = (cnt + 1) % 16
                 # if not RM.submitTaskToCluster(task, cnt, env):
                 #     tmp = (cnt + 1) % 16
@@ -153,7 +153,7 @@ def run(env):
                 else:
                     clusterId = scheduler.QosReserveClusterNum
                     for i in range(scheduler.QosReserveClusterNum, len(clusterList)):
-                        if len(clusterList[i].dmaList[0].taskList) < len(clusterList[clusterId].dmaList[0].taskList):
+                        if len(clusterList[i].taskList) < len(clusterList[clusterId].taskList):
                             clusterId = i
                         # submit
                     while not RM.submitTaskToCluster(task, clusterId, env):

@@ -56,7 +56,8 @@ class Cluster:
 
         self.clusterId = clusterId
 
-        self.speed = 2 * 256 * 866 * 1000000
+        self.speed = 256 * 866 * 10000000000
+        """speed is 256 * 866 * 1000000"""
 
         if Cluster.env == None:
             Cluster.env = env
@@ -71,6 +72,7 @@ class Cluster:
         if self.preemptionCnt == self.sortNum:
             self.preemptionCnt = 0
             self.taskList = sorted(self.taskList, key=functools.cmp_to_key(QosPreemption))
+        return True
     
     def setDsp(self, env, num, clusterId):
         for i in range(0,num):
@@ -123,7 +125,7 @@ class Cluster:
                 for data in task.getDataInsIn():
                     self.curCost -= data.total_size
                     if not RM.getMemory(self).checkData(data):
-                        print("=====debug from Shine: not in the inner memory, using dma to find=====")
+                        #print("=====debug from Shine: not in the inner memory, using dma to find=====")
                         transmitTime = 2000 * data.total_size / self.speed
                         self.offChipAccess += data.total_size
                         accessTime = self.getDma(0).getData(data)
@@ -134,7 +136,7 @@ class Cluster:
                         RM.getMemory(self).saveData(data)
 
                 if task.knrlType == "FHAC":
-                    print("=====debug from Shine: using FHAC to run task=====")
+                    #print("=====debug from Shine: using FHAC to run task=====")
                     FHACList = RM.getCluster(self.clusterId).getFHACList()
                     FHAC = FHACList[0]
                     """
@@ -142,7 +144,10 @@ class Cluster:
                         if f.curCost < FHAC.curCost:
                             FHAC = f
                     """
-                    RM.submitTaskToDsp(task, self.clusterId, 0)
+                    """
+                    need to change!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    """
+                    RM.submitTaskToFHAC(task, self.clusterId)
                 else:
                     dspList = RM.getCluster(self.clusterId).getDspList()
                     dsp = dspList[0]

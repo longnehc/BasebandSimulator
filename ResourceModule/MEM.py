@@ -11,6 +11,7 @@ class MEM:
         self.map = OrderedDict()
         self.speed = 1
 
+        #self.capacity = 100000
         self.capacity = 100000
         self.curSize = 0
         self.peek = 0
@@ -28,7 +29,6 @@ class MEM:
             self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
             self.curSize += data.total_size
         else:
-            "out of memory, saving to drr!!!!!!!!!!!!!!!"
             saveToDDR = True
             while self.curSize + data.total_size > self.capacity:
                 tmp = self.map.popitem(last=False)[1]
@@ -50,7 +50,6 @@ class MEM:
     # get data
     def getData(self, env, data, dsp):
         if not data.dataName in self.map.keys():
-            print("may be changed out, find in drr!!!!!!!!!!!!!")
             cluster = RM.getCluster(self.clusterId)
             cluster.getDma(0).getData(data)
 
