@@ -1,4 +1,4 @@
-
+#coding=utf-8
 import simpy
 from TaskModule.XMLParse import *
 from ResourceModule import ResourcesManager as RM

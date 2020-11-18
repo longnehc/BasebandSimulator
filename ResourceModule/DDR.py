@@ -12,21 +12,6 @@ class DDR:
         self.curSize = 0
         self.peek = 0 
     
-    def saveData(self, data):
-        if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
-            self.map.pop(data.dataName + "-" + str(data.data_inst_idx))
-            self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
-        elif self.checkDDRCapacity(data):
-            self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
-            self.curSize += data.total_size
-        else:
-            while self.curSize + data.total_size > self.capacity:
-                tmp = self.map.popitem(last=False)[1]
-                self.curSize -= tmp.total_size    
-                # print("******************************%d"%tmp.total_size)
-            self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
-            self.curSize += data.total_size
-    
     def checkData(data):
         if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
             return True

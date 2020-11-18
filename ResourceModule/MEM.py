@@ -18,6 +18,7 @@ class MEM:
         self.clusterId = clusterId
 
     def saveData(self, data):
+        saveToDDR = False
         # can mem save data
         # print("%s-%d" % (data.dataName, data.data_inst_idx))
         if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
@@ -27,18 +28,21 @@ class MEM:
             self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
             self.curSize += data.total_size
         else:
+            "out of memory, saving to drr!!!!!!!!!!!!!!!"
+            saveToDDR = True
             while self.curSize + data.total_size > self.capacity:
                 tmp = self.map.popitem(last=False)[1]
                 self.curSize -= tmp.total_size
                 if tmp.refCnt != 0:
                     # print("Writing back to DDR %s-%d, move: %d" % (tmp.dataName, tmp.data_inst_idx, tmp.mov_dir))
-                    if not RM.submitWriteBackTaskToDma(data, self.clusterId, 0):
+                    if not RM.submitWriteBackTaskToDma(tmp, self.clusterId, 0):
                         print("Write back buffer full, write back failed")
                 # print("******************************%d"%tmp.total_size)
             self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
             self.curSize += data.total_size
 
         self.peek = max(self.curSize,self.peek)
+        return saveToDDR
 
         # save data
         # print ("memory save %s" % data.dataName)
@@ -46,8 +50,9 @@ class MEM:
     # get data
     def getData(self, env, data, dsp):
         if not data.dataName in self.map.keys():
-           cluster = RM.getCluster(self.clusterId)
-           cluster.getDma(0).getData(data)
+            print("may be changed out, find in drr!!!!!!!!!!!!!")
+            cluster = RM.getCluster(self.clusterId)
+            cluster.getDma(0).getData(data)
 
         # transformTime = data.total_size / self.speed
         data.refCnt -= 1

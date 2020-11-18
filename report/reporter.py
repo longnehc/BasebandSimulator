@@ -256,8 +256,14 @@ class reporter:
 
         for taskname in taskTimeMap:
             fo.write("%s\n" % taskname)
-            begin = taskTimeMap[taskname][0]
-            end = taskTimeMap[taskname][1]
+            begin = -1
+            end = -1
+            for i in range(len(taskTimeMap[taskname])):
+                if i == 0:
+                    begin = taskTimeMap[taskname][i]
+                else:
+                    end = taskTimeMap[taskname][i]
+                    
             for i in range(2, len(taskTimeMap[taskname])):
                 if i % 2 == 0:
                     if taskTimeMap[taskname][i] > end:

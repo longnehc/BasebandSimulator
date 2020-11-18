@@ -123,16 +123,18 @@ class Cluster:
                 for data in task.getDataInsIn():
                     self.curCost -= data.total_size
                     if not RM.getMemory(self).checkData(data):
+                        print("=====debug from Shine: not in the inner memory, using dma to find=====")
                         transmitTime = 2000 * data.total_size / self.speed
                         self.offChipAccess += data.total_size
                         accessTime = self.getDma(0).getData(data)
                         """remember to add this to REPORTER"""
                         findTime = 0.00001
-                        yield self.env.timeout(accessTime * findTime)
+                        #yield self.env.timeout(accessTime * findTime)
                         yield self.env.timeout(transmitTime)
                         RM.getMemory(self).saveData(data)
 
                 if task.knrlType == "FHAC":
+                    print("=====debug from Shine: using FHAC to run task=====")
                     FHACList = RM.getCluster(self.clusterId).getFHACList()
                     FHAC = FHACList[0]
                     """

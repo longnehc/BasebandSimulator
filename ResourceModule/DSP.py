@@ -99,7 +99,10 @@ class DSP:
 
                 # write back
                 for data in task.getDataInsOut():
-                    RM.getMemory(self).saveData(data)
+                    print("=====debug from Shine: try to save data to memory=====")
+                    Replace = RM.getMemory(self).saveData(data)
+                    if Replace:
+                        print("=====debug from Shine: write with replace=====")
                     # print("dsp save %s" % data.data_inst_idx)
 
                 # finish task
