@@ -39,6 +39,7 @@ class DSP:
 
     def __init__(self, env, clusterId, type):
         self.type = type
+        self.speed = 1.3 * 1000000000
         #type is "DSP" or "FHAC" ...
         if self.type == 'FHAC':
             self.speed *= 16
@@ -47,7 +48,6 @@ class DSP:
             self.id = DSP.num
             DSP.num += 1
         self.taskQueue = []
-        self.speed = 1.3 * 1000000000
         self.clusterId = clusterId
         self.env = env
 

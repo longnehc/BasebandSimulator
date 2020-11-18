@@ -29,8 +29,8 @@ class reporter:
         for cluster in RM.getClusterList():
             for dsp in cluster.dspList:
                 cnt += 1
-                totalOffMem += RM.getDma(dsp).offChipAccess
-                print("Off chip mem access : %d, dsp = %d" % (RM.getDma(dsp).offChipAccess, dsp.id))
+                totalOffMem += RM.getCluster(dsp.clusterId).offChipAccess
+                print("Off chip mem access : %d, dsp = %d" % (RM.getCluster(dsp.clusterId).offChipAccess, dsp.id))
         if cnt != 0:
             print("Total offmem = %f, avgerage offmem = %f" % (totalOffMem, totalOffMem/cnt))
         
@@ -108,10 +108,10 @@ class reporter:
                         
                     curMemAccess = 0
                     if dsp.id in self.memAccessMap:
-                        curMemAccess = RM.getDma(dsp).offChipAccess - self.recordedMemAccess[dsp.id]
+                        curMemAccess = RM.getCluster(dsp.clusterId).offChipAccess - self.recordedMemAccess[dsp.id]
                     else:
-                        curMemAccess = RM.getDma(dsp).offChipAccess
-                    self.recordedMemAccess[dsp.id] = RM.getDma(dsp).offChipAccess
+                        curMemAccess = RM.getCluster(dsp.clusterId).offChipAccess
+                    self.recordedMemAccess[dsp.id] = RM.getCluster(dsp.clusterId).offChipAccess
                     if dsp.id in self.memAccessMap:
                         self.memAccessMap[dsp.id].append(curMemAccess)
                     else:

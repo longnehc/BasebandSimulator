@@ -58,12 +58,7 @@ def submitTaskToDsp(task, clusterId, dspId):
 def submitWriteBackTaskToDma(data, clusterId, dmaId):
     cluster = getCluster(clusterId)
     dma = cluster.getDma(dmaId)
-    if len(dma.writeTaskList) < dma.writeTaskListCapacity:
-        dma.saveData(data)  
-        return True
-    else:
-        # print(len(dma.taskList))
-        return False
+    return dma.saveData(data)
 
 def getSubmittedTaskNum():
     return resourcesManager.submittedTaskNum
@@ -103,10 +98,10 @@ def setCluster(env, num):
         # print("set cluster %d"%i)
         resourcesManager.clusterList.append(Cluster.Cluster(env, i))
 
-def setDma(self, num, clusterId):
+def setDma(num, clusterId):
     cluster = getCluster(clusterId)
     for i in range(0,num):
-        cluster.dmaList.append(DMA(clusterId, resourcesManager))
+        cluster.dmaList.append(DMA.DMA(clusterId))
 
 def setReserveGraph(id, ddl):
     resourcesManager.reserveGraph[id] = ddl
@@ -129,16 +124,16 @@ def getTransmitSpeed(component):
     cluster = getCluster(component.clusterId)
     return cluster.speed
 
-# clear dma's taskList [] TODO:
+# clear cluster's taskList [] TODO:
 def clearCluster(start, end):
     for i in range(start, end + 1):
         # cnt = end + 1
         cluster = resourcesManager.clusterList[i]
-        for task in cluster.dmaList[0].taskList:
-            dma = resourcesManager.clusterList[random.randint(end+1, getClusterNum()-1)].getDma(0)
-            dma.submit(task)
+        for task in cluster.taskList:
+            chosenCluster = resourcesManager.clusterList[random.randint(end+1, getClusterNum()-1)]
+            chosenCluster.submit(task)
             # cnt += 1
-        cluster.dmaList[0].taskList = []
+        cluster.taskList = []
 
 
 def getTaskExeMap():

@@ -52,7 +52,7 @@ class Cluster:
         self.setMemory(1, clusterId)
 
         self.dmaList = []
-        self.setDma(env, 1, clusterId)
+        self.offChipAccess = 0
 
         self.clusterId = clusterId
 
@@ -96,10 +96,6 @@ class Cluster:
     def getMemory(self,index):
         return self.memoryList[index]
 
-    def setDma(self, env, num, clusterId):
-        for i in range(0,num):
-            self.dmaList.append(DMA(clusterId, totalBus))
-
     def getDma(self,index):
         return self.dmaList[index]
 
@@ -130,7 +126,10 @@ class Cluster:
                         transmitTime = 2000 * data.total_size / self.speed
                         self.offChipAccess += data.total_size
                         accessTime = self.getDma(0).getData(data)
-                        yield self.env.timeout(accessTime * transmitTime)
+                        """remember to add this to REPORTER"""
+                        findTime = 0.00001
+                        yield self.env.timeout(accessTime * findTime)
+                        yield self.env.timeout(transmitTime)
                         RM.getMemory(self).saveData(data)
 
                 if task.knrlType == "FHAC":
