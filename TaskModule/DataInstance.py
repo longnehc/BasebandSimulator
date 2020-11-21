@@ -5,7 +5,7 @@ class DataInstance:
         self.job_inst_idx = job_inst_idx
         self.total_size = total_size
         self.data_inst_idx = data_inst_idx
-        self.refCnt = 0
+        self.remain_time = 0
 
     def __hash__(self):
         return hash(self.dataName)

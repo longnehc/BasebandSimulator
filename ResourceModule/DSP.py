@@ -40,7 +40,7 @@ class DSP:
     def __init__(self, env, clusterId, type):
         self.type = type
         """speed is 1.3 * 1000000000"""
-        self.speed = 1.3 * 10000000000000
+        self.speed = 1.3 * 1000000000
         #type is "DSP" or "FHAC" ...
         if self.type == 'FHAC':
             self.speed *= 16
@@ -89,7 +89,12 @@ class DSP:
                     print("error: find a FHAC task on DSP!!!!!!!")
 
                 for data in task.dataInsIn:
-                    RM.getMemory(self).getData(self.env, data, self)
+                    gotData = RM.getMemory(self).getData(self.env, data, self)
+                    gotData.remain_time -= 1
+                    if gotData.remain_time == 0:
+                        RM.getMemory(self).delData(self.env, gotData, self)
+                    if gotData.remain_time < 0:
+                        print("memory error: get data not valid!",gotData.dataName)
 
                 # print(task.taskName + " begin in %s"% self.id)
                 # TODO: Task -> schedule(all task, dsp) -> DMA -> DSP -> DMA()
@@ -111,12 +116,11 @@ class DSP:
                 self.curCost -= task.cost
                 graph = taskManager.getGraph(task.batchId, task.taskGraphId)
                 graph.taskNum -= 1
-                """
-                if task.taskGraphId == 4:
-                    print("=====debug from Shine:the remaining num of graph4=====",graph.taskNum)     
-                """
                 if graph.taskNum == 0:
                     graph.finished = True
+                    for data in task.getDataInsOut():
+                        RM.getDma(self).saveData(data)
+
                     if graph.QosReserve:
                         scheduler.qosReserveFinish()
                     print("graph %d of batch %d finish %f and cost %f" % (

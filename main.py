@@ -49,8 +49,11 @@ if __name__ == "__main__":
     DMASpeed = 10
     DDRCapacity = 100
     SIM_TIME = 10
+    """change with algo"""
     selectedAlgo = SchduleAlgorithm.QOSPreemptionG
     rpt = reporter()
+    """change with algo"""
+    """only reserve"""
     rpt.rflag = True
 
     # Create an environment and start the setup process
@@ -104,7 +107,10 @@ if __name__ == "__main__":
     #print(len(graphList))
     #print("Task graph parser ends")
 
-    
+    initData = Handler.getInitData()
+    producerMap = Handler.getProducerMap()
+    consumerMap = Handler.getConsumerMap()
+    print("=====debug from Shine: init data,",initData)
     
     taskManager = TaskManager(graphList)
     minPeriod = 1 # minimal period of all graphs 
@@ -129,7 +135,6 @@ if __name__ == "__main__":
         for task in graph.globalTaskList:
             for datains in task.dataInsIn:
                 key = datains.dataName + "-" + str(datains.data_inst_idx)
-                producerMap = Handler.getProducerMap()
                 if key in producerMap:
                     if producerMap[key].taskGraphId != task.taskGraphId:
                         if producerMap[key].taskGraphId not in precedenceGraphMap:
@@ -139,6 +144,13 @@ if __name__ == "__main__":
                         task.precedenceTask.append(producerMap[key])
                         task.precedenceJobID.append(producerMap[key].jobId)
                         # print("Cross graph task dependency: %s depends on %s" % (task.taskName, producerMap[key].taskName))
+            for dataouts in task.dataInsOut:
+                key = dataouts.dataName + "-" + str(dataouts.data_inst_idx)
+                if key in consumerMap:
+                    if dataouts.dataName=='data0':
+                        print("debug from Shine: data0 ref init",consumerMap[key])
+                    dataouts.mov_dir = consumerMap[key]
+                    dataouts.remain_time = dataouts.mov_dir
         of.write("\n")
         for key in precedenceGraphMap:
             graph.precedenceGraph.append(key)           #set precedenceGraph for graph, 除了时隙的都可以直接分析
@@ -149,6 +161,8 @@ if __name__ == "__main__":
         graph.arrivalTime = ArrivalTimeList[graphIndex]
         graphIndex += 1
     of.close()
+    """change with algo"""
+    """only reserve"""
     # Qos Reserve
     graphList[1].QosReserve = True
     graphList[4].QosReserve = True
@@ -158,7 +172,17 @@ if __name__ == "__main__":
     for i in range(ClusterNum):
         RM.setDma(1,i)
 
-    RM.setDDR(1000000)
+    initDataIns = []
+    for key in initData:
+        idxList = key.split('-')
+        refCnt = consumerMap[idxList[0]+'-'+idxList[1]]
+        dataIns = DataInstance(idxList[0],refCnt,0,int(idxList[2]),idxList[1])
+        """
+        data initialized in DDR won't be removed
+        """
+        dataIns.remain_time = 100000
+        initDataIns.append(dataIns)
+    RM.setDDR(1000000,initDataIns)
     
     RM.setReserveGraph(1, 0.8)
 

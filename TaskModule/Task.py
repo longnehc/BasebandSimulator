@@ -72,11 +72,17 @@ class Task:
         self.precedenceGraphID = precedenceGraphID    
 
     def setDataInsIn(self, dataInsIn) :
-        self.dataInsIn = dataInsIn
+        if len(self.dataInsIn)==0:
+            self.dataInsIn = dataInsIn
+        else:
+            self.dataInsIn = self.dataInsIn + dataInsIn
     
 
     def setDataInsOut(self, dataInsOut) :
-        self.dataInsOut = dataInsOut
+        if len(self.dataInsOut)==0:
+            self.dataInsOut = dataInsOut
+        else:
+            self.dataInsOut = self.dataInsOut + dataInsOut
 
     def getDataInsIn(self):
         return self.dataInsIn

@@ -33,12 +33,21 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
       self.data_inst_idx=[] 
       self.graphList=[] 
       self.producerMap = {} #key:dataInsOut : value: task
+      self.consumerMap = {} #key:dataIdx : value:refCnt
+      self.globalDataIn = set()
+      self.globalDataOut = set()
 
    def getProducerMap(self):   
       return self.producerMap
 
+   def getConsumerMap(self):
+      return self.consumerMap
+
    def getGraphList(self):
       return self.graphList
+
+   def getInitData(self):
+      return self.globalDataIn-self.globalDataOut
 
    def startElement(self, tag, attributes):
       self.CurrentData = tag
@@ -53,10 +62,13 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
                precedenceJobId = [] 
                for datains in task.dataInsIn: 
                   key = datains.dataName + "-" + str(datains.data_inst_idx)
+                  if key in self.consumerMap:
+                     self.consumerMap[key] += 1
+                  else:
+                     self.consumerMap[key] = 1
                   if key in self.producerMap:
                      precedenceTask.append(self.producerMap[key])
                      precedenceJobId.append(self.producerMap[key].jobId)
-                     datains.refCnt += 1
                      #print("%s depends on %s (jobId=%d)" % 
                      #(task.taskName, self.producerMap[key].taskName, self.producerMap[key].jobId))
                task.setPrecedenceJobID(precedenceJobId)
@@ -107,12 +119,14 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
 
             dataInsIn = []
             dataInsOut = []   
-            datasize = self.total_size/len(self.data_inst_idx)   
+            datasize = int(self.total_size/len(self.data_inst_idx))   
             if self.mov_dir==0:
-               for dataid in range (len(self.data_inst_idx)):
+               for dataid in self.data_inst_idx:
                   #dataName, mov_dir, job_inst_idx, data_size, data_inst_idx
                   # print("%s-%d" % (self.data_name, dataid))
                   datains=DataInstance(self.data_name, self.mov_dir, self.job_inst_idx, datasize, dataid)
+                  
+                  self.globalDataIn.add(self.data_name + "-" + str(dataid) + "-" + str(datasize))
                   dataInsIn.append(datains)
                   #print("input datainstance: job_inst_idx=%d, datasize=%d, data_inst_idx=%d" 
                   #% (self.job_inst_idx, datasize, dataid))
@@ -124,16 +138,18 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
                   #    print("%s-%d" % (self.data_name, dataid + self.dataid))
                   #dataName, mov_dir, job_inst_idx, data_size, data_inst_idx
                   datains=DataInstance(self.data_name, self.mov_dir, self.job_inst_idx, datasize, dataid + self.dataid)
+                  self.globalDataOut.add(self.data_name+ "-" + str(dataid + self.dataid) + "-" + str(datasize))
                   dataInsOut.append(datains)
-                  self.producerMap[self.data_name + "-" +str(dataid)] = self.taskInsList[self.job_inst_idx]
+
+                  self.producerMap[self.data_name + "-" +str(dataid+self.dataid)] = self.taskInsList[self.job_inst_idx]
                   #print("output datainstance: job_inst_idx=%d, datasize=%d, data_inst_idx=%d of jobid=%d" 
-                  #% (self.job_inst_idx, datasize, dataid, self.taskInsList[self.job_inst_idx].jobId))  
+                  #% (self.job_inst_idx, datasize, dataid, self.taskInsList[self.job_inst_idx].jobId))
+
                self.dataid += len(self.data_inst_idx)
+
                self.taskInsList[self.job_inst_idx].setDataInsOut(dataInsOut)
                #print("set dataInsOut for jobId=%d" % self.taskInsList[self.job_inst_idx].jobId)
 
-               
-              
 if ( __name__ == "__main__"):
    parser = xml.sax.make_parser()
    # turn off namepsaces

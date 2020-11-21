@@ -139,15 +139,16 @@ class TaskManager:
         dataInsIn = []
         for indata in task.dataInsIn:
             dataDataInstance = DataInstance(indata.dataName, indata.mov_dir, indata.job_inst_idx, indata.total_size, indata.data_inst_idx)
-            dataDataInstance.refCnt = indata.refCnt
             dataInsIn.append(dataDataInstance)
         newtask.setDataInsIn(dataInsIn)
  
         #set the output data instance
         dataOutIn = []
         for outdata in task.dataInsOut:
-            dataOutIn.append(DataInstance(outdata.dataName, outdata.mov_dir, outdata.job_inst_idx,
-                outdata.total_size, outdata.data_inst_idx))
+            dataDataInstance = DataInstance(outdata.dataName, outdata.mov_dir, outdata.job_inst_idx,
+                outdata.total_size, outdata.data_inst_idx)
+            dataDataInstance.remain_time = outdata.mov_dir
+            dataOutIn.append(dataDataInstance)
         newtask.setDataInsOut(dataOutIn)
         return newtask
 

@@ -56,7 +56,7 @@ class Cluster:
 
         self.clusterId = clusterId
 
-        self.speed = 256 * 866 * 10000000000
+        self.speed = 256 * 866 * 1000000
         """speed is 256 * 866 * 1000000"""
 
         if Cluster.env == None:
@@ -128,12 +128,12 @@ class Cluster:
                         #print("=====debug from Shine: not in the inner memory, using dma to find=====")
                         transmitTime = 2000 * data.total_size / self.speed
                         self.offChipAccess += data.total_size
-                        accessTime = self.getDma(0).getData(data)
+                        gotData,accessTime = self.getDma(0).getData(data)
                         """remember to add this to REPORTER"""
                         findTime = 0.00001
                         #yield self.env.timeout(accessTime * findTime)
                         yield self.env.timeout(transmitTime)
-                        RM.getMemory(self).saveData(data)
+                        RM.getMemory(self).saveData(gotData)
 
                 if task.knrlType == "FHAC":
                     #print("=====debug from Shine: using FHAC to run task=====")

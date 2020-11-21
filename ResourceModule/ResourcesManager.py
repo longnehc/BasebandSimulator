@@ -148,8 +148,8 @@ def getTaskExeMap():
 def getTaskLogMap():
     return resourcesManager.taskLogMap
 
-def setDDR(capacity):
-    resourcesManager.DDR = DDR.DDR(capacity)
+def setDDR(capacity, dataInit):
+    resourcesManager.DDR = DDR.DDR(capacity, dataInit)
 
 def getDDR():
     return resourcesManager.DDR

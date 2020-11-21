@@ -3,14 +3,17 @@ from collections import OrderedDict
 
 class DDR:
 
-    def __init__(self,capacity):
+    def __init__(self,capacity,initData):
         # key is dataName + datainstanceID
         self.map = OrderedDict()
         self.speed = 1
         # self.capacity = 100000 * 100
         self.capacity = capacity
         self.curSize = 0
-        self.peek = 0 
+        self.peek = 0
+        for data in initData:
+            key = data.dataName + "-" + str(data.data_inst_idx)
+            self.map[key] = data
     
     def checkData(data):
         if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
