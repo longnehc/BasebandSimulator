@@ -54,47 +54,10 @@ if __name__ == "__main__":
     rpt = reporter()
     """change with algo"""
     """only reserve"""
-    rpt.rflag = True
+    rpt.rflag = False
 
     # Create an environment and start the setup process
     env = simpy.Environment()
-    
-    # #dataName, mov_dir, job_inst_idx, total_size, data_inst_idx
-    # d0 = DataInstance("data0", 0, 0, 100, 33792)
-    # d1 = DataInstance("data1", 1, 0, 100, 256)
-    # #name, knrlType, instCnt, jobId, graphId, job_inst_idx
-    # t0 = Task("task0", "DSP", 1, 0, 0, 0)
-    # t0.setDataInsIn([d0])
-    # t0.setDataInsOut([d1])
-    # t0.setPrecedenceJobID([])
-    # #t0.setPrecedenceTask([])
-    #
-    # d2 = DataInstance("data2", 0, 0, 100, 3136)
-    # d3 = DataInstance("data3", 1, 0, 100, 4032)
-    #
-    # t1 = Task("task1", "DSP", 1, 1, 1, 0)
-    # t1.setDataInsIn([d2])
-    # t1.setDataInsOut([d3])
-    # t1.setPrecedenceJobID([])
-    # #t1.setPrecedenceTask([])
-    #
-    # d4 = DataInstance("data3", 0, 0, 100, 102)
-    # d5 = DataInstance("data4", 0, 0, 100, 3122)
-    #
-    # t2 = Task("task2", "DSP", 1, 2, 1, 0)
-    # t2.setDataInsIn([d4])
-    # t2.setDataInsOut([d5])
-    # t2.setPrecedenceJobID([1])
-    # #t2.setPrecedenceTask([t1])
-    #
-    # #graphId, graphName, DDL, period, globalTaskList, precedenceGraph
-    # tg0 = TaskGraph(0, "graph0", 1, 1, [t0], [])
-    # tg1 = TaskGraph(1, "graph1", 2, 1.5, [t1, t2], [0])
-    
-    #tg0: d0-t0-d1
-    #tg1: d2-t1-d3, d4-t2-d5
-
-    #graphList = [tg0, tg1] 
 
     #print("Task graph parser begins")
     parser = xml.sax.make_parser()
@@ -110,11 +73,8 @@ if __name__ == "__main__":
     initData = Handler.getInitData()
     producerMap = Handler.getProducerMap()
     consumerMap = Handler.getConsumerMap()
-    print("=====debug from Shine: init data,",initData)
+    #print("=====debug from Shine: init data,",initData) 
     
-    taskManager = TaskManager(graphList)
-    minPeriod = 1 # minimal period of all graphs 
-    env.process(taskManager.taskGenerator(env, minPeriod))
     # graph 0, 1, 2, 3, 4, 5
     DDLList = [100, 0.8, 1.5, 4, 1, 100]
     PeriodList = [1, 1, 1, 4, 1, 1]
@@ -147,10 +107,7 @@ if __name__ == "__main__":
             for dataouts in task.dataInsOut:
                 key = dataouts.dataName + "-" + str(dataouts.data_inst_idx)
                 if key in consumerMap:
-                    if dataouts.dataName=='data0':
-                        print("debug from Shine: data0 ref init",consumerMap[key])
                     dataouts.mov_dir = consumerMap[key]
-                    dataouts.remain_time = dataouts.mov_dir
         of.write("\n")
         for key in precedenceGraphMap:
             graph.precedenceGraph.append(key)           #set precedenceGraph for graph, 除了时隙的都可以直接分析
@@ -161,12 +118,21 @@ if __name__ == "__main__":
         graph.arrivalTime = ArrivalTimeList[graphIndex]
         graphIndex += 1
     of.close()
+
+    taskManager = TaskManager(graphList)
+    minPeriod = 1 # minimal period of all graphs
+    env.process(taskManager.taskGenerator(env, minPeriod))
+
+
+
     """change with algo"""
     """only reserve"""
     # Qos Reserve
+    """
     graphList[1].QosReserve = True
     graphList[4].QosReserve = True
     graphList[5].QosReserve = True
+    """
     
     RM.setCluster(env, ClusterNum)
     for i in range(ClusterNum):
@@ -177,9 +143,7 @@ if __name__ == "__main__":
         idxList = key.split('-')
         refCnt = consumerMap[idxList[0]+'-'+idxList[1]]
         dataIns = DataInstance(idxList[0],refCnt,0,int(idxList[2]),idxList[1])
-        """
-        data initialized in DDR won't be removed
-        """
+        #data initialized in DDR won't be removed
         dataIns.remain_time = 100000
         initDataIns.append(dataIns)
     RM.setDDR(1000000,initDataIns)
@@ -203,7 +167,7 @@ if __name__ == "__main__":
                     graph.graphCost = tmp     
                 if tmp > maxCost:
                     maxCost = tmp    
-        print("graph %d cost %f" % (graph.graphId, graph.graphCost))
+        #print("graph %d cost %f" % (graph.graphId, graph.graphCost))
         hight = setGraphLayer(graph)
         for i in range(0, hight):
             graph.layerCost.append(0)
@@ -264,5 +228,8 @@ if __name__ == "__main__":
 
     # Execute!
     env.run(until=SIM_TIME)
+    #rpt.dspRunningReport()
+
+
 
 

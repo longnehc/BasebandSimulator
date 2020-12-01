@@ -3,13 +3,14 @@ from ResourceModule import ResourcesManager as RM
 class DMA:
     def __init__(self, clusterId):
         self.clusterId = clusterId
+        self.speed = 256 * 866 * 1000000
+        """speed is 256 * 866 * 1000000"""
 
     def getData(self, data):
         accessTime = 0
+        transmitTime = 2000 * data.total_size / self.speed
         find = False
-        """
-        find from other cluster or DDR
-        """
+        #find from other cluster or DDR
         for cluster in RM.getClusterList():
             Mem = cluster.memoryList[0]
             accessTime += 1
@@ -26,10 +27,11 @@ class DMA:
                 find = True
             else:
                 print("not in DDR!!!!!!!!!!!!",data.dataName + "-" + str(data.data_inst_idx))
-        return gotData,accessTime
+        return gotData, accessTime, transmitTime
 
     def saveData(self, data):
         #print("write data back to DDR!!!!!!!!!!")
         DDR = RM.getDDR()
         DDR.map[data.dataName + "-" + str(data.data_inst_idx)] = data
-        return True
+        transmitTime = 2000 * data.total_size / self.speed
+        return transmitTime

@@ -56,9 +56,6 @@ class Cluster:
 
         self.clusterId = clusterId
 
-        self.speed = 256 * 866 * 1000000
-        """speed is 256 * 866 * 1000000"""
-
         if Cluster.env == None:
             Cluster.env = env
     
@@ -126,29 +123,14 @@ class Cluster:
                     self.curCost -= data.total_size
                     if not RM.getMemory(self).checkData(data):
                         #print("=====debug from Shine: not in the inner memory, using dma to find=====")
-                        transmitTime = 2000 * data.total_size / self.speed
                         self.offChipAccess += data.total_size
-                        gotData,accessTime = self.getDma(0).getData(data)
+                        gotData,accessTime,transmitTime = self.getDma(0).getData(data)
                         """remember to add this to REPORTER"""
-                        findTime = 0.00001
-                        #yield self.env.timeout(accessTime * findTime)
                         yield self.env.timeout(transmitTime)
-                        RM.getMemory(self).saveData(gotData)
+                        saveToDdrTime = RM.getMemory(self).saveData(gotData)
+                        yield self.env.timeout(saveToDdrTime)
 
-                if task.knrlType == "FHAC":
-                    #print("=====debug from Shine: using FHAC to run task=====")
-                    FHACList = RM.getCluster(self.clusterId).getFHACList()
-                    FHAC = FHACList[0]
-                    """
-                    for f in FHACList:
-                        if f.curCost < FHAC.curCost:
-                            FHAC = f
-                    """
-                    """
-                    need to change!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    """
-                    RM.submitTaskToFHAC(task, self.clusterId)
-                else:
+                if task.knrlType == "DSP":
                     dspList = RM.getCluster(self.clusterId).getDspList()
                     dsp = dspList[0]
                     for d in dspList:
@@ -156,6 +138,11 @@ class Cluster:
                             dsp = d
                     dspId = dsp.id % 4
                     RM.submitTaskToDsp(task, self.clusterId, dspId)
+                else:
+                    #print("=====debug from Shine: using FHAC to run task=====")
+                    FHACList = RM.getCluster(self.clusterId).getFHACList()
+                    FHAC = FHACList[0]
+                    RM.submitTaskToFHAC(task, self.clusterId)
                 # while not RM.submitTaskToDsp(task, self.clusterId, dspId):
                 #     yield self.env.timeout(0.001)
 

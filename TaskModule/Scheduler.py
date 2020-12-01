@@ -78,10 +78,14 @@ def run(env):
                 for i in range(0, len(clusterList)):
                     # 11111
                     tmp = 0.0
-                    for dsp in clusterList[i].getDspList():
-                        # tmp += dsp.taskQueue.qsize()
-                        tmp += dsp.curCost / dsp.speed
-                    tmp += clusterList[i].curCost / clusterList[i].speed
+                    if task.knrlType == "DSP":
+                        for dsp in clusterList[i].getDspList():
+                            # tmp += dsp.taskQueue.qsize()
+                            tmp += dsp.curCost / dsp.speed
+                    else:
+                        fhac = clusterList[i].getFHACList()[0]
+                        tmp += fhac.curCost / fhac.speed
+                    tmp += clusterList[i].curCost / clusterList[i].getDma(0).speed
                     if tmp < curCost:
                         clusterId = i
                         curCost = tmp
@@ -99,7 +103,6 @@ def run(env):
                 #             yield env.timeout(0.001)
 
             elif scheduler.algorithm == SchduleAlgorithm.LB:
-                print("Load balancing...")
                 # cnt = (cnt + 1) % 16
                 # if not RM.submitTaskToCluster(task, cnt, env):
                 #     tmp = (cnt + 1) % 16
@@ -115,10 +118,14 @@ def run(env):
                 for i in range(0, len(clusterList)):
                     # 11111
                     tmp = 0.0
-                    for dsp in clusterList[i].getDspList():
-                        # tmp += dsp.taskQueue.qsize()
-                        tmp += dsp.curCost / dsp.speed
-                    tmp += clusterList[i].curCost / clusterList[i].speed
+                    if task.knrlType == "DSP":
+                        for dsp in clusterList[i].getDspList():
+                            # tmp += dsp.taskQueue.qsize()
+                            tmp += dsp.curCost / dsp.speed
+                    else:
+                        fhac = clusterList[i].getFHACList()[0]
+                        tmp += fhac.curCost / fhac.speed
+                    tmp += clusterList[i].curCost / clusterList[i].getDma(0).speed
                     if tmp < curCost:
                         clusterId = i
                         curCost = tmp
@@ -139,7 +146,7 @@ def run(env):
                         for dsp in clusterList[i].getDspList():
                             # tmp += dsp.taskQueue.qsize()
                             tmp += dsp.curCost / dsp.speed
-                        tmp += clusterList[i].curCost / clusterList[i].speed
+                        tmp += clusterList[i].curCost / clusterList[i].getDma(0).speed
                         if tmp < curCost:
                             clusterId = i
                             curCost = tmp

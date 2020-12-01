@@ -104,7 +104,7 @@ class TaskManager:
                                             ddl = min(ddl, g.submitTime + g.DDL)
                                             for task in g.getGlobalTaskList():
                                                 cost += task.cost
-                                    print("submitTime is %.2f,now is %.2f, so we have %.2f, and cost is %.2f"% (graph.submitTime, env.now, (ddl - env.now), cost))
+                                    #print("submitTime is %.2f,now is %.2f, so we have %.2f, and cost is %.2f"% (graph.submitTime, env.now, (ddl - env.now), cost))
                                     clusterNum = (int)(1.8 * (2000 * cost / (5.2 * 1000000000)) / (ddl - env.now))
                                     clusterList = RM.getClusterList()
                                     dspCost = 0
@@ -112,7 +112,7 @@ class TaskManager:
                                     for ii in range(0, clusterNum):
                                         for dsp in clusterList[ii].getDspList():
                                             dspCost += dsp.curCost
-                                    print("dsp cost is %d"%dspCost)
+                                    #print("dsp cost is %d"%dspCost)
                                     clusterNum += (int)(1.8 * (2000 * dspCost / (5.2 * 1000000000)) / (ddl - env.now))
                                     if clusterNum < 0:
                                         clusterNum = RM.getClusterNum() * 0.9
@@ -136,20 +136,13 @@ class TaskManager:
         #set the precedence task
         newtask.setPrecedenceJobID(task.precedenceJobID)
         #set the input data instance
-        dataInsIn = []
-        for indata in task.dataInsIn:
-            dataDataInstance = DataInstance(indata.dataName, indata.mov_dir, indata.job_inst_idx, indata.total_size, indata.data_inst_idx)
-            dataInsIn.append(dataDataInstance)
-        newtask.setDataInsIn(dataInsIn)
+        newtask.setDataInsIn(task.dataInsIn)
  
         #set the output data instance
         dataOutIn = []
         for outdata in task.dataInsOut:
-            dataDataInstance = DataInstance(outdata.dataName, outdata.mov_dir, outdata.job_inst_idx,
-                outdata.total_size, outdata.data_inst_idx)
-            dataDataInstance.remain_time = outdata.mov_dir
-            dataOutIn.append(dataDataInstance)
-        newtask.setDataInsOut(dataOutIn)
+            outdata.remain_time += outdata.mov_dir
+        newtask.setDataInsOut(task.dataInsOut)
         return newtask
 
     def contructGraphById(self, graphId, batchId):

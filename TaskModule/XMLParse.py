@@ -89,7 +89,11 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
       elif tag=="properties": 
             self.instCnt=int(attributes["instCnt"])
             self.cost = int(attributes["cost"])
+            """
+            change to contrast
+            """
             self.knrlType=attributes["type"]
+            #self.knrlType="DSP"
             # if self.knrlType == "FHAC":
             #    print("Find !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %s" % self.taskName)
             self.taskInsList = [] 

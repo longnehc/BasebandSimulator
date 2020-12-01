@@ -21,8 +21,8 @@ class reporter:
             dspCurStd += np.std(dspCurCost)
         for dspTotalCost in self.dspTotalCostArr:
             dspTotalStd += np.std(dspTotalCost)
-        print("dsp avg. cur std %f" % (dspCurStd / self.cnt))
-        print("dsp avg. total std %f" % (dspTotalStd / self.cnt))
+        #print("dsp avg. cur std %f" % (dspCurStd / self.cnt))
+        #print("dsp avg. total std %f" % (dspTotalStd / self.cnt))
          
         cnt = 0
         totalOffMem = 0
@@ -30,9 +30,9 @@ class reporter:
             for dsp in cluster.dspList:
                 cnt += 1
                 totalOffMem += RM.getCluster(dsp.clusterId).offChipAccess
-                print("Off chip mem access : %d, dsp = %d" % (RM.getCluster(dsp.clusterId).offChipAccess, dsp.id))
-        if cnt != 0:
-            print("Total offmem = %f, avgerage offmem = %f" % (totalOffMem, totalOffMem/cnt))
+                #print("Off chip mem access : %d, dsp = %d" % (RM.getCluster(dsp.clusterId).offChipAccess, dsp.id))
+        #if cnt != 0:
+            #print("Total offmem = %f, avgerage offmem = %f" % (totalOffMem, totalOffMem/cnt))
         
     def graphReport(self):
         fo = open(self.prefix + "/1graphExecutionDur.txt", "w")
@@ -44,12 +44,12 @@ class reporter:
             fo2.write("%d\n" % keys)
             for ele in RM.getExecuteTimeMap()[keys]:
                 fo.write("%f %f " % (RM.getBeginTimeMap()[keys][cnt], RM.getEndTimeMap()[keys][cnt]))
-                print("1. graph id, begin, end, cost: %d %f %f %f" % (keys, RM.getBeginTimeMap()[keys][cnt], RM.getEndTimeMap()[keys][cnt], ele))
+                #print("1. graph id, begin, end, cost: %d %f %f %f" % (keys, RM.getBeginTimeMap()[keys][cnt], RM.getEndTimeMap()[keys][cnt], ele))
                 cnt += 1
                 sum += ele
             fo.write("\n")
             fo2.write("%f \n" % (sum / cnt))
-            print("2. graph %d avg cost %f" % (keys, sum / cnt))
+            #print("2. graph %d avg cost %f" % (keys, sum / cnt))
         fo.close()
         fo2.close()
 
@@ -121,18 +121,22 @@ class reporter:
 
                     # The utilization of dsp
                     if dsp.id in self.dspUtilRecord:
-                        self.dspUtilRecord[dsp.id].append((0.1 - dsp.yieldTime)/0.1)
-                        dsp.yieldTime = 0
+                        self.dspUtilRecord[dsp.id].append((dsp.executionTime + dsp.dmaTransmitTime)/0.1)
+                        dsp.executionTime = 0
+                        dsp.dmaTransmitTime = 0
+
                     else:
-                        self.dspUtilRecord[dsp.id] = [(0.1 - dsp.yieldTime)/0.1]
-                        dsp.yieldTime = 0
+                        self.dspUtilRecord[dsp.id] = [(dsp.executionTime + dsp.dmaTransmitTime)/0.1]
+                        dsp.executionTime = 0
+                        dsp.dmaTransmitTime = 0
+
             yield env.timeout(0.1)
 
     def memPeekReport(self):
         # print("memPeekReport")
         fo = open(self.prefix + "/3memPeek.txt","w")
         clusterList = RM.getClusterList()
-        print(self.memPeekMap)
+        #print(self.memPeekMap)
         for cluster in clusterList:
             # print("cccc %d" % cluster.clusterId)
             if cluster.clusterId in self.memPeekMap:
@@ -140,8 +144,8 @@ class reporter:
                 for i in range(0, len(self.memPeekMap[cluster.clusterId])):
                     fo.write("%f " % self.memPeekMap[cluster.clusterId][i])
                 fo.write("\n")
-                print("3. Mem peek of cluster %d" % cluster.clusterId)
-                print(*self.memPeekMap[cluster.clusterId]) 
+                #print("3. Mem peek of cluster %d" % cluster.clusterId)
+                #print(*self.memPeekMap[cluster.clusterId]) 
         fo.close()
     
     def dspCostReport(self):
@@ -152,23 +156,23 @@ class reporter:
         for cluster in clusterList:
             for dsp in cluster.dspList:
                 if dsp.id in self.dspCurCostMap:
-                    print("4. Dsp cost of dsp %d" % dsp.id)
-                    print(*self.dspCurCostMap[dsp.id])
+                    #print("4. Dsp cost of dsp %d" % dsp.id)
+                    #print(*self.dspCurCostMap[dsp.id])
                     fo.write("%d\n" % dsp.id)
                     for i in range(0, len(self.dspCurCostMap[dsp.id])):
                         fo.write("%f " % self.dspCurCostMap[dsp.id][i])
                     fo.write("\n")
-        print("=============%d" % len(self.dspCurCostMap[0]))
+        #print("=============%d" % len(self.dspCurCostMap[0]))
         for i in range(0, len(self.dspCurCostMap[0])):
             cost = []
             for cluster in clusterList:
                 for dsp in cluster.dspList:
                     cost.append(self.dspCurCostMap[dsp.id][i])
             stdArr.append(np.std(cost))
-        print("5. The dsp cost std is")
+        #print("5. The dsp cost std is")
         for i in range(0, len(stdArr)):
             fo2.write("%f " % stdArr[i])
-        print(*stdArr) 
+        #print(*stdArr) 
         fo.close()
         fo2.close()
                 
@@ -180,8 +184,8 @@ class reporter:
         for cluster in clusterList:
             for dsp in cluster.dspList:
                 if dsp.id in self.memAccessMap:
-                    print("6. Dsp mem access of dsp %d" % dsp.id)
-                    print(*self.memAccessMap[dsp.id])
+                    #print("6. Dsp mem access of dsp %d" % dsp.id)
+                    #print(*self.memAccessMap[dsp.id])
                     fo.write("%d\n" % dsp.id)
                     for i in range(0, len(self.memAccessMap[dsp.id])):
                         fo.write("%f " % self.memAccessMap[dsp.id][i])
@@ -195,27 +199,27 @@ class reporter:
                     access.append(self.memAccessMap[dsp.id][i])
             memstd.append(np.std(access))
             total.append(np.sum(access))
-        print("7. The mem access std is")
-        print(*memstd)
+        #print("7. The mem access std is")
+        #print(*memstd)
         for i in range(0, len(memstd)):
             fo2.write("%f " % memstd[i])
-        print("8. The total mem access is")
+        #print("8. The total mem access is")
         for i in range(0, len(total)):
             fo3.write("%f " % total[i])
-        print(*total)
+        #print(*total)
         fo.close()
         fo2.close()
         fo3.close()
 
     def dspUtilReport(self):
         fo = open(self.prefix + "/9DSPUtil.txt","w")
-        print("9. The utilization of dsp")
+        #print("9. The utilization of dsp")
         clusterList = RM.getClusterList()
         for cluster in clusterList:
             for dsp in cluster.dspList:
                 if dsp.id in self.dspUtilRecord:
-                    print("dsp %d" % dsp.id)
-                    print(*self.dspUtilRecord[dsp.id])
+                    #print("dsp %d" % dsp.id)
+                    #print(*self.dspUtilRecord[dsp.id])
                     fo.write("%d\n" % dsp.id)
                     for i in range(0, len(self.dspUtilRecord[dsp.id])):
                         fo.write("%f " % self.dspUtilRecord[dsp.id][i])
@@ -240,7 +244,7 @@ class reporter:
     
     def taskReport(self):
         fo = open(self.prefix + "/10TaskExecutionDur.txt","w")
-        print("10. Task begin time and end time")
+        #print("10. Task begin time and end time")
         taskTimeMap = {}
         for i in range(0, len(RM.getTaskExeMap())):
             for taskname in RM.getTaskExeMap()[i]:
@@ -248,7 +252,7 @@ class reporter:
                 for jobidx in RM.getTaskExeMap()[i][taskname]:
                     for j in range(0, len(RM.getTaskExeMap()[i][taskname][jobidx])):
                         timelist.append(RM.getTaskExeMap()[i][taskname][jobidx][j]) 
-                print(*timelist)
+                #print(*timelist)
                 if taskname in taskTimeMap:
                     taskTimeMap[taskname].extend(timelist)
                 else:

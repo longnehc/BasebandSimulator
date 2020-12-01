@@ -56,6 +56,8 @@ class DSP:
         self.curCost = 0
 
         self.yieldTime = 0
+        self.executionTime = 0
+        self.dmaTransmitTime = 0
         self.capacity = 15
 
         self.preemptionCnt = 0
@@ -88,8 +90,10 @@ class DSP:
                 if task.knrlType == "FHAC" and self.type == 'DSP':
                     print("error: find a FHAC task on DSP!!!!!!!")
 
+                transmitTimeToYield = 0
                 for data in task.dataInsIn:
-                    gotData = RM.getMemory(self).getData(self.env, data, self)
+                    gotData,transmitTime = RM.getMemory(self).getData(self.env, data, self)
+                    transmitTimeToYield += transmitTime
                     gotData.remain_time -= 1
                     if gotData.remain_time == 0:
                         RM.getMemory(self).delData(self.env, gotData, self)
@@ -101,16 +105,13 @@ class DSP:
 
                 # exe
                 yield self.env.timeout(2000 * task.cost / self.speed)  # TTI = 0.5ms
+                self.executionTime += 2000 * task.cost / self.speed
 
                 # write back
                 for data in task.getDataInsOut():
-                    Replace = RM.getMemory(self).saveData(data)
-                    """
-                    if Replace:
-                        print("=====debug from Shine: write with replace=====")
-                    """
+                    transmitTimeToYield += RM.getMemory(self).saveData(data)
                     # print("dsp save %s" % data.data_inst_idx)
-
+                
                 # finish task
                 task.taskStatus = TaskStatus.FINISH
                 self.curCost -= task.cost
@@ -119,7 +120,7 @@ class DSP:
                 if graph.taskNum == 0:
                     graph.finished = True
                     for data in task.getDataInsOut():
-                        RM.getDma(self).saveData(data)
+                        transmitTimeToYield += RM.getDma(self).saveData(data)
 
                     if graph.QosReserve:
                         scheduler.qosReserveFinish()
@@ -136,7 +137,14 @@ class DSP:
                         RM.getBeginTimeMap()[graph.graphId] = [graph.submitTime]
                         RM.getEndTimeMap()[graph.graphId] = [self.env.now]
                     
-                
+                # yield of dma
+                """
+                to debug
+                """
+                #yield self.env.timeout(transmitTimeToYield)  # TTI = 0.5ms
+                self.dmaTransmitTime += transmitTimeToYield
+
+
                 # if graph.taskNum < 0:
                 #     print("graph %d task %d %s" % (graph.graphId,graph.taskNum,task.taskName))
                 # print(task.taskName + " finish in: %f" % self.env.now)
@@ -144,5 +152,4 @@ class DSP:
 
                 RM.getTaskExeMap()[task.batchId - 1][task.taskName][task.job_inst_idx].append(self.env.now)
                 RM.getTaskLogMap()[task.taskName][task.job_inst_idx].append(self.env.now)
-            self.yieldTime += 0.0002
-            yield self.env.timeout(0.0002)
+            yield self.env.timeout(0.0003)

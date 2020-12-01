@@ -1,0 +1,38 @@
+Baseband simulator starting
+graph0 depends on graph5
+graph1 depends on graph0
+graph1 depends on graph4
+graph2 depends on graph0
+graph2 depends on graph4
+graph3 depends on graph0
+graph3 depends on graph4
+graph4 depends on graph0
+graph4 depends on graph5
+graph 0 normalized cost 1.000000
+graph 1 normalized cost 2.000000
+graph 2 normalized cost 5.000000
+graph 3 normalized cost 4.000000
+graph 4 normalized cost 2.000000
+graph 5 normalized cost 0.000000
+system time: 0.000000
+Doing log at time: 0.000000
+Add all tasks of graph 5 in the 1-th batch into candidateTaskBuffer at 0.010000 
+graph 5 of batch 1 finish 0.012300 and cost 0.012300
+getFinishGraphCnt: 1
+Add all tasks of graph 0 in the 1-th batch into candidateTaskBuffer at 0.020000 
+graph 0 of batch 1 finish 0.024602 and cost 0.024602
+getFinishGraphCnt: 2
+Add all tasks of graph 4 in the 1-th batch into candidateTaskBuffer at 0.030000 
+graph 4 of batch 1 finish 0.077160 and cost 0.077160
+getFinishGraphCnt: 3
+Add all tasks of graph 1 in the 1-th batch into candidateTaskBuffer at 0.080000 
+Add all tasks of graph 2 in the 1-th batch into candidateTaskBuffer at 0.080000 
+Doing log at time: 0.100000
+system time: 0.200000
+Doing log at time: 0.200000
+graph 1 of batch 1 finish 0.251888 and cost 0.251888
+getFinishGraphCnt: 4
+Doing log at time: 0.300000
+system time: 0.400000
+Doing log at time: 0.400000
+Doing log at time: 0.500000
