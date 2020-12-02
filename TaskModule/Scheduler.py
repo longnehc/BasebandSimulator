@@ -74,22 +74,21 @@ def run(env):
             elif scheduler.algorithm == SchduleAlgorithm.QOSPreemptionG or scheduler.algorithm == SchduleAlgorithm.QOSPreemptionT:
                 clusterId = 0
                 curCost = 10000000.0
-                clusterList = RM.getClusterList()
-                for i in range(0, len(clusterList)):
-                    # 11111
-                    tmp = 0.0
-                    if task.knrlType == "DSP":
+                if task.knrlType == "FHAC":
+                    clusterId = -1
+                else:
+                    clusterList = RM.getClusterList()
+                    for i in range(0, len(clusterList)):
+                        # 11111
+                        tmp = 0.0
                         for dsp in clusterList[i].getDspList():
                             # tmp += dsp.taskQueue.qsize()
                             tmp += dsp.curCost / dsp.speed
-                    else:
-                        fhac = clusterList[i].getFHACList()[0]
-                        tmp += fhac.curCost / fhac.speed
-                    tmp += clusterList[i].curCost / clusterList[i].getDma(0).speed
-                    if tmp < curCost:
-                        clusterId = i
-                        curCost = tmp
-                    # submit
+                        tmp += clusterList[i].curCost / clusterList[i].getDma(0).speed
+                        if tmp < curCost:
+                            clusterId = i
+                            curCost = tmp
+                # submit
                 while not RM.submitTaskToCluster(task, clusterId, env):
                     yield env.timeout(0.001)
                 # ---
@@ -114,33 +113,11 @@ def run(env):
                 # new LB
                 clusterId = 0
                 curCost = 10000000.0
-                clusterList = RM.getClusterList()
-                for i in range(0, len(clusterList)):
-                    # 11111
-                    tmp = 0.0
-                    if task.knrlType == "DSP":
-                        for dsp in clusterList[i].getDspList():
-                            # tmp += dsp.taskQueue.qsize()
-                            tmp += dsp.curCost / dsp.speed
-                    else:
-                        fhac = clusterList[i].getFHACList()[0]
-                        tmp += fhac.curCost / fhac.speed
-                    tmp += clusterList[i].curCost / clusterList[i].getDma(0).speed
-                    if tmp < curCost:
-                        clusterId = i
-                        curCost = tmp
-                    # submit
-                while not RM.submitTaskToCluster(task, clusterId, env):
-                    yield env.timeout(0.001)
-
-            # TODO:
-            elif scheduler.algorithm == SchduleAlgorithm.QOSReserve:
-                clusterList = RM.getClusterList()
-                if task.taskGraphId in scheduler.QosReserveGraphId:
-                    # print("graph %d quick"%task.taskGraphId)
-                    clusterId = 0
-                    curCost = 10000000.0
-                    for i in range(0, scheduler.QosReserveClusterNum):
+                if task.knrlType == "FHAC":
+                    clusterId = -1
+                else:
+                    clusterList = RM.getClusterList()
+                    for i in range(0, len(clusterList)):
                         # 11111
                         tmp = 0.0
                         for dsp in clusterList[i].getDspList():
@@ -150,24 +127,50 @@ def run(env):
                         if tmp < curCost:
                             clusterId = i
                             curCost = tmp
-                        # 22222
-                        # if len(clusterList[i].getDma(0).taskList) < len(clusterList[clusterId].getDma(0).taskList):
-                        #     clusterId = i
-                        # submit
-                    # print(clusterId)
+                # submit
+                while not RM.submitTaskToCluster(task, clusterId, env):
+                    yield env.timeout(0.001)
+
+            # TODO:
+            elif scheduler.algorithm == SchduleAlgorithm.QOSReserve:
+                if task.knrlType == "FHAC":
+                    clusterId = -1
                     while not RM.submitTaskToCluster(task, clusterId, env):
                         yield env.timeout(0.001)
                 else:
-                    clusterId = scheduler.QosReserveClusterNum
-                    for i in range(scheduler.QosReserveClusterNum, len(clusterList)):
-                        if len(clusterList[i].taskList) < len(clusterList[clusterId].taskList):
-                            clusterId = i
-                        # submit
-                    while not RM.submitTaskToCluster(task, clusterId, env):
-                        yield env.timeout(0.001)
-                if env.now > scheduler.QosReserveDdl:
-                    scheduler.algorithm = SchduleAlgorithm.QOSPreemptionG
-                    print("reverse finish")
+                    clusterList = RM.getClusterList()
+                    if task.taskGraphId in scheduler.QosReserveGraphId:
+                        # print("graph %d quick"%task.taskGraphId)
+                        clusterId = 0
+                        curCost = 10000000.0
+                        for i in range(0, scheduler.QosReserveClusterNum):
+                            # 11111
+                            tmp = 0.0
+                            for dsp in clusterList[i].getDspList():
+                                # tmp += dsp.taskQueue.qsize()
+                                tmp += dsp.curCost / dsp.speed
+                            tmp += clusterList[i].curCost / clusterList[i].getDma(0).speed
+                            if tmp < curCost:
+                                clusterId = i
+                                curCost = tmp
+                            # 22222
+                            # if len(clusterList[i].getDma(0).taskList) < len(clusterList[clusterId].getDma(0).taskList):
+                            #     clusterId = i
+                            # submit
+                        # print(clusterId)
+                        while not RM.submitTaskToCluster(task, clusterId, env):
+                            yield env.timeout(0.001)
+                    else:
+                        clusterId = scheduler.QosReserveClusterNum
+                        for i in range(scheduler.QosReserveClusterNum, len(clusterList)):
+                            if len(clusterList[i].taskList) < len(clusterList[clusterId].taskList):
+                                clusterId = i
+                            # submit
+                        while not RM.submitTaskToCluster(task, clusterId, env):
+                            yield env.timeout(0.001)
+                    if env.now > scheduler.QosReserveDdl:
+                        scheduler.algorithm = SchduleAlgorithm.QOSPreemptionG
+                        print("reverse finish")
 
             else:
                 print("Not implemented")

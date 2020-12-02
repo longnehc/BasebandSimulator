@@ -3,6 +3,8 @@ from ResourceModule.DSP import *
 from ResourceModule import ResourcesManager as RM
 from collections import OrderedDict
 
+import sys
+
 
 class MEM:
 
@@ -12,6 +14,8 @@ class MEM:
 
         #self.capacity = 100000
         self.capacity = 100000
+        if clusterId < 0:
+            self.capacity = sys.maxsize
         self.curSize = 0
         self.peek = 0
 
@@ -22,8 +26,8 @@ class MEM:
         # can mem save data
         # print("%s-%d" % (data.dataName, data.data_inst_idx))
         if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
-            print("=====debug from Shine: already have this data in MEM!=====")
-            print("%s-%d" % (data.dataName, data.data_inst_idx))
+            # print("=====debug from Shine: already have this data in MEM!=====")
+            # print("%s-%d" % (data.dataName, data.data_inst_idx))
             old = self.map[data.dataName + "-" + str(data.data_inst_idx)]
             if id(old)!=id(data):
                 print("the old remain and new remain is: ",old.remain_time,data.remain_time)

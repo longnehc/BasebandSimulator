@@ -39,9 +39,10 @@ class Cluster:
 
     def __init__(self, env, clusterId):
         self.dspList = []
-        self.setDsp(env, 4, clusterId)
-        self.FHACList = []
-        self.setFHAC(env, 1, clusterId)
+        if clusterId >= 0:
+            self.setDsp(env, 4, clusterId)
+        else:
+            self.setFHAC(env, clusterId)
 
         self.taskList = []
         self.curCost = 0
@@ -65,25 +66,22 @@ class Cluster:
         for data in task.dataInsIn:
             self.curCost += data.total_size
             # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        self.preemptionCnt += 1
-        if self.preemptionCnt == self.sortNum:
-            self.preemptionCnt = 0
-            self.taskList = sorted(self.taskList, key=functools.cmp_to_key(QosPreemption))
+        if self.clusterId >= 0:
+            self.preemptionCnt += 1
+            if self.preemptionCnt == self.sortNum:
+                self.preemptionCnt = 0
+                self.taskList = sorted(self.taskList, key=functools.cmp_to_key(QosPreemption))
         return True
     
     def setDsp(self, env, num, clusterId):
         for i in range(0,num):
             self.dspList.append(DSP(env, clusterId, 'DSP'))
 
-    def setFHAC(self, env, num, clusterId):
-        for i in range(num):
-            self.FHACList.append(DSP(env, clusterId, 'FHAC'))
+    def setFHAC(self, env, clusterId):
+        self.dspList.append(DSP(env, clusterId, 'FHAC'))
 
     def getDspList(self):
         return self.dspList
-
-    def getFHACList(self):
-        return self.FHACList
 
     def getDsp(self,index):
         return self.dspList[index]
@@ -119,6 +117,7 @@ class Cluster:
                 else:
                     RM.getTaskLogMap()[task.taskName][task.job_inst_idx] = [self.env.now]
 
+                transmitTimeToYield = 0
                 for data in task.getDataInsIn():
                     self.curCost -= data.total_size
                     if not RM.getMemory(self).checkData(data):
@@ -126,23 +125,24 @@ class Cluster:
                         self.offChipAccess += data.total_size
                         gotData,accessTime,transmitTime = self.getDma(0).getData(data)
                         """remember to add this to REPORTER"""
-                        yield self.env.timeout(transmitTime)
+                        transmitTimeToYield += transmitTime
+                        #yield self.env.timeout(transmitTime)
                         saveToDdrTime = RM.getMemory(self).saveData(gotData)
-                        yield self.env.timeout(saveToDdrTime)
+                        transmitTimeToYield += saveToDdrTime
+                        #yield self.env.timeout(saveToDdrTime)
+                """to debug"""
+                #yield self.env.timeout(transmitTimeToYield)
 
-                if task.knrlType == "DSP":
-                    dspList = RM.getCluster(self.clusterId).getDspList()
-                    dsp = dspList[0]
+                dspList = RM.getCluster(self.clusterId).getDspList()
+                dsp = dspList[0]
+                if self.clusterId >= 0:
                     for d in dspList:
                         if d.curCost < dsp.curCost:
                             dsp = d
                     dspId = dsp.id % 4
-                    RM.submitTaskToDsp(task, self.clusterId, dspId)
                 else:
-                    #print("=====debug from Shine: using FHAC to run task=====")
-                    FHACList = RM.getCluster(self.clusterId).getFHACList()
-                    FHAC = FHACList[0]
-                    RM.submitTaskToFHAC(task, self.clusterId)
+                    dspId = 0
+                RM.submitTaskToDsp(task, self.clusterId, dspId)
                 # while not RM.submitTaskToDsp(task, self.clusterId, dspId):
                 #     yield self.env.timeout(0.001)
 

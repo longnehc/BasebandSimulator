@@ -40,11 +40,11 @@ class DSP:
     def __init__(self, env, clusterId, type):
         self.type = type
         """speed is 1.3 * 1000000000"""
-        self.speed = 1.3 * 1000000000
+        self.speed = 1.3 * 10000000000000
         #type is "DSP" or "FHAC" ...
         if self.type == 'FHAC':
-            self.speed *= 16
-            self.id = 0
+            self.speed *= 16*10000
+            self.id = -1
         else:
             self.id = DSP.num
             DSP.num += 1
@@ -72,15 +72,16 @@ class DSP:
         self.curCost += task.cost
         self.totalCost += task.cost
         # print("%d || %d" % (self.curCost, self.totalCost))
-        self.preemptionCnt += 1
-        if self.preemptionCnt == self.sortNum:
-            self.preemptionCnt = 0
-            self.taskQueue = sorted(self.taskQueue, key=functools.cmp_to_key(QosPreemption))
-            # if 0.08 > self.env.now > 0.06:
-            #     for i in range(0, len(self.taskQueue)):
-            #         print(self.taskQueue[i].taskGraphId, end=" ")
-            #     print(self.taskQueue.pop(0).taskGraphId)
-            #     print("dsp")
+        if self.type == 'DSP':
+            self.preemptionCnt += 1
+            if self.preemptionCnt == self.sortNum:
+                self.preemptionCnt = 0
+                self.taskQueue = sorted(self.taskQueue, key=functools.cmp_to_key(QosPreemption))
+                # if 0.08 > self.env.now > 0.06:
+                #     for i in range(0, len(self.taskQueue)):
+                #         print(self.taskQueue[i].taskGraphId, end=" ")
+                #     print(self.taskQueue.pop(0).taskGraphId)
+                #     print("dsp")
 
     def run(self, taskManager):
         while (True):
@@ -152,4 +153,4 @@ class DSP:
 
                 RM.getTaskExeMap()[task.batchId - 1][task.taskName][task.job_inst_idx].append(self.env.now)
                 RM.getTaskLogMap()[task.taskName][task.job_inst_idx].append(self.env.now)
-            yield self.env.timeout(0.0003)
+            yield self.env.timeout(0.0002)

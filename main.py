@@ -137,6 +137,8 @@ if __name__ == "__main__":
     RM.setCluster(env, ClusterNum)
     for i in range(ClusterNum):
         RM.setDma(1,i)
+    RM.setFhacCluster(env)
+    RM.setDma(1,-1)
 
     initDataIns = []
     for key in initData:
@@ -219,12 +221,13 @@ if __name__ == "__main__":
    
     scheduler.setAlgorithm(selectedAlgo)
     env.process(scheduler.run(env))
+    FhacCluster = RM.getCluster(-1)
+    env.process(FhacCluster.run())
+    env.process(FhacCluster.getDsp(0).run(taskManager))
     for cluster in RM.getClusterList():
         env.process(cluster.run())
         for dsp in cluster.getDspList():
             env.process(dsp.run(taskManager))
-        for FHAC in cluster.getFHACList():
-            env.process(FHAC.run(taskManager))
 
     # Execute!
     env.run(until=SIM_TIME)

@@ -18,6 +18,13 @@ class DMA:
                 gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)]
                 find = True
                 break
+        #find from FHAC mem
+        if not find:
+            accessTime += 1
+            Mem = RM.getCluster(-1).memoryList[0]
+            if data.dataName + "-" + str(data.data_inst_idx) in Mem.map.keys():
+                gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)]
+                find = True
         #find in DDR
         if not find:
             accessTime += 1

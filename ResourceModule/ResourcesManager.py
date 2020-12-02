@@ -21,6 +21,7 @@ class ResourcesManager:
         self.waitTime = 0.0
         self.reserveGraph = {}
         self.DDR = {}
+        self.FHAC = {}
 
 
 
@@ -42,7 +43,6 @@ def submitTaskToCluster(task, clusterId, env):
     # dma.submit(task)
     # task.taskStatus = TaskStatus.SUMBITTED
 
-
 def submitTaskToDsp(task, clusterId, dspId):
     cluster = getCluster(clusterId)
     dsp = cluster.getDsp(dspId)
@@ -55,11 +55,6 @@ def submitTaskToDsp(task, clusterId, dspId):
     # else:
     #     # print(len(dma.taskList))
     #     return False
-
-def submitTaskToFHAC(task, clusterId):
-    cluster = getCluster(clusterId)
-    dsp = cluster.getFHACList()[0]
-    dsp.submit(task)
 
 def submitWriteBackTaskToDma(data, clusterId, dmaId):
     cluster = getCluster(clusterId)
@@ -90,19 +85,22 @@ def setFinishGraphCnt(cnt):
 def getClusterList():
     return resourcesManager.clusterList
 
-
 def getClusterNum():
     return len(resourcesManager.clusterList)
 
-
 def getCluster(index):
-    return resourcesManager.clusterList[index]
-
+    if index < 0:
+        return resourcesManager.FHAC
+    else:
+        return resourcesManager.clusterList[index]
 
 def setCluster(env, num):
     for i in range(0, num):
         # print("set cluster %d"%i)
         resourcesManager.clusterList.append(Cluster.Cluster(env, i))
+
+def setFhacCluster(env):
+    resourcesManager.FHAC = Cluster.Cluster(env,-1)
 
 def setDma(num, clusterId):
     cluster = getCluster(clusterId)
