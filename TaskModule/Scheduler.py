@@ -18,6 +18,8 @@ class SchduleAlgorithm(Enum):
     LB = 5
     QOSReserve = 6
 
+
+
 class Scheduler:
 
     def __init__(self):
@@ -28,8 +30,14 @@ class Scheduler:
         self.QosReserveClusterNum = 0
         self.QosReserveGraphId = []
         self.QosGraphNum = 0
+
+        self.slidingWindow = True
     
 scheduler = Scheduler()
+
+
+def slidingWindow():
+    return scheduler.slidingWindow
     
 def setAlgorithm(algorithm):
     scheduler.algorithm = algorithm

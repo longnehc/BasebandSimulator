@@ -49,7 +49,7 @@ if __name__ == "__main__":
     DMASpeed = 10
     DDRCapacity = 100
     SIM_TIME = 10
-    selectedAlgo = SchduleAlgorithm.QOSPreemptionG
+    selectedAlgo = SchduleAlgorithm.OFFMEM
     rpt = reporter()
     rpt.rflag = True
 
