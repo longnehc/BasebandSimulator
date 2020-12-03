@@ -1,4 +1,3 @@
-from ResourceModule.DMA import *
 from ResourceModule.DSP import *
 from ResourceModule import ResourcesManager as RM
 from collections import OrderedDict
@@ -43,7 +42,7 @@ class MEM:
                     print("=====memory error: save data not valid!=====",tmp.dataName+'-'+str(tmp.data_inst_idx))
                 if tmp.remain_time != 0:
                     # print("Writing back to DDR %s-%d, move: %d" % (tmp.dataName, tmp.data_inst_idx, tmp.mov_dir))
-                    transmitTime += RM.submitWriteBackTaskToDma(tmp, self.clusterId, 0)
+                    transmitTime += RM.dmaSaveData(tmp)
                 # print("******************************%d"%tmp.total_size)
             self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
             self.curSize += data.total_size
@@ -61,8 +60,7 @@ class MEM:
             validData = self.map[data.dataName + "-" + str(data.data_inst_idx)]
             transmitTime = 0
         else:
-            cluster = RM.getCluster(self.clusterId)
-            validData,accessTime,transmitTime = cluster.getDma(0).getData(data)
+            validData,accessTime,transmitTime = RM.dmaGetData(data)
         return validData,transmitTime
 
     def delData(self, env, data, dsp):

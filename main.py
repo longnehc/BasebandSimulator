@@ -46,7 +46,6 @@ if __name__ == "__main__":
     ClusterNum = 20
     DSPPerCluster = 4
     MemCapacity = 100
-    DMASpeed = 10
     DDRCapacity = 100
     SIM_TIME = 10
     """change with algo"""
@@ -135,10 +134,7 @@ if __name__ == "__main__":
     """
     
     RM.setCluster(env, ClusterNum)
-    for i in range(ClusterNum):
-        RM.setDma(1,i)
     RM.setFhacCluster(env)
-    RM.setDma(1,-1)
 
     initDataIns = []
     for key in initData:

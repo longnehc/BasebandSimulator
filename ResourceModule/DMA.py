@@ -1,8 +1,7 @@
 from ResourceModule import ResourcesManager as RM 
 
 class DMA:
-    def __init__(self, clusterId):
-        self.clusterId = clusterId
+    def __init__(self):
         self.speed = 256 * 866 * 1000000
         """speed is 256 * 866 * 1000000"""
 

@@ -84,7 +84,6 @@ def run(env):
                         for dsp in clusterList[i].getDspList():
                             # tmp += dsp.taskQueue.qsize()
                             tmp += dsp.curCost / dsp.speed
-                        tmp += clusterList[i].curCost / clusterList[i].getDma(0).speed
                         if tmp < curCost:
                             clusterId = i
                             curCost = tmp
@@ -123,7 +122,6 @@ def run(env):
                         for dsp in clusterList[i].getDspList():
                             # tmp += dsp.taskQueue.qsize()
                             tmp += dsp.curCost / dsp.speed
-                        tmp += clusterList[i].curCost / clusterList[i].getDma(0).speed
                         if tmp < curCost:
                             clusterId = i
                             curCost = tmp
@@ -149,14 +147,9 @@ def run(env):
                             for dsp in clusterList[i].getDspList():
                                 # tmp += dsp.taskQueue.qsize()
                                 tmp += dsp.curCost / dsp.speed
-                            tmp += clusterList[i].curCost / clusterList[i].getDma(0).speed
                             if tmp < curCost:
                                 clusterId = i
                                 curCost = tmp
-                            # 22222
-                            # if len(clusterList[i].getDma(0).taskList) < len(clusterList[clusterId].getDma(0).taskList):
-                            #     clusterId = i
-                            # submit
                         # print(clusterId)
                         while not RM.submitTaskToCluster(task, clusterId, env):
                             yield env.timeout(0.001)

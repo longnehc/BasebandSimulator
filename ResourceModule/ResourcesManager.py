@@ -1,5 +1,4 @@
 from ResourceModule import Cluster
-from ResourceModule import DMA
 from ResourceModule import DDR
 
 from TaskModule.Task import TaskStatus
@@ -11,6 +10,7 @@ class ResourcesManager:
     def __init__(self):
         self.name = "ResourceModule manager"
         self.clusterList = []
+        self.dmaNum = 20
         self.finishGraphCnt = 0
         self.executeTimeMap = {}
         self.beginTimeMap = {}
@@ -22,6 +22,8 @@ class ResourcesManager:
         self.reserveGraph = {}
         self.DDR = {}
         self.FHAC = {}
+        #dma speed is 256 * 866 * 1000000
+        self.speed = 256 * 866 * 1000000
 
 
 
@@ -38,28 +40,50 @@ def submitTaskToCluster(task, clusterId, env):
         resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
         return True
     else:
-        # print(len(dma.taskList))
         return False
-    # dma.submit(task)
-    # task.taskStatus = TaskStatus.SUMBITTED
 
 def submitTaskToDsp(task, clusterId, dspId):
     cluster = getCluster(clusterId)
     dsp = cluster.getDsp(dspId)
     # 01
     dsp.submit(task)
-    # 02
-    # if dsp.taskQueue.qsize() < dsp.capacity:
-    #     dsp.submit(task)
-    #     return True
-    # else:
-    #     # print(len(dma.taskList))
-    #     return False
 
-def submitWriteBackTaskToDma(data, clusterId, dmaId):
-    cluster = getCluster(clusterId)
-    dma = cluster.getDma(dmaId)
-    return dma.saveData(data)
+def dmaSaveData(data):
+    #print("write data back to DDR!!!!!!!!!!")
+    DDR = getDDR()
+    DDR.map[data.dataName + "-" + str(data.data_inst_idx)] = data
+    transmitTime = 2000 * data.total_size / resourcesManager.speed
+    return transmitTime
+
+def dmaGetData(data):
+    accessTime = 0
+    transmitTime = 2000 * data.total_size / resourcesManager.speed
+    find = False
+    #find from other cluster or DDR
+    for cluster in getClusterList():
+        Mem = cluster.memoryList[0]
+        accessTime += 1
+        if data.dataName + "-" + str(data.data_inst_idx) in Mem.map.keys():
+            gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)]
+            find = True
+            break
+    #find from FHAC mem
+    if not find:
+        accessTime += 1
+        Mem = getCluster(-1).memoryList[0]
+        if data.dataName + "-" + str(data.data_inst_idx) in Mem.map.keys():
+            gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)]
+            find = True
+    #find in DDR
+    if not find:
+        accessTime += 1
+        DDR = getDDR()
+        if data.dataName + "-" + str(data.data_inst_idx) in DDR.map.keys():
+            gotData = DDR.map[data.dataName + "-" + str(data.data_inst_idx)]
+            find = True
+        else:
+            print("not in DDR!!!!!!!!!!!!",data.dataName + "-" + str(data.data_inst_idx))
+    return gotData, accessTime, transmitTime
 
 def getSubmittedTaskNum():
     return resourcesManager.submittedTaskNum
@@ -102,27 +126,15 @@ def setCluster(env, num):
 def setFhacCluster(env):
     resourcesManager.FHAC = Cluster.Cluster(env,-1)
 
-def setDma(num, clusterId):
-    cluster = getCluster(clusterId)
-    for i in range(0,num):
-        cluster.dmaList.append(DMA.DMA(clusterId))
-
 def setReserveGraph(id, ddl):
     resourcesManager.reserveGraph[id] = ddl
 
 def getReserveGraph():
     return resourcesManager.reserveGraph
-  
-def getDma(dsp):
-    # get memory
-    cluster = getCluster(dsp.clusterId)
-    return cluster.getDma(0)
-
 
 def getMemory(component):
     cluster = getCluster(component.clusterId)
     return cluster.getMemory(0)
-
 
 def getTransmitSpeed(component):
     cluster = getCluster(component.clusterId)

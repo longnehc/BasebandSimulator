@@ -1,7 +1,6 @@
 import functools
 
 from TaskModule.Task import TaskStatus
-from ResourceModule.DMA import *
 from ResourceModule.MEM import *
 from queue import Queue
 from ResourceModule import ResourcesManager as RM
@@ -43,7 +42,7 @@ class DSP:
         self.speed = 1.3 * 10000000000000
         #type is "DSP" or "FHAC" ...
         if self.type == 'FHAC':
-            self.speed *= 16*10000
+            self.speed *= 16
             self.id = -1
         else:
             self.id = DSP.num
@@ -101,8 +100,6 @@ class DSP:
                     if gotData.remain_time < 0:
                         print("memory error: get data not valid!",gotData.dataName)
 
-                # print(task.taskName + " begin in %s"% self.id)
-                # TODO: Task -> schedule(all task, dsp) -> DMA -> DSP -> DMA()
 
                 # exe
                 yield self.env.timeout(2000 * task.cost / self.speed)  # TTI = 0.5ms
@@ -121,7 +118,7 @@ class DSP:
                 if graph.taskNum == 0:
                     graph.finished = True
                     for data in task.getDataInsOut():
-                        transmitTimeToYield += RM.getDma(self).saveData(data)
+                        transmitTimeToYield += RM.dmaSaveData(data)
 
                     if graph.QosReserve:
                         scheduler.qosReserveFinish()

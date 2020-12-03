@@ -52,7 +52,6 @@ class Cluster:
         self.memoryList = []
         self.setMemory(1, clusterId)
 
-        self.dmaList = []
         self.offChipAccess = 0
 
         self.clusterId = clusterId
@@ -93,12 +92,6 @@ class Cluster:
     def getMemory(self,index):
         return self.memoryList[index]
 
-    def getDma(self,index):
-        return self.dmaList[index]
-
-    def getDmaList(self):
-        return self.dmaList
-
     def run(self):
         while(True):
             while len(self.taskList) > 0:
@@ -123,7 +116,7 @@ class Cluster:
                     if not RM.getMemory(self).checkData(data):
                         #print("=====debug from Shine: not in the inner memory, using dma to find=====")
                         self.offChipAccess += data.total_size
-                        gotData,accessTime,transmitTime = self.getDma(0).getData(data)
+                        gotData,accessTime,transmitTime = RM.dmaGetData(data)
                         """remember to add this to REPORTER"""
                         transmitTimeToYield += transmitTime
                         #yield self.env.timeout(transmitTime)
