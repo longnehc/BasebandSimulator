@@ -126,12 +126,10 @@ class Cluster:
                         gotData,accessTime,transmitTime = self.getDma(0).getData(data)
                         """remember to add this to REPORTER"""
                         transmitTimeToYield += transmitTime
-                        #yield self.env.timeout(transmitTime)
                         saveToDdrTime = RM.getMemory(self).saveData(gotData)
                         transmitTimeToYield += saveToDdrTime
-                        #yield self.env.timeout(saveToDdrTime)
                 """to debug"""
-                #yield self.env.timeout(transmitTimeToYield)
+                yield self.env.timeout(transmitTimeToYield)
 
                 dspList = RM.getCluster(self.clusterId).getDspList()
                 dsp = dspList[0]

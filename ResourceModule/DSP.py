@@ -40,7 +40,7 @@ class DSP:
     def __init__(self, env, clusterId, type):
         self.type = type
         """speed is 1.3 * 1000000000"""
-        self.speed = 1.3 * 10000000000000
+        self.speed = 1.3 * 1000000000
         #type is "DSP" or "FHAC" ...
         if self.type == 'FHAC':
             self.speed *= 16*10000
@@ -142,7 +142,7 @@ class DSP:
                 """
                 to debug
                 """
-                #yield self.env.timeout(transmitTimeToYield)  # TTI = 0.5ms
+                yield self.env.timeout(transmitTimeToYield)  # TTI = 0.5ms
                 self.dmaTransmitTime += transmitTimeToYield
 
 

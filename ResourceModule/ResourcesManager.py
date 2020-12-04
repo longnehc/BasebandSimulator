@@ -3,6 +3,7 @@ from ResourceModule import DMA
 from ResourceModule import DDR
 
 from TaskModule.Task import TaskStatus
+from TaskModule import Scheduler as scheduler
 import random
 
 
@@ -31,15 +32,30 @@ resourcesManager = ResourcesManager()
  
 def submitTaskToCluster(task, clusterId, env):
     cluster = getCluster(clusterId)
-    if cluster.submit(task):
-        task.taskStatus = TaskStatus.SUMBITTED
-        task.submittedTime = env.now
-        resourcesManager.submittedTaskNum += 1
-        resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
-        return True
+    if scheduler.slidingWindow():
+        flag = False
+        for dsp in cluster.dspList:
+            if len(dsp.taskQueue) == 0:
+                flag = True
+        if flag:
+            cluster.submit(task)
+            task.taskStatus = TaskStatus.SUMBITTED
+            task.submittedTime = env.now
+            resourcesManager.submittedTaskNum += 1
+            resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
+            return True
+        else:
+            return False
     else:
-        # print(len(dma.taskList))
-        return False
+        if cluster.submit(task):
+            task.taskStatus = TaskStatus.SUMBITTED
+            task.submittedTime = env.now
+            resourcesManager.submittedTaskNum += 1
+            resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
+            return True
+        else:
+            # print(len(dma.taskList))
+            return False
     # dma.submit(task)
     # task.taskStatus = TaskStatus.SUMBITTED
 
@@ -155,3 +171,22 @@ def getDDR():
 
 def test(env, data, memory):
     print("TTTTTTTTTTTTTTTTTTTTTTTest")
+
+"""
+def getIdleDma():
+    dma = None
+    for cluster in resourcesManager.clusterList:
+        for dsp in cluster.dspList:
+            if len(dsp.taskQueue) == 0:
+                dma = cluster.getDma(0)
+                return dma
+    return dma
+"""
+
+def checkDspIdle(clusterId):
+    cluster = resourcesManager.clusterList[clusterId]
+    flag = False
+    for dsp in cluster.dspList:
+        if len(dsp.taskQueue) == 0:
+            flag = True
+    return flag

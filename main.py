@@ -50,7 +50,7 @@ if __name__ == "__main__":
     DDRCapacity = 100
     SIM_TIME = 10
     """change with algo"""
-    selectedAlgo = SchduleAlgorithm.QOSPreemptionG
+    selectedAlgo = SchduleAlgorithm.LB
     rpt = reporter()
     """change with algo"""
     """only reserve"""
