@@ -28,8 +28,13 @@ class Scheduler:
         self.QosReserveClusterNum = 0
         self.QosReserveGraphId = []
         self.QosGraphNum = 0
+
+        self.slidingWindow = True
     
 scheduler = Scheduler()
+
+def slidingWindow():
+    return scheduler.slidingWindow
     
 def setAlgorithm(algorithm):
     scheduler.algorithm = algorithm
@@ -67,7 +72,11 @@ def run(env):
                 print("Greedy...")
             elif scheduler.algorithm == SchduleAlgorithm.OFFMEM:
                 # print("Minimizing off-chip memory access...")
-                while not RM.submitTaskToCluster(task, task.clusterId, env):
+                if task.knrlType == "FHAC":
+                    clusterId = -1
+                else:
+                    clusterId = task.clusterId
+                while not RM.submitTaskToCluster(task, clusterId, env):
                     yield env.timeout(0.0001)
 
             # TODO:
@@ -84,6 +93,7 @@ def run(env):
                         for dsp in clusterList[i].getDspList():
                             # tmp += dsp.taskQueue.qsize()
                             tmp += dsp.curCost / dsp.speed
+                        tmp += clusterList[i].curCost
                         if tmp < curCost:
                             clusterId = i
                             curCost = tmp
@@ -122,6 +132,7 @@ def run(env):
                         for dsp in clusterList[i].getDspList():
                             # tmp += dsp.taskQueue.qsize()
                             tmp += dsp.curCost / dsp.speed
+                        tmp += clusterList[i].curCost
                         if tmp < curCost:
                             clusterId = i
                             curCost = tmp

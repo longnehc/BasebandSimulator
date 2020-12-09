@@ -36,13 +36,13 @@ class DSP:
     num = 0
     env = None
 
-    def __init__(self, env, clusterId, type):
+    def __init__(self, env, clusterId, type, dmaControl):
         self.type = type
         """speed is 1.3 * 1000000000"""
-        self.speed = 1.3 * 10000000000000
+        self.speed = 1.3 * 1000000000
         #type is "DSP" or "FHAC" ...
         if self.type == 'FHAC':
-            self.speed *= 16
+            self.speed *= 32
             self.id = -1
         else:
             self.id = DSP.num
@@ -63,6 +63,7 @@ class DSP:
         self.sortNum = 1
         if DSP.env == None:
             DSP.env = env
+        self.dmaControl = dmaControl
 
     def submit(self, task):
         self.taskQueue.append(task)
@@ -90,13 +91,18 @@ class DSP:
                 if task.knrlType == "FHAC" and self.type == 'DSP':
                     print("error: find a FHAC task on DSP!!!!!!!")
 
-                transmitTimeToYield = 0
                 for data in task.dataInsIn:
-                    gotData,transmitTime = RM.getMemory(self).getData(self.env, data, self)
-                    transmitTimeToYield += transmitTime
+                    gotData,flag = RM.getMemory(self).getData(data)
+                    if not flag:
+                        with self.dmaControl.request() as req:  # 寻求进入
+                            yield req
+                            gotData,accessTime,transmitTime = RM.dmaGetData(data)
+                            """remember to add this to REPORTER"""
+                            self.dmaTransmitTime += transmitTime
+                            yield self.env.timeout(transmitTime)
                     gotData.remain_time -= 1
                     if gotData.remain_time == 0:
-                        RM.getMemory(self).delData(self.env, gotData, self)
+                        RM.delData(gotData)
                     if gotData.remain_time < 0:
                         print("memory error: get data not valid!",gotData.dataName)
 
@@ -107,8 +113,13 @@ class DSP:
 
                 # write back
                 for data in task.getDataInsOut():
-                    transmitTimeToYield += RM.getMemory(self).saveData(data)
-                    # print("dsp save %s" % data.data_inst_idx)
+                    saveFlag = RM.getMemory(self).saveData(data, False)
+                    if saveFlag < 0:
+                        with self.dmaControl.request() as req:  # 寻求进入
+                            yield req
+                            transmitTime = RM.getMemory(self).saveData(data, True)
+                            self.dmaTransmitTime += transmitTime
+                            yield self.env.timeout(transmitTime)
                 
                 # finish task
                 task.taskStatus = TaskStatus.FINISH
@@ -118,7 +129,11 @@ class DSP:
                 if graph.taskNum == 0:
                     graph.finished = True
                     for data in task.getDataInsOut():
-                        transmitTimeToYield += RM.dmaSaveData(data)
+                        with self.dmaControl.request() as req:  # 寻求进入
+                            yield req
+                            transmitTime = RM.dmaSaveData(data)
+                            self.dmaTransmitTime += transmitTime
+                            yield self.env.timeout(transmitTime)
 
                     if graph.QosReserve:
                         scheduler.qosReserveFinish()
@@ -134,13 +149,7 @@ class DSP:
                         RM.getExecuteTimeMap()[graph.graphId] = [self.env.now - graph.submitTime]
                         RM.getBeginTimeMap()[graph.graphId] = [graph.submitTime]
                         RM.getEndTimeMap()[graph.graphId] = [self.env.now]
-                    
-                # yield of dma
-                """
-                to debug
-                """
-                #yield self.env.timeout(transmitTimeToYield)  # TTI = 0.5ms
-                self.dmaTransmitTime += transmitTimeToYield
+
 
 
                 # if graph.taskNum < 0:

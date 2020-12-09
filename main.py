@@ -44,12 +44,13 @@ if __name__ == "__main__":
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
     ClusterNum = 20
+    DmaNum = 12
     DSPPerCluster = 4
     MemCapacity = 100
     DDRCapacity = 100
     SIM_TIME = 10
     """change with algo"""
-    selectedAlgo = SchduleAlgorithm.QOSPreemptionG
+    selectedAlgo = SchduleAlgorithm.OFFMEM
     rpt = reporter()
     """change with algo"""
     """only reserve"""
@@ -57,6 +58,17 @@ if __name__ == "__main__":
 
     # Create an environment and start the setup process
     env = simpy.Environment()
+
+
+    #withpooling
+    dmaControl = simpy.Resource(env, capacity=DmaNum)
+
+    """
+    #withoutpooling
+    dmaControl = []
+    for i in range(ClusterNum+1):
+        dmaControl.append(simpy.Resource(env, capacity=DmaNum))
+    """
 
     #print("Task graph parser begins")
     parser = xml.sax.make_parser()
@@ -133,8 +145,17 @@ if __name__ == "__main__":
     graphList[5].QosReserve = True
     """
     
-    RM.setCluster(env, ClusterNum)
-    RM.setFhacCluster(env)
+
+    #withpooling
+    RM.setCluster(env, ClusterNum, dmaControl)
+    RM.setFhacCluster(env, dmaControl)
+
+    """
+    #withoutpooling
+    RM.setCluster(env, ClusterNum, dmaControl)
+    RM.setFhacCluster(env,dmaControl)
+    """
+
 
     initDataIns = []
     for key in initData:

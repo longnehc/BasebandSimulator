@@ -2,6 +2,7 @@ from ResourceModule import Cluster
 from ResourceModule import DDR
 
 from TaskModule.Task import TaskStatus
+from TaskModule import Scheduler as scheduler
 import random
 
 
@@ -10,7 +11,6 @@ class ResourcesManager:
     def __init__(self):
         self.name = "ResourceModule manager"
         self.clusterList = []
-        self.dmaNum = 20
         self.finishGraphCnt = 0
         self.executeTimeMap = {}
         self.beginTimeMap = {}
@@ -33,14 +33,32 @@ resourcesManager = ResourcesManager()
  
 def submitTaskToCluster(task, clusterId, env):
     cluster = getCluster(clusterId)
-    if cluster.submit(task):
-        task.taskStatus = TaskStatus.SUMBITTED
-        task.submittedTime = env.now
-        resourcesManager.submittedTaskNum += 1
-        resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
-        return True
+    if scheduler.slidingWindow():
+        flag = False
+        for dsp in cluster.dspList:
+            if len(dsp.taskQueue) <= 1:
+                flag = True
+        if flag:
+            cluster.submit(task)
+            task.taskStatus = TaskStatus.SUMBITTED
+            task.submittedTime = env.now
+            resourcesManager.submittedTaskNum += 1
+            resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
+            return True
+        else:
+            return False
     else:
-        return False
+        if cluster.submit(task):
+            task.taskStatus = TaskStatus.SUMBITTED
+            task.submittedTime = env.now
+            resourcesManager.submittedTaskNum += 1
+            resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
+            return True
+        else:
+            # print(len(dma.taskList))
+            return False
+    # dma.submit(task)
+    # task.taskStatus = TaskStatus.SUMBITTED
 
 def submitTaskToDsp(task, clusterId, dspId):
     cluster = getCluster(clusterId)
@@ -85,6 +103,13 @@ def dmaGetData(data):
             print("not in DDR!!!!!!!!!!!!",data.dataName + "-" + str(data.data_inst_idx))
     return gotData, accessTime, transmitTime
 
+def delData(data):
+    for cluster in resourcesManager.clusterList:
+        mem = cluster.getMemory(0)
+        mem.delData(data)
+    fhacMem = getCluster(-1).getMemory(0)
+    fhacMem.delData(data)
+
 def getSubmittedTaskNum():
     return resourcesManager.submittedTaskNum
 
@@ -118,13 +143,26 @@ def getCluster(index):
     else:
         return resourcesManager.clusterList[index]
 
-def setCluster(env, num):
+def setCluster(env, num, dmaControl):
+
+    #withpooling
     for i in range(0, num):
         # print("set cluster %d"%i)
-        resourcesManager.clusterList.append(Cluster.Cluster(env, i))
+        resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl))
+    """
+    #withoutpooling
+    for i in range(0, num):
+        # print("set cluster %d"%i)
+        resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl[num]))
+    """
 
-def setFhacCluster(env):
-    resourcesManager.FHAC = Cluster.Cluster(env,-1)
+def setFhacCluster(env, dmaControl):
+    #withpooling
+    resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl)
+    """
+    #withoutpooling
+    resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl[-1])
+    """
 
 def setReserveGraph(id, ddl):
     resourcesManager.reserveGraph[id] = ddl
@@ -167,3 +205,22 @@ def getDDR():
 
 def test(env, data, memory):
     print("TTTTTTTTTTTTTTTTTTTTTTTest")
+
+"""
+def getIdleDma():
+    dma = None
+    for cluster in resourcesManager.clusterList:
+        for dsp in cluster.dspList:
+            if len(dsp.taskQueue) == 0:
+                dma = cluster.getDma(0)
+                return dma
+    return dma
+"""
+
+def checkDspIdle(clusterId):
+    cluster = resourcesManager.clusterList[clusterId]
+    flag = False
+    for dsp in cluster.dspList:
+        if len(dsp.taskQueue) <= 1:
+            flag = True
+    return flag

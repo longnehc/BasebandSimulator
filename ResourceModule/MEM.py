@@ -11,8 +11,8 @@ class MEM:
         # key is dataName
         self.map = OrderedDict()
 
-        #self.capacity = 100000
-        self.capacity = 100000
+        #self.capacity = 1000000
+        self.capacity = sys.maxsize
         if clusterId < 0:
             self.capacity = sys.maxsize
         self.curSize = 0
@@ -20,7 +20,7 @@ class MEM:
 
         self.clusterId = clusterId
 
-    def saveData(self, data):
+    def saveData(self, data, admission):
         transmitTime = 0
         # can mem save data
         # print("%s-%d" % (data.dataName, data.data_inst_idx))
@@ -31,39 +31,43 @@ class MEM:
             if id(old)!=id(data):
                 print("the old remain and new remain is: ",old.remain_time,data.remain_time)
             self.map[data.dataName + "-" + str(data.data_inst_idx)] = old
+            self.peek = max(self.curSize,self.peek)
+            return 0
         elif self.checkMem(data):
             self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
             self.curSize += data.total_size
+            self.peek = max(self.curSize,self.peek)
+            return 0
         else:
-            while self.curSize + data.total_size > self.capacity:
-                tmp = self.map.popitem(last=False)[1]
-                self.curSize -= tmp.total_size
-                if tmp.remain_time < 0:
-                    print("=====memory error: save data not valid!=====",tmp.dataName+'-'+str(tmp.data_inst_idx))
-                if tmp.remain_time != 0:
-                    # print("Writing back to DDR %s-%d, move: %d" % (tmp.dataName, tmp.data_inst_idx, tmp.mov_dir))
-                    transmitTime += RM.dmaSaveData(tmp)
-                # print("******************************%d"%tmp.total_size)
-            self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
-            self.curSize += data.total_size
-
-        self.peek = max(self.curSize,self.peek)
-
-        return transmitTime
+            if not admission:
+                return -1
+            else:
+                while self.curSize + data.total_size > self.capacity:
+                    tmp = self.map.popitem(last=False)[1]
+                    self.curSize -= tmp.total_size
+                    if tmp.remain_time < 0:
+                        print("=====memory error: save data not valid!=====",tmp.dataName+'-'+str(tmp.data_inst_idx))
+                    if tmp.remain_time != 0:
+                        # print("Writing back to DDR %s-%d, move: %d" % (tmp.dataName, tmp.data_inst_idx, tmp.mov_dir))
+                        transmitTime += RM.dmaSaveData(tmp)
+                    # print("******************************%d"%tmp.total_size)
+                self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
+                self.curSize += data.total_size
+                self.peek = max(self.curSize,self.peek)
+                return transmitTime
 
         # save data
         # print ("memory save %s" % data.dataName)
 
     # get data
-    def getData(self, env, data, dsp):
+    def getData(self, data):
         if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
             validData = self.map[data.dataName + "-" + str(data.data_inst_idx)]
-            transmitTime = 0
+            return validData,True
         else:
-            validData,accessTime,transmitTime = RM.dmaGetData(data)
-        return validData,transmitTime
+            return data,False
 
-    def delData(self, env, data, dsp):
+    def delData(self, data):
         if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
             tmp = self.map.pop(data.dataName + "-" + str(data.data_inst_idx))
             if tmp.remain_time > 0:

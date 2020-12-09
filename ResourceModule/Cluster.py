@@ -37,12 +37,8 @@ def QosPreemption(t1, t2):
 class Cluster:
     env = None
 
-    def __init__(self, env, clusterId):
+    def __init__(self, env, clusterId, dmaControl):
         self.dspList = []
-        if clusterId >= 0:
-            self.setDsp(env, 4, clusterId)
-        else:
-            self.setFHAC(env, clusterId)
 
         self.taskList = []
         self.curCost = 0
@@ -58,6 +54,13 @@ class Cluster:
 
         if Cluster.env == None:
             Cluster.env = env
+        self.dmaControl = dmaControl
+        if clusterId >= 0:
+            self.setDsp(env, 4, clusterId)
+        else:
+            self.setFHAC(env, clusterId)
+
+
     
     def submit(self, task):
         # if dmaTask not in self.taskList:
@@ -74,10 +77,10 @@ class Cluster:
     
     def setDsp(self, env, num, clusterId):
         for i in range(0,num):
-            self.dspList.append(DSP(env, clusterId, 'DSP'))
+            self.dspList.append(DSP(env, clusterId, 'DSP', self.dmaControl))
 
     def setFHAC(self, env, clusterId):
-        self.dspList.append(DSP(env, clusterId, 'FHAC'))
+        self.dspList.append(DSP(env, clusterId, 'FHAC', self.dmaControl))
 
     def getDspList(self):
         return self.dspList
@@ -110,21 +113,20 @@ class Cluster:
                 else:
                     RM.getTaskLogMap()[task.taskName][task.job_inst_idx] = [self.env.now]
 
-                transmitTimeToYield = 0
                 for data in task.getDataInsIn():
                     self.curCost -= data.total_size
                     if not RM.getMemory(self).checkData(data):
                         #print("=====debug from Shine: not in the inner memory, using dma to find=====")
                         self.offChipAccess += data.total_size
-                        gotData,accessTime,transmitTime = RM.dmaGetData(data)
-                        """remember to add this to REPORTER"""
-                        transmitTimeToYield += transmitTime
-                        #yield self.env.timeout(transmitTime)
-                        saveToDdrTime = RM.getMemory(self).saveData(gotData)
-                        transmitTimeToYield += saveToDdrTime
-                        #yield self.env.timeout(saveToDdrTime)
-                """to debug"""
-                #yield self.env.timeout(transmitTimeToYield)
+                        with self.dmaControl.request() as req:  # 寻求进入
+                            yield req
+                            transmitTimeToYield = 0
+                            gotData,accessTime,transmitTime = RM.dmaGetData(data)
+                            """remember to add this to REPORTER"""
+                            transmitTimeToYield += transmitTime
+                            saveToDdrTime = RM.getMemory(self).saveData(gotData, True)
+                            transmitTimeToYield += saveToDdrTime
+                            yield self.env.timeout(transmitTimeToYield)
 
                 dspList = RM.getCluster(self.clusterId).getDspList()
                 dsp = dspList[0]
