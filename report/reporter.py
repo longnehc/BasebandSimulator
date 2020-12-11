@@ -300,6 +300,13 @@ class reporter:
         #     fo.write("\n")
         fo.close()
 
+    def memOutReport(self):
+        clusterList = RM.getClusterList()
+        for cluster in clusterList:
+            mem = cluster.getMemory(0)
+            print(mem.outSize)
+
+
     def setAlgorithm(self, selectedAlgo):
         self.selectedAlgo = selectedAlgo
 
@@ -329,4 +336,5 @@ class reporter:
                 self.maxExecutionReport()
                 self.avgWaitTime()
                 self.resourceUtilReport()
+                self.memOutReport()
                 reported = True

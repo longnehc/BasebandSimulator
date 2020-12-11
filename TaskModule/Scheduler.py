@@ -138,7 +138,8 @@ def run(env):
                             curCost = tmp
                 # submit
                 while not RM.submitTaskToCluster(task, clusterId, env):
-                    yield env.timeout(0.001)
+                    """debug from shine: test window"""
+                    yield env.timeout(0.0001)
 
             # TODO:
             elif scheduler.algorithm == SchduleAlgorithm.QOSReserve:

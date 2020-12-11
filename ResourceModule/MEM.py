@@ -12,10 +12,11 @@ class MEM:
         self.map = OrderedDict()
 
         #self.capacity = 1000000
-        self.capacity = sys.maxsize
+        self.capacity = 5000000
         if clusterId < 0:
             self.capacity = sys.maxsize
         self.curSize = 0
+        self.outSize = 0
         self.peek = 0
 
         self.clusterId = clusterId
@@ -25,7 +26,7 @@ class MEM:
         # can mem save data
         # print("%s-%d" % (data.dataName, data.data_inst_idx))
         if data.dataName + "-" + str(data.data_inst_idx) in self.map.keys():
-            # print("=====debug from Shine: already have this data in MEM!=====")
+            print("=====debug from Shine: already have this data in MEM!=====")
             # print("%s-%d" % (data.dataName, data.data_inst_idx))
             old = self.map[data.dataName + "-" + str(data.data_inst_idx)]
             if id(old)!=id(data):
@@ -45,6 +46,7 @@ class MEM:
                 while self.curSize + data.total_size > self.capacity:
                     tmp = self.map.popitem(last=False)[1]
                     self.curSize -= tmp.total_size
+                    self.outSize += tmp.total_size
                     if tmp.remain_time < 0:
                         print("=====memory error: save data not valid!=====",tmp.dataName+'-'+str(tmp.data_inst_idx))
                     if tmp.remain_time != 0:

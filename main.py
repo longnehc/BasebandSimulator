@@ -43,14 +43,14 @@ if __name__ == "__main__":
     #taskGraphs = taskManager.taskXMLParser("taskgraph.xml")
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
-    ClusterNum = 20
+    ClusterNum = 8
     DmaNum = 12
     DSPPerCluster = 4
     MemCapacity = 100
     DDRCapacity = 100
     SIM_TIME = 10
     """change with algo"""
-    selectedAlgo = SchduleAlgorithm.OFFMEM
+    selectedAlgo = SchduleAlgorithm.LB
     rpt = reporter()
     """change with algo"""
     """only reserve"""
@@ -163,9 +163,16 @@ if __name__ == "__main__":
         refCnt = consumerMap[idxList[0]+'-'+idxList[1]]
         dataIns = DataInstance(idxList[0],refCnt,0,int(idxList[2]),idxList[1])
         #data initialized in DDR won't be removed
-        dataIns.remain_time = 100000
+        dataIns.remain_time = dataIns.mov_dir
         initDataIns.append(dataIns)
-    RM.setDDR(1000000,initDataIns)
+    num = len(initDataIns)
+    for i in range(1,11):
+        str = '*'*i
+        for j in range(num):
+            dataIns = DataInstance(initDataIns[j].dataName+str,initDataIns[j].mov_dir,initDataIns[j].job_inst_idx,initDataIns[j].total_size,initDataIns[j].data_inst_idx)
+            dataIns.remain_time = initDataIns[j].mov_dir
+            initDataIns.append(dataIns)
+    RM.setDDR(100000000,initDataIns)
     
     RM.setReserveGraph(1, 0.8)
 
