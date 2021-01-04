@@ -43,8 +43,8 @@ if __name__ == "__main__":
     #taskGraphs = taskManager.taskXMLParser("taskgraph.xml")
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
-    ClusterNum = 8
-    DmaNum = 12
+    ClusterNum = 10
+    DmaNum = 10
     DSPPerCluster = 4
     MemCapacity = 100
     DDRCapacity = 100
@@ -61,13 +61,17 @@ if __name__ == "__main__":
 
 
     #withpooling
+    """
     dmaControl = simpy.Resource(env, capacity=DmaNum)
-
+    """
+    #modified for more than one dma of a cluster
+    mutex = simpy.Resource(env, capacity=1)
+    dmaControl = [DmaNum,mutex,simpy.Container(env, init=DmaNum, capacity=DmaNum)]
     """
     #withoutpooling
     dmaControl = []
     for i in range(ClusterNum+1):
-        dmaControl.append(simpy.Resource(env, capacity=DmaNum))
+        dmaControl.append(simpy.Resource(env, capacity=1))
     """
 
     #print("Task graph parser begins")
@@ -146,15 +150,9 @@ if __name__ == "__main__":
     """
     
 
-    #withpooling
+    #modified for more than one dma of a cluster
     RM.setCluster(env, ClusterNum, dmaControl)
     RM.setFhacCluster(env, dmaControl)
-
-    """
-    #withoutpooling
-    RM.setCluster(env, ClusterNum, dmaControl)
-    RM.setFhacCluster(env,dmaControl)
-    """
 
 
     initDataIns = []
@@ -216,6 +214,7 @@ if __name__ == "__main__":
     #     graphList[i].graphCost = i
     #     print("graph %d normalized cost %d" % (graphList[i].graphId, graphList[i].graphCost))
     for graph in graphList: 
+        print(graph.graphCost)
         graph.graphCost = math.ceil((graph.graphCost / maxCost) * 5)
         print("graph %d normalized cost %f" % (graph.graphId, graph.graphCost))
 

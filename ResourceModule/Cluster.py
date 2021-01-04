@@ -77,10 +77,12 @@ class Cluster:
     
     def setDsp(self, env, num, clusterId):
         for i in range(0,num):
-            self.dspList.append(DSP(env, clusterId, 'DSP', self.dmaControl))
+            #modified for more than one dma of a cluster
+            self.dspList.append(DSP(env, clusterId, 'DSP'))
 
     def setFHAC(self, env, clusterId):
-        self.dspList.append(DSP(env, clusterId, 'FHAC', self.dmaControl))
+        #modified for more than one dma of a cluster
+        self.dspList.append(DSP(env, clusterId, 'FHAC'))
 
     def getDspList(self):
         return self.dspList
@@ -113,20 +115,54 @@ class Cluster:
                 else:
                     RM.getTaskLogMap()[task.taskName][task.job_inst_idx] = [self.env.now]
 
+                #if self.clusterId > -1 and task.cost > 0:
+                    #yield self.env.process(RM.checkDspIdle(self.clusterId,self.env))
+
+                #modified for more than one dma of a cluster
+                with self.dmaControl[1].request() as req:  # 修改个数的权限
+                    yield req
+                    """
+                    if self.dmaControl[0] <= 0:
+                        ownDmaNum = 1
+                    else:
+                        ownDmaNum = (self.dmaControl[0]+1)//2
+                    """
+                    ownDmaNum = 1
+                    self.dmaControl[0] -= ownDmaNum
+                yield self.dmaControl[2].get(ownDmaNum)
+
+                dmaIndex = 0
+                maxPeriodTime = 0
+
                 for data in task.getDataInsIn():
                     self.curCost -= data.total_size
-                    if not RM.getMemory(self).checkData(data):
+                    if RM.getMemory(self).checkData(data):
+                        RM.getMemory(self).setVisit(data, True)
+                    else:
                         #print("=====debug from Shine: not in the inner memory, using dma to find=====")
                         self.offChipAccess += data.total_size
-                        with self.dmaControl.request() as req:  # 寻求进入
-                            yield req
-                            transmitTimeToYield = 0
-                            gotData,accessTime,transmitTime = RM.dmaGetData(data)
-                            """remember to add this to REPORTER"""
-                            transmitTimeToYield += transmitTime
-                            saveToDdrTime = RM.getMemory(self).saveData(gotData, True)
-                            transmitTimeToYield += saveToDdrTime
-                            yield self.env.timeout(transmitTimeToYield)
+                        
+                        transmitTimeToYield = 0
+                        gotData,accessTime,transmitTime = RM.dmaGetData(data)
+                        """remember to add this to REPORTER"""
+                        transmitTimeToYield += transmitTime
+                        saveToDdrTime = RM.getMemory(self).saveData(gotData, True, False)
+                        transmitTimeToYield += saveToDdrTime
+                        if transmitTimeToYield > maxPeriodTime:
+                            maxPeriodTime = transmitTimeToYield
+                        dmaIndex += 1
+                        if dmaIndex == ownDmaNum:
+                            dmaIndex = 0
+                            yield self.env.timeout(maxPeriodTime)
+                            maxPeriodTime = 0
+                yield self.env.timeout(maxPeriodTime)
+
+                yield self.dmaControl[2].put(ownDmaNum)
+                #modified for more than one dma of a cluster
+                with self.dmaControl[1].request() as req:  # 修改个数的权限
+                    yield req
+                    self.dmaControl[0] += ownDmaNum
+
 
                 dspList = RM.getCluster(self.clusterId).getDspList()
                 dsp = dspList[0]
@@ -142,4 +178,4 @@ class Cluster:
                 #     yield self.env.timeout(0.001)
 
             # yield self.env.timeout(0.0002)
-            yield self.env.timeout(0.002)
+            yield self.env.timeout(0.00001)
