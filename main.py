@@ -61,11 +61,12 @@ if __name__ == "__main__":
 
 
     #withpooling
-    # dmaControl = simpy.Resource(env, capacity=DmaNum)
+    mutex = simpy.Resource(env, capacity=1)
+    dmaControl = [DmaNum, mutex, simpy.Container(env, init=DmaNum, capacity=DmaNum)]
     #withoutpooling
-    dmaControl = []
-    for i in range(ClusterNum+1):
-        dmaControl.append(simpy.Resource(env, capacity=1))
+    # dmaControl = []
+    # for i in range(ClusterNum+1):
+    #     dmaControl.append(simpy.Resource(env, capacity=1))
 
     #print("Task graph parser begins")
     parser = xml.sax.make_parser()
@@ -145,12 +146,12 @@ if __name__ == "__main__":
     
 
     #withpooling
-    # RM.setCluster(env, ClusterNum, dmaControl)
-    # RM.setFhacCluster(env, dmaControl)
+    RM.setCluster(env, ClusterNum, dmaControl)
+    RM.setFhacCluster(env, dmaControl)
 
     #withoutpooling
-    RM.setCluster(env, ClusterNum, dmaControl)
-    RM.setFhacCluster(env,dmaControl)
+    # RM.setCluster(env, ClusterNum, dmaControl)
+    # RM.setFhacCluster(env,dmaControl)
 
     initDataIns = []
     for key in initData:

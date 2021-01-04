@@ -141,23 +141,23 @@ def getCluster(index):
 def setCluster(env, num, dmaControl):
 
     #withpooling
-    # for i in range(0, num):
-    #     # print("set cluster %d"%i)
-    #     resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl))
-
-    #withoutpooling
     for i in range(0, num):
         # print("set cluster %d"%i)
-        resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl[num]))
+        resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl))
+
+    #withoutpooling
+    # for i in range(0, num):
+    #     # print("set cluster %d"%i)
+    #     resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl[num]))
 
 
 def setFhacCluster(env, dmaControl):
     
     #withpooling
-    # resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl)
+    resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl)
 
     #withoutpooling
-    resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl[-1])
+    # resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl[-1])
 
 
 def setReserveGraph(id, ddl):
