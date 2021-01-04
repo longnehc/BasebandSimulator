@@ -25,6 +25,10 @@ class ResourcesManager:
         #dma speed is 256 * 866 * 1000000
         self.speed = 256 * 866 * 1000000
 
+        self.otherClusterSize = 0
+        self.DDRSize = 0
+        self.FHACSize = 0
+
 
 
 resourcesManager = ResourcesManager()
@@ -84,6 +88,7 @@ def dmaGetData(data):
         if data.dataName + "-" + str(data.data_inst_idx) in Mem.map.keys():
             gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)]
             find = True
+            resourcesManager.otherClusterSize += data.total_size
             break
     #find from FHAC mem
     if not find:
@@ -92,6 +97,7 @@ def dmaGetData(data):
         if data.dataName + "-" + str(data.data_inst_idx) in Mem.map.keys():
             gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)]
             find = True
+            resourcesManager.FHACSize += data.total_size
     #find in DDR
     if not find:
         accessTime += 1
@@ -99,6 +105,8 @@ def dmaGetData(data):
         if data.dataName + "-" + str(data.data_inst_idx) in DDR.map.keys():
             gotData = DDR.map[data.dataName + "-" + str(data.data_inst_idx)]
             find = True
+            # print("DDRDDRDDRDDRDDR")
+            resourcesManager.DDRSize += data.total_size
         else:
             print("not in DDR!!!!!!!!!!!!",data.dataName + "-" + str(data.data_inst_idx))
     return gotData, accessTime, transmitTime
@@ -146,23 +154,23 @@ def getCluster(index):
 def setCluster(env, num, dmaControl):
 
     #withpooling
-    for i in range(0, num):
-        # print("set cluster %d"%i)
-        resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl))
-    """
+    # for i in range(0, num):
+    #     # print("set cluster %d"%i)
+    #     resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl))
+
     #withoutpooling
     for i in range(0, num):
         # print("set cluster %d"%i)
         resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl[num]))
-    """
+
 
 def setFhacCluster(env, dmaControl):
     #withpooling
-    resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl)
-    """
+    # resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl)
+
     #withoutpooling
     resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl[-1])
-    """
+
 
 def setReserveGraph(id, ddl):
     resourcesManager.reserveGraph[id] = ddl
@@ -224,3 +232,6 @@ def checkDspIdle(clusterId):
         if len(dsp.taskQueue) <= 1:
             flag = True
     return flag
+
+def OFFMEMlog():
+    print("***************************** %d %d %d "%(resourcesManager.DDRSize, resourcesManager.otherClusterSize, resourcesManager.FHACSize))

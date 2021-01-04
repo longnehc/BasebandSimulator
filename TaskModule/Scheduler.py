@@ -52,12 +52,25 @@ def beginQosReserve(graphId, QosReserveDdl, QosReserveClusterNum):
     scheduler.QosReserveGraphId = graphId
     RM.clearCluster(0, QosReserveClusterNum-1)
     scheduler.QosGraphNum = len(graphId)
+    for cluster in RM.getClusterList():
+        if cluster.clusterId < QosReserveClusterNum:
+            cluster.setQosDma(True, QosReserveClusterNum)
+            for dsp in cluster.dspList:
+                dsp.setQosDma(True, QosReserveClusterNum)
+        else:
+            cluster.setQosDma(False, QosReserveClusterNum)
+            for dsp in cluster.dspList:
+                dsp.setQosDma(False, QosReserveClusterNum)
 
 
 def qosReserveFinish():
     scheduler.QosGraphNum -= 1
     if scheduler.QosGraphNum == 0:
         scheduler.algorithm = SchduleAlgorithm.QOSPreemptionG
+        for cluster in RM.getClusterList():
+            cluster.finishQosDma()
+            for dsp in cluster.dspList:
+                dsp.finishQosDma()
         print("reverse finish")
     
 cnt = 0
@@ -76,6 +89,7 @@ def run(env):
                     clusterId = -1
                 else:
                     clusterId = task.clusterId
+                # print(clusterId)
                 while not RM.submitTaskToCluster(task, clusterId, env):
                     yield env.timeout(0.0001)
 
@@ -111,14 +125,6 @@ def run(env):
                 #             yield env.timeout(0.001)
 
             elif scheduler.algorithm == SchduleAlgorithm.LB:
-                # cnt = (cnt + 1) % 16
-                # if not RM.submitTaskToCluster(task, cnt, env):
-                #     tmp = (cnt + 1) % 16
-                #     while not RM.submitTaskToCluster(task, tmp, env):
-                #         tmp = (tmp + 1) % 16
-                #         if tmp == cnt:
-                #             # print("full")
-                #             yield env.timeout(0.001)
                 # new LB
                 clusterId = 0
                 curCost = 10000000.0
@@ -136,6 +142,9 @@ def run(env):
                         if tmp < curCost:
                             clusterId = i
                             curCost = tmp
+                    # off-chip test
+                    # clusterId = 0
+                # print(clusterId)
                 # submit
                 while not RM.submitTaskToCluster(task, clusterId, env):
                     yield env.timeout(0.001)
@@ -148,33 +157,53 @@ def run(env):
                         yield env.timeout(0.001)
                 else:
                     clusterList = RM.getClusterList()
+                    clusterId = 0
+                    curCost = 10000000.0
                     if task.taskGraphId in scheduler.QosReserveGraphId:
-                        # print("graph %d quick"%task.taskGraphId)
-                        clusterId = 0
-                        curCost = 10000000.0
+                        # if task.taskGraphId == 0:
+                        #     print("graph %d quick"%task.taskGraphId)
                         for i in range(0, scheduler.QosReserveClusterNum):
-                            # 11111
+                        # for i in range(0, len(clusterList)):
                             tmp = 0.0
                             for dsp in clusterList[i].getDspList():
-                                # tmp += dsp.taskQueue.qsize()
                                 tmp += dsp.curCost / dsp.speed
+                            tmp += clusterList[i].curCost
                             if tmp < curCost:
                                 clusterId = i
                                 curCost = tmp
-                        # print(clusterId)
                         while not RM.submitTaskToCluster(task, clusterId, env):
                             yield env.timeout(0.001)
                     else:
                         clusterId = scheduler.QosReserveClusterNum
                         for i in range(scheduler.QosReserveClusterNum, len(clusterList)):
-                            if len(clusterList[i].taskList) < len(clusterList[clusterId].taskList):
+                        # for i in range(0, len(clusterList)):
+                            tmp = 0.0
+                            for dsp in clusterList[i].getDspList():
+                                tmp += dsp.curCost / dsp.speed
+                            tmp += clusterList[i].curCost
+                            if tmp < curCost:
                                 clusterId = i
+                                curCost = tmp
                             # submit
                         while not RM.submitTaskToCluster(task, clusterId, env):
                             yield env.timeout(0.001)
-                    if env.now > scheduler.QosReserveDdl:
-                        scheduler.algorithm = SchduleAlgorithm.QOSPreemptionG
-                        print("reverse finish")
+                    # for i in range(0, len(clusterList)):
+                    #     tmp = 0.0
+                    #     for dsp in clusterList[i].getDspList():
+                    #         tmp += dsp.curCost / dsp.speed
+                    #     tmp += clusterList[i].curCost
+                    #     if tmp < curCost:
+                    #         clusterId = i
+                    #         curCost = tmp
+                    # while not RM.submitTaskToCluster(task, clusterId, env):
+                    #     yield env.timeout(0.001)
+                    # if env.now > scheduler.QosReserveDdl:
+                    #     scheduler.algorithm = SchduleAlgorithm.QOSPreemptionG
+                    #     for cluster in RM.getClusterList():
+                    #         cluster.finishQosDma()
+                    #         for dsp in cluster.dspList:
+                    #             dsp.finishQosDma()
+                    #     print("reverse finish")
 
             else:
                 print("Not implemented")

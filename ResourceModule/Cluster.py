@@ -1,4 +1,6 @@
 import functools
+
+import simpy
 from ResourceModule.DSP import *
 from ResourceModule.MEM import *
 from queue import Queue
@@ -60,6 +62,16 @@ class Cluster:
         else:
             self.setFHAC(env, clusterId)
 
+    def setQosDma(self, flag, QosClusterNum):
+        # if flag:
+        #     self.dmaControl = simpy.Resource(self.env, capacity=QosClusterNum)
+        # else:
+        #     self.dmaControl = simpy.Resource(self.env, capacity=len(RM.getClusterList()) - QosClusterNum)
+        tmp = 1
+
+    def finishQosDma(self):
+        # self.dmaControl = simpy.Resource(self.env, capacity=len(RM.getClusterList()))
+        tmp = 1
 
     
     def submit(self, task):
@@ -116,7 +128,7 @@ class Cluster:
                 for data in task.getDataInsIn():
                     self.curCost -= data.total_size
                     if not RM.getMemory(self).checkData(data):
-                        #print("=====debug from Shine: not in the inner memory, using dma to find=====")
+                        # print("=====debug from Shine: not in the inner memory, using dma to find=====")
                         self.offChipAccess += data.total_size
                         with self.dmaControl.request() as req:  # 寻求进入
                             yield req
@@ -127,6 +139,12 @@ class Cluster:
                             saveToDdrTime = RM.getMemory(self).saveData(gotData, True)
                             transmitTimeToYield += saveToDdrTime
                             yield self.env.timeout(transmitTimeToYield)
+
+                mallocSize = 0
+                for data in task.getDataInsOut():
+                    mallocSize += data.total_size
+                transmitTimeToYield = RM.getMemory(self).malloc(mallocSize)
+                yield self.env.timeout(transmitTimeToYield)
 
                 dspList = RM.getCluster(self.clusterId).getDspList()
                 dsp = dspList[0]

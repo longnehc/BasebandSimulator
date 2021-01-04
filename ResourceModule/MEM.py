@@ -12,11 +12,13 @@ class MEM:
         self.map = OrderedDict()
 
         #self.capacity = 1000000
-        self.capacity = sys.maxsize
+        self.capacity = 1000000 * 10
         if clusterId < 0:
             self.capacity = sys.maxsize
         self.curSize = 0
         self.peek = 0
+
+        self.dataBuffer = 0
 
         self.clusterId = clusterId
 
@@ -93,3 +95,22 @@ class MEM:
             return False
         else:
             return True
+
+    def malloc(self, dataSize):
+        transmitTime = 0
+        if self.curSize + dataSize >= self.capacity:
+            while self.curSize + dataSize > self.capacity:
+                if not bool(self.map):
+                    print("=====memory error: Insufficient memory space recommended to increase memory===========")
+                tmp = self.map.popitem(last=False)[1]
+                self.curSize -= tmp.total_size
+                if tmp.remain_time < 0:
+                    print("=====memory error: save data not valid!=====")
+                if tmp.remain_time != 0:
+                    transmitTime += RM.dmaSaveData(tmp)
+        self.curSize += dataSize
+        return transmitTime
+
+    def dspSave(self, data):
+        self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
+        self.peek = max(self.curSize, self.peek)

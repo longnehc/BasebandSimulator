@@ -1,5 +1,6 @@
 import functools
 
+import simpy
 from TaskModule.Task import TaskStatus
 from ResourceModule.MEM import *
 from queue import Queue
@@ -83,6 +84,17 @@ class DSP:
                 #     print(self.taskQueue.pop(0).taskGraphId)
                 #     print("dsp")
 
+    def setQosDma(self, flag, QosClusterNum):
+        # if flag:
+        #     self.dmaControl = simpy.Resource(self.env, capacity=QosClusterNum)
+        # else:
+        #     self.dmaControl = simpy.Resource(self.env, capacity=len(RM.getClusterList()) - QosClusterNum)
+        tmp = 1
+
+    def finishQosDma(self):
+        # self.dmaControl = simpy.Resource(self.env, capacity=len(RM.getClusterList()))
+        tmp = 1
+
     def run(self, taskManager):
         while (True):
             while len(self.taskQueue) > 0:
@@ -112,6 +124,7 @@ class DSP:
                 self.executionTime += 2000 * task.cost / self.speed
 
                 # write back
+                '''
                 for data in task.getDataInsOut():
                     saveFlag = RM.getMemory(self).saveData(data, False)
                     if saveFlag < 0:
@@ -120,7 +133,11 @@ class DSP:
                             transmitTime = RM.getMemory(self).saveData(data, True)
                             self.dmaTransmitTime += transmitTime
                             yield self.env.timeout(transmitTime)
-                
+                '''
+                for data in task.getDataInsOut():
+                    RM.getMemory(self).dspSave(data)
+
+
                 # finish task
                 task.taskStatus = TaskStatus.FINISH
                 self.curCost -= task.cost
@@ -137,6 +154,7 @@ class DSP:
 
                     if graph.QosReserve:
                         scheduler.qosReserveFinish()
+                        # print("//////////////////////////qosfinish by dsp")
                     print("graph %d of batch %d finish %f and cost %f" % (
                     graph.graphId, graph.batchId, self.env.now, self.env.now - graph.submitTime))
                     if graph.graphId in RM.getExecuteTimeMap():

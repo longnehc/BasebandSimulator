@@ -268,11 +268,11 @@ class TaskManager:
                         if predTask.taskStatus != TaskStatus.FINISH:
                             prepareToSumbit = False
                             #print("%s wait for %s ...." % (task.taskName, predTask.taskName))
-                    """debug from Shine
+                    # OFFMEM check
                     if scheduler.getAlgorithm().value == 2:
-                        if not RM.checkDspIdle(task.clusterId):
-                            prepareToSumbit = False
-                    """
+                        if not task.knrlType == "FHAC":
+                            if not RM.checkDspIdle(task.clusterId):
+                                prepareToSumbit = False
                     if prepareToSumbit:
                         # print("Submit %s !!!!!!!!!!!" % task.taskName)
                         #print(task)

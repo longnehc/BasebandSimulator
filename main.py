@@ -43,32 +43,32 @@ if __name__ == "__main__":
     #taskGraphs = taskManager.taskXMLParser("taskgraph.xml")
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
-    ClusterNum = 20
+    ClusterNum = 10
     DmaNum = 12
     DSPPerCluster = 4
     MemCapacity = 100
     DDRCapacity = 100
     SIM_TIME = 10
     """change with algo"""
-    selectedAlgo = SchduleAlgorithm.OFFMEM
+    selectedAlgo = SchduleAlgorithm.QOSPreemptionG
     rpt = reporter()
     """change with algo"""
     """only reserve"""
-    rpt.rflag = False
+    rpt.rflag = True
 
     # Create an environment and start the setup process
     env = simpy.Environment()
 
 
     #withpooling
-    dmaControl = simpy.Resource(env, capacity=DmaNum)
+    # dmaControl = simpy.Resource(env, capacity=DmaNum)
 
-    """
+
     #withoutpooling
     dmaControl = []
     for i in range(ClusterNum+1):
-        dmaControl.append(simpy.Resource(env, capacity=DmaNum))
-    """
+        dmaControl.append(simpy.Resource(env, capacity=1))
+
 
     #print("Task graph parser begins")
     parser = xml.sax.make_parser()
@@ -87,10 +87,10 @@ if __name__ == "__main__":
     #print("=====debug from Shine: init data,",initData) 
     
     # graph 0, 1, 2, 3, 4, 5
-    DDLList = [100, 0.8, 1.5, 4, 1, 100]
-    PeriodList = [1, 1, 1, 4, 1, 1]
+    DDLList = [100, 1, 1.5, 4, 0.55, 100]
+    PeriodList = [1, 1, 1, 1, 4, 1]
     PriorityList = [1, 4, 3, 1, 1, 1]
-    ArrivalTimeList = [0, 0, 0, 4, 0, 0]
+    ArrivalTimeList = [0, 0, 0, 0, 0, 0]
     # DDLList = [100, 0.8, 1.5, 4, 1, 100]
     # PeriodList = [1, 1, 1, 1, 1, 1]
     # PriorityList = [1, 2, 3, 4, 5, 6]
@@ -139,22 +139,22 @@ if __name__ == "__main__":
     """change with algo"""
     """only reserve"""
     # Qos Reserve
-    """
-    graphList[1].QosReserve = True
-    graphList[4].QosReserve = True
-    graphList[5].QosReserve = True
-    """
+
+    # graphList[1].QosReserve = True
+    # graphList[0].QosReserve = True
+    # graphList[4].QosReserve = True
+    # graphList[5].QosReserve = True
+
     
 
     #withpooling
-    RM.setCluster(env, ClusterNum, dmaControl)
-    RM.setFhacCluster(env, dmaControl)
+    # RM.setCluster(env, ClusterNum, dmaControl)
+    # RM.setFhacCluster(env, dmaControl)
 
-    """
     #withoutpooling
     RM.setCluster(env, ClusterNum, dmaControl)
     RM.setFhacCluster(env,dmaControl)
-    """
+
 
 
     initDataIns = []
@@ -191,13 +191,22 @@ if __name__ == "__main__":
         for i in range(0, hight):
             graph.layerCost.append(0)
             graph.layerDdl.append(0)
+            graph.layerTaskNum.append(0)
         for t in graph.globalTaskList:
             graph.layerCost[t.layer] += t.cost
+            graph.layerTaskNum[t.layer] += 1
         rate = 0
         for i in range(0, hight):
             graph.layerCost[i] /= (graph.graphCost + 1)
             rate += graph.layerCost[i]
             graph.layerDdl[i] = graph.DDL * rate
+        # OFF-Mem analyse
+        dataSize = 0
+        for task in graph.globalTaskList:
+            for data in task.dataInsIn:
+                dataSize += data.total_size
+        graph.dataSize = dataSize
+        print("Graph%d:  Cost: %d DataSize: %d Parallelism: %d"%(graph.graphId, graph.graphCost, graph.dataSize, len(graph.globalTaskList)/hight))
         # for i in range(0, hight):
         #     print(graph.layerDdl[i], end=",")
         # print(" ")

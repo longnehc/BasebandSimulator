@@ -27,9 +27,9 @@ class reporter:
         cnt = 0
         totalOffMem = 0
         for cluster in RM.getClusterList():
+            totalOffMem += RM.getCluster(dsp.clusterId).offChipAccess
             for dsp in cluster.dspList:
                 cnt += 1
-                totalOffMem += RM.getCluster(dsp.clusterId).offChipAccess
                 #print("Off chip mem access : %d, dsp = %d" % (RM.getCluster(dsp.clusterId).offChipAccess, dsp.id))
         #if cnt != 0:
             #print("Total offmem = %f, avgerage offmem = %f" % (totalOffMem, totalOffMem/cnt))
@@ -319,6 +319,7 @@ class reporter:
             print("system time: %f" % env.now)
             yield env.timeout(0.2)
             # if RM.getFinishGraphCnt() >= 6 and not reported:
+            RM.OFFMEMlog()
             if env.now > 6 and not reported:
                 self.graphReport()
                 self.memPeekReport()

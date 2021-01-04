@@ -19,6 +19,11 @@ class TaskGraph :
 
         self.layerCost = []
         self.layerDdl = []
+
+        self.layerTaskNum = []
+        self.Parallelism = -1
+        self.maxLayerNum = -1
+        self.dataSize = -1
         
  
     def isSubmitted(self):
