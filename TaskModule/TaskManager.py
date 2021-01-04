@@ -128,21 +128,28 @@ class TaskManager:
             # yield env.timeout(0.05)  # TODO
             yield env.timeout(0.01)  # TODO
 
-    def constructTask(self, task):
+    def constructTask(self, task, batch):
         #name, knrlType, instCnt, jobId, graphId, job_inst_idx
         #constructing new task based on task
         newtask = Task(task.taskName, task.knrlType, task.instCnt, task.jobId, task.taskGraphId, task.job_inst_idx, task.cost)
         newtask.clusterId = task.clusterId
         #set the precedence task
         newtask.setPrecedenceJobID(task.precedenceJobID)
+        str = batch * '*'
         #set the input data instance
-        newtask.setDataInsIn(task.dataInsIn)
+        dataInsIn = []
+        for indata in task.dataInsIn:
+            dataDataInstance = DataInstance(indata.dataName+str, indata.mov_dir, indata.job_inst_idx, indata.total_size, indata.data_inst_idx)
+            dataInsIn.append(dataDataInstance)
+        newtask.setDataInsIn(dataInsIn)
  
         #set the output data instance
         dataOutIn = []
         for outdata in task.dataInsOut:
-            outdata.remain_time += outdata.mov_dir
-        newtask.setDataInsOut(task.dataInsOut)
+            dataDataInstance = DataInstance(outdata.dataName+str, outdata.mov_dir, outdata.job_inst_idx, outdata.total_size, outdata.data_inst_idx)
+            dataDataInstance.remain_time += outdata.mov_dir
+            dataOutIn.append(dataDataInstance)
+        newtask.setDataInsOut(dataOutIn)
         return newtask
 
     def contructGraphById(self, graphId, batchId):
@@ -168,7 +175,7 @@ class TaskManager:
             taskMap = {}
             for graph in self.graphList:
                 for task in graph.globalTaskList:
-                    newtask = self.constructTask(task)
+                    newtask = self.constructTask(task,self.taskBatch)
                     # newtask.graphDDL = graph.DDL + env.now
                     taskMap[newtask.jobId] = newtask
                     # if newtask.taskGraphId == 3:

@@ -13,6 +13,5 @@ class DataInstance:
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return self.data_inst_idx == other.data_inst_idx and self.dataName == other.dataName
-            # return self.dataName == other.dataName
         else:
             return False

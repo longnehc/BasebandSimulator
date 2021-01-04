@@ -37,7 +37,7 @@ class DSP:
     num = 0
     env = None
 
-    def __init__(self, env, clusterId, type, dmaControl):
+    def __init__(self, env, clusterId, type):
         self.type = type
         """speed is 1.3 * 1000000000"""
         self.speed = 1.3 * 1000000000
@@ -64,7 +64,7 @@ class DSP:
         self.sortNum = 1
         if DSP.env == None:
             DSP.env = env
-        self.dmaControl = dmaControl
+        self.missMem = 0
 
     def submit(self, task):
         self.taskQueue.append(task)
@@ -104,19 +104,27 @@ class DSP:
                     print("error: find a FHAC task on DSP!!!!!!!")
 
                 for data in task.dataInsIn:
-                    gotData,flag = RM.getMemory(self).getData(data)
+                    gotData,flag,isProducer = RM.getMemory(self).getData(data)
                     if not flag:
+                        print("modified for more than one dma of a cluster!mem error!")
+                        """
+                        self.missMem += data.total_size
                         with self.dmaControl.request() as req:  # 寻求进入
                             yield req
                             gotData,accessTime,transmitTime = RM.dmaGetData(data)
-                            """remember to add this to REPORTER"""
                             self.dmaTransmitTime += transmitTime
                             yield self.env.timeout(transmitTime)
+                        isProducer = False
+                        """
                     gotData.remain_time -= 1
+                    RM.getMemory(self).setVisit(data,False)
+                    #if not isProducer:
+                        #RM.getCluster(self.clusterId).getMemory(0).delData(gotData)
                     if gotData.remain_time == 0:
                         RM.delData(gotData)
                     if gotData.remain_time < 0:
                         print("memory error: get data not valid!",gotData.dataName)
+
 
 
                 # exe
@@ -137,7 +145,6 @@ class DSP:
                 for data in task.getDataInsOut():
                     RM.getMemory(self).dspSave(data)
 
-
                 # finish task
                 task.taskStatus = TaskStatus.FINISH
                 self.curCost -= task.cost
@@ -145,12 +152,15 @@ class DSP:
                 graph.taskNum -= 1
                 if graph.taskNum == 0:
                     graph.finished = True
+                    #modified for more than one dma of a cluster
+                    """
                     for data in task.getDataInsOut():
                         with self.dmaControl.request() as req:  # 寻求进入
                             yield req
                             transmitTime = RM.dmaSaveData(data)
                             self.dmaTransmitTime += transmitTime
                             yield self.env.timeout(transmitTime)
+                    """
 
                     if graph.QosReserve:
                         scheduler.qosReserveFinish()
@@ -177,4 +187,4 @@ class DSP:
 
                 RM.getTaskExeMap()[task.batchId - 1][task.taskName][task.job_inst_idx].append(self.env.now)
                 RM.getTaskLogMap()[task.taskName][task.job_inst_idx].append(self.env.now)
-            yield self.env.timeout(0.0002)
+            yield self.env.timeout(0.00001)

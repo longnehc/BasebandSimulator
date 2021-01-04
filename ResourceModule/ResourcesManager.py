@@ -37,30 +37,15 @@ resourcesManager = ResourcesManager()
  
 def submitTaskToCluster(task, clusterId, env):
     cluster = getCluster(clusterId)
-    if scheduler.slidingWindow():
-        flag = False
-        for dsp in cluster.dspList:
-            if len(dsp.taskQueue) <= 1:
-                flag = True
-        if flag:
-            cluster.submit(task)
-            task.taskStatus = TaskStatus.SUMBITTED
-            task.submittedTime = env.now
-            resourcesManager.submittedTaskNum += 1
-            resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
-            return True
-        else:
-            return False
+    if cluster.submit(task):
+        task.taskStatus = TaskStatus.SUMBITTED
+        task.submittedTime = env.now
+        resourcesManager.submittedTaskNum += 1
+        resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
+        return True
     else:
-        if cluster.submit(task):
-            task.taskStatus = TaskStatus.SUMBITTED
-            task.submittedTime = env.now
-            resourcesManager.submittedTaskNum += 1
-            resourcesManager.waitTime += (task.submittedTime - task.graphSumbittedTime)
-            return True
-        else:
-            # print(len(dma.taskList))
-            return False
+        # print(len(dma.taskList))
+        return False
     # dma.submit(task)
     # task.taskStatus = TaskStatus.SUMBITTED
 
@@ -86,7 +71,7 @@ def dmaGetData(data):
         Mem = cluster.memoryList[0]
         accessTime += 1
         if data.dataName + "-" + str(data.data_inst_idx) in Mem.map.keys():
-            gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)]
+            gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)][0]
             find = True
             resourcesManager.otherClusterSize += data.total_size
             break
@@ -95,7 +80,7 @@ def dmaGetData(data):
         accessTime += 1
         Mem = getCluster(-1).memoryList[0]
         if data.dataName + "-" + str(data.data_inst_idx) in Mem.map.keys():
-            gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)]
+            gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)][0]
             find = True
             resourcesManager.FHACSize += data.total_size
     #find in DDR
@@ -112,6 +97,8 @@ def dmaGetData(data):
     return gotData, accessTime, transmitTime
 
 def delData(data):
+    if data.remain_time > 0:
+        print("memory error!:del dependency data!")
     for cluster in resourcesManager.clusterList:
         mem = cluster.getMemory(0)
         mem.delData(data)
@@ -165,6 +152,7 @@ def setCluster(env, num, dmaControl):
 
 
 def setFhacCluster(env, dmaControl):
+    
     #withpooling
     # resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl)
 
@@ -225,9 +213,12 @@ def getIdleDma():
     return dma
 """
 
-def checkDspIdle(clusterId):
+def checkDspIdle(clusterId,env):
     cluster = resourcesManager.clusterList[clusterId]
-    flag = False
+    mem = cluster.getMemory(0)
+    waitTime = 0
+    speed = cluster.dspList[0].speed
+    cost = []
     for dsp in cluster.dspList:
         if len(dsp.taskQueue) <= 1:
             flag = True

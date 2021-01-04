@@ -28,13 +28,8 @@ class Scheduler:
         self.QosReserveClusterNum = 0
         self.QosReserveGraphId = []
         self.QosGraphNum = 0
-
-        self.slidingWindow = True
     
 scheduler = Scheduler()
-
-def slidingWindow():
-    return scheduler.slidingWindow
     
 def setAlgorithm(algorithm):
     scheduler.algorithm = algorithm
@@ -113,7 +108,7 @@ def run(env):
                             curCost = tmp
                 # submit
                 while not RM.submitTaskToCluster(task, clusterId, env):
-                    yield env.timeout(0.001)
+                    yield env.timeout(0.0001)
                 # ---
                 # cnt = (cnt + 1) % 16
                 # if not RM.submitTaskToCluster(task, cnt, env):
@@ -147,14 +142,15 @@ def run(env):
                 # print(clusterId)
                 # submit
                 while not RM.submitTaskToCluster(task, clusterId, env):
-                    yield env.timeout(0.001)
+                    """debug from shine: test window"""
+                    yield env.timeout(0.0001)
 
             # TODO:
             elif scheduler.algorithm == SchduleAlgorithm.QOSReserve:
                 if task.knrlType == "FHAC":
                     clusterId = -1
                     while not RM.submitTaskToCluster(task, clusterId, env):
-                        yield env.timeout(0.001)
+                        yield env.timeout(0.0001)
                 else:
                     clusterList = RM.getClusterList()
                     clusterId = 0
@@ -172,7 +168,7 @@ def run(env):
                                 clusterId = i
                                 curCost = tmp
                         while not RM.submitTaskToCluster(task, clusterId, env):
-                            yield env.timeout(0.001)
+                            yield env.timeout(0.0001)
                     else:
                         clusterId = scheduler.QosReserveClusterNum
                         for i in range(scheduler.QosReserveClusterNum, len(clusterList)):
@@ -204,11 +200,10 @@ def run(env):
                     #         for dsp in cluster.dspList:
                     #             dsp.finishQosDma()
                     #     print("reverse finish")
-
             else:
                 print("Not implemented")
 
             # if task.taskStatus != TaskStatus.SUMBITTED:
             #     yield env.timeout(0.002)
-        yield env.timeout(0.0002)
+        yield env.timeout(0.00001)
 
