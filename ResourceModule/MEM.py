@@ -51,7 +51,7 @@ class MEM:
                     self.curSize -= tmp.total_size
                     if tmp.remain_time < 0:
                         print("=====memory error: save data not valid!=====")
-                    if tmp.remain_time != 0 and not isProducer:
+                    if tmp.remain_time != 0 and isProducer:
                         transmitTime += RM.dmaSaveData(tmp)
                     del self.map[key]
             if self.curSize + data.total_size > self.capacity:
