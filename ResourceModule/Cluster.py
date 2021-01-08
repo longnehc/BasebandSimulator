@@ -80,6 +80,8 @@ class Cluster:
         for data in task.dataInsIn:
             self.curCost += data.total_size
             # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        for data in task.getDataInsOut():
+            self.curCost += data.total_size
         if self.clusterId >= 0:
             self.preemptionCnt += 1
             if self.preemptionCnt == self.sortNum:
@@ -127,60 +129,56 @@ class Cluster:
                 else:
                     RM.getTaskLogMap()[task.taskName][task.job_inst_idx] = [self.env.now]
 
-                #if self.clusterId > -1 and task.cost > 0:
-                    #yield self.env.process(RM.checkDspIdle(self.clusterId,self.env))
+                if self.clusterId > -1 and task.cost > 0:
+                    yield self.env.process(RM.checkDspIdle(self.clusterId,self.env))
+
+                speedChange = 1
 
                 #modified for more than one dma of a cluster
-                with self.dmaControl[1].request() as req:  # 修改个数的权限
+                with self.dmaControl[2].request() as req:
                     yield req
-                    """
-                    if self.dmaControl[0] <= 0:
-                        ownDmaNum = 1
-                    else:
-                        ownDmaNum = (self.dmaControl[0]+1)//2
-                    """
-                    ownDmaNum = 1
-                    self.dmaControl[0] -= ownDmaNum
-                yield self.dmaControl[2].get(ownDmaNum)
+                    with self.dmaControl[1].request() as req2:
+                        yield req2
+                        if self.dmaControl[0] >= 256 * 866 * 1000000:
+                            self.dmaControl[0] -= 256 * 866 * 1000000
+                            speedChange = 1
+                        elif self.dmaControl[0] == 256 * 134 * 1000000:
+                            self.dmaControl[0] -= 256 * 134 * 1000000
+                            speedChange = 134/866
+                        else:
+                            print("==========error! dma not valid!==========")
 
-                dmaIndex = 0
-                maxPeriodTime = 0
+                    transmitTimeToYield = 0
+                    for data in task.getDataInsIn():
+                        self.curCost -= data.total_size
+                        if RM.getMemory(self).checkData(data):
+                            RM.getMemory(self).setVisit(data)
+                        else:
+                            #print("=====debug from Shine: not in the inner memory, using dma to find=====")
+                            self.offChipAccess += data.total_size
+                            gotData,accessTime,transmitTime = RM.dmaGetData(data)
+                            """remember to add this to REPORTER"""
+                            transmitTimeToYield += transmitTime
+                            saveToDdrTime = RM.getMemory(self).clusterSaveData(gotData)
+                            RM.getMemory(self).setVisit(data)
+                            transmitTimeToYield += saveToDdrTime
+                    yield self.env.timeout(transmitTimeToYield/speedChange)
 
-                for data in task.getDataInsIn():
-                    self.curCost -= data.total_size
-                    if RM.getMemory(self).checkData(data):
-                        RM.getMemory(self).setVisit(data, True)
-                    else:
-                        #print("=====debug from Shine: not in the inner memory, using dma to find=====")
-                        self.offChipAccess += data.total_size
-                        
-                        transmitTimeToYield = 0
-                        gotData,accessTime,transmitTime = RM.dmaGetData(data)
-                        """remember to add this to REPORTER"""
-                        transmitTimeToYield += transmitTime
-                        saveToDdrTime = RM.getMemory(self).saveData(gotData, True, False)
-                        transmitTimeToYield += saveToDdrTime
-                        if transmitTimeToYield > maxPeriodTime:
-                            maxPeriodTime = transmitTimeToYield
-                        dmaIndex += 1
-                        if dmaIndex == ownDmaNum:
-                            dmaIndex = 0
-                            yield self.env.timeout(maxPeriodTime)
-                            maxPeriodTime = 0
-                yield self.env.timeout(maxPeriodTime)
+                    mallocSize = 0
+                    for data in task.getDataInsOut():
+                        mallocSize += data.total_size
+                    transmitTimeToYield = RM.getMemory(self).malloc(mallocSize)
+                    yield self.env.timeout(transmitTimeToYield/speedChange)
+                    self.curCost -= mallocSize
 
-                yield self.dmaControl[2].put(ownDmaNum)
-                #modified for more than one dma of a cluster
-                with self.dmaControl[1].request() as req:  # 修改个数的权限
-                    yield req
-                    self.dmaControl[0] += ownDmaNum
+                    with self.dmaControl[1].request() as req3:
+                        yield req3
+                        if speedChange == 1:
+                            self.dmaControl[0] += 256 * 866 * 1000000
+                        else:
+                            self.dmaControl[0] += 256 * 134 * 1000000
 
 
-                mallocSize = 0
-                for data in task.getDataInsOut():
-                    mallocSize += data.total_size
-                transmitTimeToYield = RM.getMemory(self).malloc(mallocSize)
-                yield self.env.timeout(transmitTimeToYield)
 
                 dspList = RM.getCluster(self.clusterId).getDspList()
                 dsp = dspList[0]
@@ -193,7 +191,5 @@ class Cluster:
                     dspId = 0
                 RM.submitTaskToDsp(task, self.clusterId, dspId)
                 # while not RM.submitTaskToDsp(task, self.clusterId, dspId):
-                #     yield self.env.timeout(0.001)
-
-            # yield self.env.timeout(0.0002)
+                yield self.env.timeout(0.00001)
             yield self.env.timeout(0.00001)

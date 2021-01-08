@@ -214,6 +214,7 @@ def getIdleDma():
 """
 
 def checkDspIdle(clusterId,env):
+    """
     cluster = resourcesManager.clusterList[clusterId]
     mem = cluster.getMemory(0)
     waitTime = 0
@@ -223,6 +224,27 @@ def checkDspIdle(clusterId,env):
         if len(dsp.taskQueue) <= 1:
             flag = True
     return flag
+    """
+    cluster = resourcesManager.clusterList[clusterId]
+    mem = cluster.getMemory(0)
+    waitTime = 0
+    speed = cluster.dspList[0].speed
+    cost = []
+    for dsp in cluster.dspList:
+        cost.append(dsp.curCost)
+    cost.sort()
+    interval = cost[0]+1
+    timeCtrl = interval/speed
+    while True:
+        flag = False
+        for dsp in cluster.dspList:
+            if len(dsp.taskQueue) == 0:
+                flag = True
+        if flag:
+            break
+        else:
+            yield env.timeout(0.0001)
+            timeCtrl /= 2
 
 def OFFMEMlog():
     print("***************************** %d %d %d "%(resourcesManager.DDRSize, resourcesManager.otherClusterSize, resourcesManager.FHACSize))

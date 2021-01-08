@@ -44,29 +44,25 @@ if __name__ == "__main__":
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
     ClusterNum = 10
-    DmaNum = 10
+    BandWidth = 256*1000000000
     DSPPerCluster = 4
     MemCapacity = 100
     DDRCapacity = 100
     SIM_TIME = 10
     """change with algo"""
-    selectedAlgo = SchduleAlgorithm.QOSPreemptionG
+    selectedAlgo = SchduleAlgorithm.LB
     rpt = reporter()
     """change with algo"""
     """only reserve"""
-    rpt.rflag = True
+    rpt.rflag = False
 
     # Create an environment and start the setup process
     env = simpy.Environment()
 
+    #first mutex to control the modify of BandWidth number
+    #the second is for simulation
+    dmaControl = [BandWidth, simpy.Resource(env, capacity=1), simpy.Resource(env, capacity=2)]
 
-    #withpooling
-    mutex = simpy.Resource(env, capacity=1)
-    dmaControl = [DmaNum, mutex, simpy.Container(env, init=DmaNum, capacity=DmaNum)]
-    #withoutpooling
-    # dmaControl = []
-    # for i in range(ClusterNum+1):
-    #     dmaControl.append(simpy.Resource(env, capacity=1))
 
     #print("Task graph parser begins")
     parser = xml.sax.make_parser()
@@ -86,9 +82,9 @@ if __name__ == "__main__":
     
     # graph 0, 1, 2, 3, 4, 5
     DDLList = [100, 1, 1.5, 4, 0.55, 100]
-    PeriodList = [1, 1, 1, 1, 4, 1]
+    PeriodList = [1, 1, 1, 4, 1, 1]
     PriorityList = [1, 4, 3, 1, 1, 1]
-    ArrivalTimeList = [0, 0, 0, 0, 0, 0]
+    ArrivalTimeList = [0, 0, 0, 4, 0, 0]
     # DDLList = [100, 0.8, 1.5, 4, 1, 100]
     # PeriodList = [1, 1, 1, 1, 1, 1]
     # PriorityList = [1, 2, 3, 4, 5, 6]

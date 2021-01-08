@@ -5,6 +5,7 @@ from ResourceModule import ResourcesManager as RM
 from queue import Queue
 
 import random
+import sys
 
 from TaskModule.Task import TaskStatus
 
@@ -91,7 +92,7 @@ def run(env):
             # TODO:
             elif scheduler.algorithm == SchduleAlgorithm.QOSPreemptionG or scheduler.algorithm == SchduleAlgorithm.QOSPreemptionT:
                 clusterId = 0
-                curCost = 10000000.0
+                curCost = sys.maxsize
                 if task.knrlType == "FHAC":
                     clusterId = -1
                 else:
@@ -122,7 +123,7 @@ def run(env):
             elif scheduler.algorithm == SchduleAlgorithm.LB:
                 # new LB
                 clusterId = 0
-                curCost = 10000000.0
+                curCost = sys.maxsize
                 if task.knrlType == "FHAC":
                     clusterId = -1
                 else:
@@ -154,7 +155,7 @@ def run(env):
                 else:
                     clusterList = RM.getClusterList()
                     clusterId = 0
-                    curCost = 10000000.0
+                    curCost = sys.maxsize
                     if task.taskGraphId in scheduler.QosReserveGraphId:
                         # if task.taskGraphId == 0:
                         #     print("graph %d quick"%task.taskGraphId)

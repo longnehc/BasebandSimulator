@@ -107,19 +107,10 @@ class DSP:
                     gotData,flag,isProducer = RM.getMemory(self).getData(data)
                     if not flag:
                         print("modified for more than one dma of a cluster!mem error!")
-                        """
-                        self.missMem += data.total_size
-                        with self.dmaControl.request() as req:  # 寻求进入
-                            yield req
-                            gotData,accessTime,transmitTime = RM.dmaGetData(data)
-                            self.dmaTransmitTime += transmitTime
-                            yield self.env.timeout(transmitTime)
-                        isProducer = False
-                        """
                     gotData.remain_time -= 1
-                    RM.getMemory(self).setVisit(data,False)
-                    #if not isProducer:
-                        #RM.getCluster(self.clusterId).getMemory(0).delData(gotData)
+                    waitForVisit = RM.getMemory(self).checkVisit(data)
+                    if not isProducer and waitForVisit <= 0:
+                        RM.getCluster(self.clusterId).getMemory(0).delData(gotData)
                     if gotData.remain_time == 0:
                         RM.delData(gotData)
                     if gotData.remain_time < 0:
@@ -132,16 +123,6 @@ class DSP:
                 self.executionTime += 2000 * task.cost / self.speed
 
                 # write back
-                '''
-                for data in task.getDataInsOut():
-                    saveFlag = RM.getMemory(self).saveData(data, False)
-                    if saveFlag < 0:
-                        with self.dmaControl.request() as req:  # 寻求进入
-                            yield req
-                            transmitTime = RM.getMemory(self).saveData(data, True)
-                            self.dmaTransmitTime += transmitTime
-                            yield self.env.timeout(transmitTime)
-                '''
                 for data in task.getDataInsOut():
                     RM.getMemory(self).dspSave(data)
 
