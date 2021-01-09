@@ -23,11 +23,13 @@ class ResourcesManager:
         self.DDR = {}
         self.FHAC = {}
         #dma speed is 256 * 866 * 1000000
-        self.speed = 256 * 866 * 1000000
+        self.speed = 256*2000000000
 
         self.otherClusterSize = 0
         self.DDRSize = 0
         self.FHACSize = 0
+
+        self.finishGraphNum = 0
 
 
 
@@ -248,3 +250,9 @@ def checkDspIdle(clusterId,env):
 
 def OFFMEMlog():
     print("***************************** %d %d %d "%(resourcesManager.DDRSize, resourcesManager.otherClusterSize, resourcesManager.FHACSize))
+
+def addFinishGraphNum():
+    resourcesManager.finishGraphNum += 1
+
+def getFinishGraphNum():
+    return resourcesManager.finishGraphNum 

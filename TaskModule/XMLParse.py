@@ -33,7 +33,7 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
       self.data_inst_idx=[] 
       self.graphList=[] 
       self.producerMap = {} #key:dataInsOut : value: task
-      self.consumerMap = {} #key:dataIdx : value:refCnt
+      self.consumerMap = {} #key:dataIdx : value:[refCnt,refCnt of tti4]
       self.globalDataIn = set()
       self.globalDataOut = set()
 
@@ -62,10 +62,12 @@ class TaskXMLHandler( xml.sax.ContentHandler ):
                precedenceJobId = [] 
                for datains in task.dataInsIn: 
                   key = datains.dataName + "-" + str(datains.data_inst_idx)
-                  if key in self.consumerMap:
-                     self.consumerMap[key] += 1
-                  else:
-                     self.consumerMap[key] = 1
+                  if not key in self.consumerMap:
+                     self.consumerMap[key] = [0,0]
+                  self.consumerMap[key][1] += 1
+                  if self.graphId != 3:
+                     self.consumerMap[key][0] += 1
+
                   if key in self.producerMap:
                      precedenceTask.append(self.producerMap[key])
                      precedenceJobId.append(self.producerMap[key].jobId)

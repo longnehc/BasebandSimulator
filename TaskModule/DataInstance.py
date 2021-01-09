@@ -6,6 +6,7 @@ class DataInstance:
         self.total_size = total_size
         self.data_inst_idx = data_inst_idx
         self.remain_time = 0
+        self.mov_dir_v2 = 0
 
     def __hash__(self):
         return hash(self.dataName)

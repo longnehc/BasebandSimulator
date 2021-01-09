@@ -147,7 +147,9 @@ class TaskManager:
         dataOutIn = []
         for outdata in task.dataInsOut:
             dataDataInstance = DataInstance(outdata.dataName+str, outdata.mov_dir, outdata.job_inst_idx, outdata.total_size, outdata.data_inst_idx)
-            dataDataInstance.remain_time += outdata.mov_dir
+            dataDataInstance.remain_time = outdata.mov_dir
+            if batch == 5:
+                dataDataInstance.remain_time = outdata.mov_dir_v2
             dataOutIn.append(dataDataInstance)
         newtask.setDataInsOut(dataOutIn)
         return newtask
@@ -184,12 +186,19 @@ class TaskManager:
             self.taskBatch += 1
             yield env.timeout(minPeriod)
 
-    def graphGenerator(self, env, graph):
+    def graphGenerator(self, env, graph, cnt):
         yield env.timeout(graph.arrivalTime)
         while True: 
             find = False
+            cnt -= 1
+            if cnt < 0:
+                break
             # print(graph.graphId)
-            for i in range (1, self.batchId + 1):
+            if graph.graphId == 3:
+                a = 5
+            else:
+                a = 1
+            for i in range (a, self.batchId + 1):
                 #print(self.candidateGraphBuffer[i])
                 #print("=========")
                 if graph.graphId not in self.candidateGraphBuffer[i]:      #new graph belongs to the existence batch

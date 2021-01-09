@@ -133,6 +133,7 @@ class DSP:
                 graph.taskNum -= 1
                 if graph.taskNum == 0:
                     graph.finished = True
+                    RM.addFinishGraphNum()
                     #modified for more than one dma of a cluster
                     """
                     for data in task.getDataInsOut():

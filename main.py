@@ -43,8 +43,8 @@ if __name__ == "__main__":
     #taskGraphs = taskManager.taskXMLParser("taskgraph.xml")
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
-    ClusterNum = 10
-    BandWidth = 256*1000000000
+    ClusterNum = 12
+    BandWidth = 256*3000000000
     DSPPerCluster = 4
     MemCapacity = 100
     DDRCapacity = 100
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     #first mutex to control the modify of BandWidth number
     #the second is for simulation
-    dmaControl = [BandWidth, simpy.Resource(env, capacity=1), simpy.Resource(env, capacity=2)]
+    dmaControl = [BandWidth, simpy.Resource(env, capacity=1), simpy.Resource(env, capacity=3)]
 
 
     #print("Task graph parser begins")
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     DDLList = [100, 1, 1.5, 4, 0.55, 100]
     PeriodList = [1, 1, 1, 4, 1, 1]
     PriorityList = [1, 4, 3, 1, 1, 1]
-    ArrivalTimeList = [0, 0, 0, 4, 0, 0]
+    ArrivalTimeList = [0, 0, 0, 4.00001, 0, 0]
     # DDLList = [100, 0.8, 1.5, 4, 1, 100]
     # PeriodList = [1, 1, 1, 1, 1, 1]
     # PriorityList = [1, 2, 3, 4, 5, 6]
@@ -112,7 +112,8 @@ if __name__ == "__main__":
             for dataouts in task.dataInsOut:
                 key = dataouts.dataName + "-" + str(dataouts.data_inst_idx)
                 if key in consumerMap:
-                    dataouts.mov_dir = consumerMap[key]
+                    dataouts.mov_dir = consumerMap[key][0]
+                    dataouts.mov_dir_v2 = consumerMap[key][1]
         of.write("\n")
         for key in precedenceGraphMap:
             graph.precedenceGraph.append(key)           #set precedenceGraph for graph, 除了时隙的都可以直接分析
@@ -152,10 +153,12 @@ if __name__ == "__main__":
     initDataIns = []
     for key in initData:
         idxList = key.split('-')
-        refCnt = consumerMap[idxList[0]+'-'+idxList[1]]
-        dataIns = DataInstance(idxList[0],refCnt,0,int(idxList[2]),idxList[1])
+        mov_dir = consumerMap[idxList[0]+'-'+idxList[1]][0]
+        mov_dir_v2 = consumerMap[idxList[0]+'-'+idxList[1]][1]
+        dataIns = DataInstance(idxList[0],mov_dir,0,int(idxList[2]),idxList[1])
         #data initialized in DDR won't be removed
-        dataIns.remain_time = dataIns.mov_dir
+        dataIns.mov_dir_v2 = mov_dir_v2
+        dataIns.remain_time = mov_dir
         initDataIns.append(dataIns)
     num = len(initDataIns)
     for i in range(1,11):
@@ -163,6 +166,8 @@ if __name__ == "__main__":
         for j in range(num):
             dataIns = DataInstance(initDataIns[j].dataName+str,initDataIns[j].mov_dir,initDataIns[j].job_inst_idx,initDataIns[j].total_size,initDataIns[j].data_inst_idx)
             dataIns.remain_time = initDataIns[j].mov_dir
+            if i == 5:
+                dataIns.remain_time = initDataIns[j].mov_dir_v2
             initDataIns.append(dataIns)
     RM.setDDR(100000000,initDataIns)
     
@@ -222,7 +227,7 @@ if __name__ == "__main__":
         print("graph %d normalized cost %f" % (graph.graphId, graph.graphCost))
 
     for graph in graphList:
-       env.process(taskManager.graphGenerator(env, graph))
+       env.process(taskManager.graphGenerator(env, graph, 5))
     
     env.process(taskManager.submitGraph(env))
       

@@ -13,7 +13,7 @@ class MEM:
         #key:(data,isProducer,waitForVisit)
 
         #self.capacity = 1000000
-        self.capacity = 1000000 * 8
+        self.capacity = 1000000 * 10
         if clusterId < 0:
             self.capacity = sys.maxsize
         self.curSize = 0
@@ -49,6 +49,7 @@ class MEM:
                 if tmpWaitForVisit <= 0:
                     tmp = self.map[key][0]
                     self.curSize -= tmp.total_size
+                    self.outSize += tmp.total_size
                     if tmp.remain_time < 0:
                         print("=====memory error: save data not valid!=====")
                     if tmp.remain_time != 0 and isProducer:
@@ -72,7 +73,7 @@ class MEM:
         data_key = data.dataName + "-" + str(data.data_inst_idx)
         if data_key in self.map.keys():
             tmp = self.map[data_key]
-            if not tmp[2]:
+            if tmp[2]==0:
                 del self.map[data_key]
                 self.curSize -= data.total_size
 
@@ -118,6 +119,7 @@ class MEM:
             if waitForVisit <= 0:
                 tmp = self.map[key][0]
                 self.curSize -= tmp.total_size
+                self.outSize += tmp.total_size
                 del self.map[key]
                 if tmp.remain_time < 0:
                     print("=====memory error: save data not valid!=====")
@@ -128,6 +130,9 @@ class MEM:
             print("Insufficient memory space recommended to increase memory===========")
 
     def dspSave(self, data):
-        self.map[data.dataName + "-" + str(data.data_inst_idx)] = [data, True, 0]
+        if data.remain_time == 0:
+            self.curSize -= data.total_size
+        else:
+            self.map[data.dataName + "-" + str(data.data_inst_idx)] = [data, True, 0]
         self.peek = max(self.curSize, self.peek)
 

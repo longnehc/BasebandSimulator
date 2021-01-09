@@ -132,21 +132,49 @@ class Cluster:
                 if self.clusterId > -1 and task.cost > 0:
                     yield self.env.process(RM.checkDspIdle(self.clusterId,self.env))
 
-                speedChange = 1
+                speedChange = 1/3
 
-                #modified for more than one dma of a cluster
+                """
+                #without dma pooling
+                speedChange = 1/10*1000/886
+                transmitTimeToYield = 0
+                for data in task.getDataInsIn():
+                    self.curCost -= data.total_size
+                    if RM.getMemory(self).checkData(data):
+                        RM.getMemory(self).setVisit(data)
+                    else:
+                        #print("=====debug from Shine: not in the inner memory, using dma to find=====")
+                        self.offChipAccess += data.total_size
+                        gotData,accessTime,transmitTime = RM.dmaGetData(data)
+                        transmitTimeToYield += transmitTime
+                        saveToDdrTime = RM.getMemory(self).clusterSaveData(gotData)
+                        RM.getMemory(self).setVisit(data)
+                        transmitTimeToYield += saveToDdrTime
+                yield self.env.timeout(transmitTimeToYield/speedChange)
+
+                mallocSize = 0
+                for data in task.getDataInsOut():
+                    mallocSize += data.total_size
+                transmitTimeToYield = RM.getMemory(self).malloc(mallocSize)
+                yield self.env.timeout(transmitTimeToYield/speedChange)
+                self.curCost -= mallocSize
+                
+                """
+                #modified for dma pooling
                 with self.dmaControl[2].request() as req:
                     yield req
+                    """
                     with self.dmaControl[1].request() as req2:
                         yield req2
                         if self.dmaControl[0] >= 256 * 866 * 1000000:
                             self.dmaControl[0] -= 256 * 866 * 1000000
                             speedChange = 1
-                        elif self.dmaControl[0] == 256 * 134 * 1000000:
-                            self.dmaControl[0] -= 256 * 134 * 1000000
+                        elif self.dmaControl[0] == 256 * 634 * 1000000:
+                            self.dmaControl[0] -= 256 * 634 * 1000000
                             speedChange = 134/866
                         else:
                             print("==========error! dma not valid!==========")
+                    """
 
                     transmitTimeToYield = 0
                     for data in task.getDataInsIn():
@@ -157,7 +185,6 @@ class Cluster:
                             #print("=====debug from Shine: not in the inner memory, using dma to find=====")
                             self.offChipAccess += data.total_size
                             gotData,accessTime,transmitTime = RM.dmaGetData(data)
-                            """remember to add this to REPORTER"""
                             transmitTimeToYield += transmitTime
                             saveToDdrTime = RM.getMemory(self).clusterSaveData(gotData)
                             RM.getMemory(self).setVisit(data)
@@ -171,13 +198,14 @@ class Cluster:
                     yield self.env.timeout(transmitTimeToYield/speedChange)
                     self.curCost -= mallocSize
 
+                    """
                     with self.dmaControl[1].request() as req3:
                         yield req3
                         if speedChange == 1:
                             self.dmaControl[0] += 256 * 866 * 1000000
                         else:
-                            self.dmaControl[0] += 256 * 134 * 1000000
-
+                            self.dmaControl[0] += 256 * 634 * 1000000
+                    """
 
 
                 dspList = RM.getCluster(self.clusterId).getDspList()
