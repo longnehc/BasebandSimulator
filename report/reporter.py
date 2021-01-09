@@ -171,7 +171,7 @@ class reporter:
             stdArr.append(np.std(cost))
         #print("5. The dsp cost std is")
         for i in range(0, len(stdArr)):
-            fo2.write("%f " % stdArr[i])
+            fo2.write("%f   " % stdArr[i])
         #print(*stdArr) 
         fo.close()
         fo2.close()
@@ -205,7 +205,7 @@ class reporter:
             fo2.write("%f " % memstd[i])
         #print("8. The total mem access is")
         for i in range(0, len(total)):
-            fo3.write("%f " % total[i])
+            fo3.write("%f   " % total[i])
         #print(*total)
         fo.close()
         fo2.close()
@@ -238,7 +238,7 @@ class reporter:
                     if dsp.id in self.dspUtilRecord:
                         util += self.dspUtilRecord[dsp.id][i]
                         cnt += 1
-            fo.write("%f " % (util / cnt))
+            fo.write("%f    " % (util / cnt))
         fo.close()
  
     
@@ -327,7 +327,8 @@ class reporter:
             yield env.timeout(0.2)
             # if RM.getFinishGraphCnt() >= 6 and not reported:
             RM.OFFMEMlog()
-            if env.now > 6 and not reported:
+            # if env.now > 6 and not reported:
+            if RM.getFinishGraphNum() >= 26 and not reported:
                 self.graphReport()
                 self.memPeekReport()
                 self.dspCostReport()
