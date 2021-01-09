@@ -40,7 +40,7 @@ class DSP:
     def __init__(self, env, clusterId, type):
         self.type = type
         """speed is 1.3 * 1000000000"""
-        self.speed = 1.3 * 1000000000
+        self.speed = 1.3 * 1000000000 * 10000000
         #type is "DSP" or "FHAC" ...
         if self.type == 'FHAC':
             self.speed *= 32
@@ -152,6 +152,7 @@ class DSP:
                 graph.taskNum -= 1
                 if graph.taskNum == 0:
                     graph.finished = True
+                    RM.addFinishGraphNum()
                     #modified for more than one dma of a cluster
                     """
                     for data in task.getDataInsOut():

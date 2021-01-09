@@ -184,10 +184,13 @@ class TaskManager:
             self.taskBatch += 1
             yield env.timeout(minPeriod)
 
-    def graphGenerator(self, env, graph):
+    def graphGenerator(self, env, graph, cnt):
         yield env.timeout(graph.arrivalTime)
         while True: 
             find = False
+            cnt -= 1
+            if cnt < 0:
+                break
             # print(graph.graphId)
             for i in range (1, self.batchId + 1):
                 #print(self.candidateGraphBuffer[i])

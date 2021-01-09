@@ -104,7 +104,7 @@ class MEM:
             while self.curSize + dataSize > self.capacity:
                 if not bool(self.map):
                     print("=====memory error: Insufficient memory space recommended to increase memory===========")
-                tmp = self.map.popitem(last=False)[1]
+                tmp = self.map.popitem(last=False)[1][0]
                 self.curSize -= tmp.total_size
                 if tmp.remain_time < 0:
                     print("=====memory error: save data not valid!=====")
@@ -114,7 +114,7 @@ class MEM:
         return transmitTime
 
     def dspSave(self, data):
-        self.map[data.dataName + "-" + str(data.data_inst_idx)] = data
+        self.map[data.dataName + "-" + str(data.data_inst_idx)] = [data, True, True]
         self.peek = max(self.curSize, self.peek)
 
     def squeeze(self):
