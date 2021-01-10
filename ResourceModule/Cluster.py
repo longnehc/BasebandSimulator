@@ -163,18 +163,11 @@ class Cluster:
                 #modified for dma pooling
                 with self.dmaControl[2].request() as req:
                     yield req
-                    """
+
                     with self.dmaControl[1].request() as req2:
                         yield req2
-                        if self.dmaControl[0] >= 256 * 866 * 1000000:
-                            self.dmaControl[0] -= 256 * 866 * 1000000
-                            speedChange = 1
-                        elif self.dmaControl[0] == 256 * 634 * 1000000:
-                            self.dmaControl[0] -= 256 * 634 * 1000000
-                            speedChange = 134/866
-                        else:
-                            print("==========error! dma not valid!==========")
-                    """
+                        self.dmaControl[0] -= 1/3
+                        RM.dmaChange(self.env.now,self.dmaControl[0])
 
                     transmitTimeToYield = 0
                     for data in task.getDataInsIn():
@@ -198,14 +191,12 @@ class Cluster:
                     yield self.env.timeout(transmitTimeToYield/speedChange)
                     self.curCost -= mallocSize
 
-                    """
+                    
                     with self.dmaControl[1].request() as req3:
                         yield req3
-                        if speedChange == 1:
-                            self.dmaControl[0] += 256 * 866 * 1000000
-                        else:
-                            self.dmaControl[0] += 256 * 634 * 1000000
-                    """
+                        self.dmaControl[0] += 1/3
+                        RM.dmaChange(self.env.now,self.dmaControl[0])
+                    
 
 
                 dspList = RM.getCluster(self.clusterId).getDspList()

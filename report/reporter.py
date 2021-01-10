@@ -339,4 +339,6 @@ class reporter:
                 self.avgWaitTime()
                 self.resourceUtilReport()
                 self.memOutReport()
+                dmaUtil = RM.dmaUtil()
+                np.save(self.prefix+'/dmaUtil.npy',np.array(dmaUtil))
                 reported = True

@@ -30,6 +30,7 @@ class ResourcesManager:
         self.FHACSize = 0
 
         self.finishGraphNum = 0
+        self.dmaRecord = []
 
 
 
@@ -256,3 +257,9 @@ def addFinishGraphNum():
 
 def getFinishGraphNum():
     return resourcesManager.finishGraphNum 
+
+def dmaChange(time, BandWidth):
+    resourcesManager.dmaRecord.append([time, BandWidth])
+
+def dmaUtil():
+    return resourcesManager.dmaRecord

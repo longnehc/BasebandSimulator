@@ -44,7 +44,6 @@ if __name__ == "__main__":
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
     ClusterNum = 12
-    BandWidth = 256*3000000000
     DSPPerCluster = 4
     MemCapacity = 100
     DDRCapacity = 100
@@ -61,7 +60,7 @@ if __name__ == "__main__":
 
     #first mutex to control the modify of BandWidth number
     #the second is for simulation
-    dmaControl = [BandWidth, simpy.Resource(env, capacity=1), simpy.Resource(env, capacity=3)]
+    dmaControl = [1, simpy.Resource(env, capacity=1), simpy.Resource(env, capacity=3)]
 
 
     #print("Task graph parser begins")
