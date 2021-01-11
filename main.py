@@ -43,13 +43,13 @@ if __name__ == "__main__":
     #taskGraphs = taskManager.taskXMLParser("taskgraph.xml")
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
-    ClusterNum = 12
+    ClusterNum = 15
     DSPPerCluster = 4
     MemCapacity = 100
     DDRCapacity = 100
     SIM_TIME = 10
     """change with algo"""
-    selectedAlgo = SchduleAlgorithm.LB
+    selectedAlgo = SchduleAlgorithm.QOSPreemptionT
     rpt = reporter()
     """change with algo"""
     """only reserve"""
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     #first mutex to control the modify of BandWidth number
     #the second is for simulation
-    dmaControl = [1, simpy.Resource(env, capacity=1), simpy.Resource(env, capacity=3)]
+    dmaControl = [1, simpy.Resource(env, capacity=1), simpy.Resource(env, capacity=2)]
 
 
     #print("Task graph parser begins")
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     #print("=====debug from Shine: init data,",initData) 
     
     # graph 0, 1, 2, 3, 4, 5
-    DDLList = [100, 1, 1.5, 4, 0.55, 100]
+    DDLList = [100, 200, 200, 1, 0.4, 100]
     PeriodList = [1, 1, 1, 4, 1, 1]
     PriorityList = [1, 4, 3, 1, 1, 1]
     ArrivalTimeList = [0, 0, 0, 4.00001, 0, 0]
@@ -113,6 +113,8 @@ if __name__ == "__main__":
                 if key in consumerMap:
                     dataouts.mov_dir = consumerMap[key][0]
                     dataouts.mov_dir_v2 = consumerMap[key][1]
+                else:
+                    dataouts.mov_dir = 0
         of.write("\n")
         for key in precedenceGraphMap:
             graph.precedenceGraph.append(key)           #set precedenceGraph for graph, 除了时隙的都可以直接分析
