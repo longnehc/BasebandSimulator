@@ -249,6 +249,24 @@ def checkDspIdle(clusterId,env):
             yield env.timeout(0.0001)
             timeCtrl /= 2
 
+def checkMem(clusterId,env,dataSize):
+    cluster = resourcesManager.clusterList[clusterId]
+    mem = cluster.getMemory(0)
+    waitTime = 0
+    speed = cluster.dspList[0].speed
+    cost = []
+    for dsp in cluster.dspList:
+        cost.append(dsp.curCost)
+    cost.sort()
+    timeCtrl = (cost[0]+1)/speed
+    maxTime = (cost[3]+1)/speed
+    while True:
+        if (mem.curSize+dataSize)<mem.capacity:
+            break
+        else:
+            yield env.timeout(timeCtrl)
+            waitTime += timeCtrl
+
 def OFFMEMlog():
     print("***************************** %d %d %d "%(resourcesManager.DDRSize, resourcesManager.otherClusterSize, resourcesManager.FHACSize))
 

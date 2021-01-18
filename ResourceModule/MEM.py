@@ -76,6 +76,8 @@ class MEM:
             if tmp[2]==0:
                 del self.map[data_key]
                 self.curSize -= data.total_size
+            else:
+                print("why??????????????????")
 
 
     def checkData(self, data):

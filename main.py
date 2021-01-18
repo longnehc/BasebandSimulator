@@ -80,7 +80,7 @@ if __name__ == "__main__":
     #print("=====debug from Shine: init data,",initData) 
     
     # graph 0, 1, 2, 3, 4, 5
-    DDLList = [100, 200, 200, 1, 0.4, 100]
+    DDLList = [100, 0.9, 2, 100, 0.4, 100]
     PeriodList = [1, 1, 1, 4, 1, 1]
     PriorityList = [1, 4, 3, 1, 1, 1]
     ArrivalTimeList = [0, 0, 0, 4.00001, 0, 0]

@@ -129,44 +129,28 @@ class Cluster:
                 else:
                     RM.getTaskLogMap()[task.taskName][task.job_inst_idx] = [self.env.now]
 
-                if self.clusterId > -1 and task.cost > 0:
-                    yield self.env.process(RM.checkDspIdle(self.clusterId,self.env))
-
-                speedChange = 1/3
-
-                """
-                #without dma pooling
-                speedChange = 1/10*1000/886
-                transmitTimeToYield = 0
-                for data in task.getDataInsIn():
-                    self.curCost -= data.total_size
-                    if RM.getMemory(self).checkData(data):
-                        RM.getMemory(self).setVisit(data)
-                    else:
-                        #print("=====debug from Shine: not in the inner memory, using dma to find=====")
-                        self.offChipAccess += data.total_size
-                        gotData,accessTime,transmitTime = RM.dmaGetData(data)
-                        transmitTimeToYield += transmitTime
-                        saveToDdrTime = RM.getMemory(self).clusterSaveData(gotData)
-                        RM.getMemory(self).setVisit(data)
-                        transmitTimeToYield += saveToDdrTime
-                yield self.env.timeout(transmitTimeToYield/speedChange)
-
                 mallocSize = 0
                 for data in task.getDataInsOut():
                     mallocSize += data.total_size
-                transmitTimeToYield = RM.getMemory(self).malloc(mallocSize)
-                yield self.env.timeout(transmitTimeToYield/speedChange)
-                self.curCost -= mallocSize
-                
-                """
+
+                checkSize = mallocSize
+                for data in task.dataInsIn:
+                    checkSize += data.total_size
+
+                if self.clusterId > -1 and task.cost > 0:
+                    yield self.env.process(RM.checkDspIdle(self.clusterId,self.env))
+
+                #if self.clusterId > -1 and task.cost > 0:
+                    #yield self.env.process(RM.checkMem(self.clusterId,self.env,checkSize))
+
+                speedChange = 1/2
                 #modified for dma pooling
                 with self.dmaControl[2].request() as req:
                     yield req
 
                     with self.dmaControl[1].request() as req2:
                         yield req2
-                        self.dmaControl[0] -= 1/3
+                        self.dmaControl[0] -= speedChange
                         RM.dmaChange(self.env.now,self.dmaControl[0])
 
                     transmitTimeToYield = 0
@@ -184,9 +168,7 @@ class Cluster:
                             transmitTimeToYield += saveToDdrTime
                     yield self.env.timeout(transmitTimeToYield/speedChange)
 
-                    mallocSize = 0
-                    for data in task.getDataInsOut():
-                        mallocSize += data.total_size
+                    
                     transmitTimeToYield = RM.getMemory(self).malloc(mallocSize)
                     yield self.env.timeout(transmitTimeToYield/speedChange)
                     self.curCost -= mallocSize
@@ -194,7 +176,7 @@ class Cluster:
                     
                     with self.dmaControl[1].request() as req3:
                         yield req3
-                        self.dmaControl[0] += 1/3
+                        self.dmaControl[0] += speedChange
                         RM.dmaChange(self.env.now,self.dmaControl[0])
                     
 
