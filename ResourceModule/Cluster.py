@@ -82,11 +82,10 @@ class Cluster:
             # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         for data in task.getDataInsOut():
             self.curCost += data.total_size
-        if self.clusterId >= 0:
-            self.preemptionCnt += 1
-            if self.preemptionCnt == self.sortNum:
-                self.preemptionCnt = 0
-                self.taskList = sorted(self.taskList, key=functools.cmp_to_key(QosPreemption))
+        self.preemptionCnt += 1
+        if self.preemptionCnt == self.sortNum:
+            self.preemptionCnt = 0
+            self.taskList = sorted(self.taskList, key=functools.cmp_to_key(QosPreemption))
         return True
     
     def setDsp(self, env, num, clusterId):

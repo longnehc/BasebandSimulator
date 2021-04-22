@@ -122,14 +122,13 @@ def run(env):
 
             elif scheduler.algorithm == SchduleAlgorithm.LB:
                 # new LB
-                clusterId = 0
                 curCost = sys.maxsize
-                if task.knrlType == "FHAC":
-                    clusterId = -1
-                else:
-                    clusterList = RM.getClusterList()
+                clusterList = RM.getClusterList()
+                if task.knrlType == "DSP":
+                    clusterId = 0
                     for i in range(0, len(clusterList)):
-                        # 11111
+                        if clusterList[i].clusterId < 0:
+                            break
                         tmp = 0.0
                         for dsp in clusterList[i].getDspList():
                             # tmp += dsp.taskQueue.qsize()
@@ -138,9 +137,21 @@ def run(env):
                         if tmp < curCost:
                             clusterId = i
                             curCost = tmp
-                    # off-chip test
-                    # clusterId = 0
-                # print(clusterId)
+
+                else:
+                    clusterId = -1
+                    for i in range(len(clusterList), 0, -1):
+                        if clusterList[-i].clusterId >= 0:
+                            break
+                        tmp = 0.0
+                        for dsp in clusterList[-i].getDspList():
+                            # tmp += dsp.taskQueue.qsize()
+                            tmp += dsp.curCost / dsp.speed
+                        tmp += clusterList[-i].curCost
+                        if tmp < curCost:
+                            clusterId = -i
+                            curCost = tmp
+                
                 # submit
                 while not RM.submitTaskToCluster(task, clusterId, env):
                     """debug from shine: test window"""

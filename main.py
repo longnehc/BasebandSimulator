@@ -44,12 +44,13 @@ if __name__ == "__main__":
     #hardwareConfig = ResourceManager.hardwareXMLParser("hardware.xml")
  
     ClusterNum = 15
+    hacNum = 6
     DSPPerCluster = 4
     MemCapacity = 100
     DDRCapacity = 100
     SIM_TIME = 10
     """change with algo"""
-    selectedAlgo = SchduleAlgorithm.QOSPreemptionT
+    selectedAlgo = SchduleAlgorithm.LB
     rpt = reporter()
     """change with algo"""
     """only reserve"""
@@ -141,15 +142,7 @@ if __name__ == "__main__":
     # graphList[4].QosReserve = True
     # graphList[5].QosReserve = True
 
-    
-
-    #withpooling
-    RM.setCluster(env, ClusterNum, dmaControl)
-    RM.setFhacCluster(env, dmaControl)
-
-    #withoutpooling
-    # RM.setCluster(env, ClusterNum, dmaControl)
-    # RM.setFhacCluster(env,dmaControl)
+    RM.setCluster(env, ClusterNum, hacNum,dmaControl)
 
     initDataIns = []
     for key in initData:

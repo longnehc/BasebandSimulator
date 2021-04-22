@@ -21,7 +21,6 @@ class ResourcesManager:
         self.waitTime = 0.0
         self.reserveGraph = {}
         self.DDR = {}
-        self.FHAC = {}
         #dma speed is 256 * 866 * 1000000
         self.speed = 256*2000000000
 
@@ -76,16 +75,11 @@ def dmaGetData(data):
         if data.dataName + "-" + str(data.data_inst_idx) in Mem.map.keys():
             gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)][0]
             find = True
-            resourcesManager.otherClusterSize += data.total_size
+            if cluster.clusterId >= 0:
+                resourcesManager.otherClusterSize += data.total_size
+            else:
+                resourcesManager.FHACSize += data.total_size
             break
-    #find from FHAC mem
-    if not find:
-        accessTime += 1
-        Mem = getCluster(-1).memoryList[0]
-        if data.dataName + "-" + str(data.data_inst_idx) in Mem.map.keys():
-            gotData = Mem.map[data.dataName + "-" + str(data.data_inst_idx)][0]
-            find = True
-            resourcesManager.FHACSize += data.total_size
     #find in DDR
     if not find:
         accessTime += 1
@@ -105,8 +99,6 @@ def delData(data):
     for cluster in resourcesManager.clusterList:
         mem = cluster.getMemory(0)
         mem.delData(data)
-    fhacMem = getCluster(-1).getMemory(0)
-    fhacMem.delData(data)
 
 def getSubmittedTaskNum():
     return resourcesManager.submittedTaskNum
@@ -136,32 +128,23 @@ def getClusterNum():
     return len(resourcesManager.clusterList)
 
 def getCluster(index):
-    if index < 0:
-        return resourcesManager.FHAC
-    else:
-        return resourcesManager.clusterList[index]
+    return resourcesManager.clusterList[index]
 
-def setCluster(env, num, dmaControl):
+def setCluster(env, clusterNum, hacNum, dmaControl):
 
     #withpooling
-    for i in range(0, num):
+    for i in range(0, clusterNum):
         # print("set cluster %d"%i)
         resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl))
+    for i in range(hacNum, 0, -1):
+        resourcesManager.clusterList.append(Cluster.Cluster(env, -i, dmaControl))
+
+    
 
     #withoutpooling
     # for i in range(0, num):
     #     # print("set cluster %d"%i)
     #     resourcesManager.clusterList.append(Cluster.Cluster(env, i, dmaControl[num]))
-
-
-def setFhacCluster(env, dmaControl):
-    
-    #withpooling
-    resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl)
-
-    #withoutpooling
-    # resourcesManager.FHAC = Cluster.Cluster(env,-1, dmaControl[-1])
-
 
 def setReserveGraph(id, ddl):
     resourcesManager.reserveGraph[id] = ddl
