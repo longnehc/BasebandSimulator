@@ -77,11 +77,7 @@ class Cluster:
     def submit(self, task):
         # if dmaTask not in self.taskList:
         self.taskList.append(task)
-        for data in task.dataInsIn:
-            self.curCost += data.total_size
-            # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        for data in task.getDataInsOut():
-            self.curCost += data.total_size
+        self.curCost += task.cost
         self.preemptionCnt += 1
         if self.preemptionCnt == self.sortNum:
             self.preemptionCnt = 0
@@ -154,7 +150,6 @@ class Cluster:
 
                     transmitTimeToYield = 0
                     for data in task.getDataInsIn():
-                        self.curCost -= data.total_size
                         if RM.getMemory(self).checkData(data):
                             RM.getMemory(self).setVisit(data)
                         else:
@@ -170,7 +165,6 @@ class Cluster:
                     
                     transmitTimeToYield = RM.getMemory(self).malloc(mallocSize)
                     yield self.env.timeout(transmitTimeToYield/speedChange)
-                    self.curCost -= mallocSize
 
                     
                     with self.dmaControl[1].request() as req3:
@@ -190,6 +184,7 @@ class Cluster:
                 else:
                     dspId = 0
                 RM.submitTaskToDsp(task, self.clusterId, dspId)
+                self.curCost -= task.cost
                 # while not RM.submitTaskToDsp(task, self.clusterId, dspId):
                 yield self.env.timeout(0.00001)
             yield self.env.timeout(0.00001)

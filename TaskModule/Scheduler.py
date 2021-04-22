@@ -129,11 +129,10 @@ def run(env):
                     for i in range(0, len(clusterList)):
                         if clusterList[i].clusterId < 0:
                             break
-                        tmp = 0.0
+                        tmp = clusterList[i].curCost / 10000
                         for dsp in clusterList[i].getDspList():
                             # tmp += dsp.taskQueue.qsize()
-                            tmp += dsp.curCost / dsp.speed
-                        tmp += clusterList[i].curCost
+                            tmp += dsp.curCost / 10000
                         if tmp < curCost:
                             clusterId = i
                             curCost = tmp
@@ -143,11 +142,10 @@ def run(env):
                     for i in range(len(clusterList), 0, -1):
                         if clusterList[-i].clusterId >= 0:
                             break
-                        tmp = 0.0
+                        tmp = clusterList[-i].curCost / 10000
                         for dsp in clusterList[-i].getDspList():
                             # tmp += dsp.taskQueue.qsize()
-                            tmp += dsp.curCost / dsp.speed
-                        tmp += clusterList[-i].curCost
+                            tmp += dsp.curCost / 10000
                         if tmp < curCost:
                             clusterId = -i
                             curCost = tmp
