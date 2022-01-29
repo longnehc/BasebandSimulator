@@ -26,10 +26,13 @@ def QosPreemption(t1, t2):
             return t1.graphDDL - t2.graphDDL
         else:
             return t1.cost - t2.cost
+        '''
+        return t1.graphDDL - t2.graphDDL
+        '''
     else:
         # print("算法：%d；实际：%d"%(scheduler.getAlgorithm().value,SchduleAlgorithm.QOSPreemptionT.value))
         p1 = (t1.graphCost + t1.graphPriority) / (max(0, t1.graphDDL - TaskManager.env.now) + 0.001)
-        p2 = (t2.graphCost + t2.graphPriority) / (max(0, t2.graphDDL - TaskManager.env.now) + 0.001)
+        p2 = (t2.graphCost + t2.graphPriority) / (max(0, t2.graphDDL - TaskMawenager.env.now) + 0.001)
         return p2 - p1
 
 

@@ -327,8 +327,8 @@ class reporter:
             yield env.timeout(0.2)
             # if RM.getFinishGraphCnt() >= 6 and not reported:
             RM.OFFMEMlog()
-            # if env.now > 6 and not reported:
-            if RM.getFinishGraphNum() >= 26 and not reported:
+            if env.now > 5 and not reported:
+            # if RM.getFinishGraphNum() >= 26 and not reported:
                 self.graphReport()
                 self.memPeekReport()
                 self.dspCostReport()
